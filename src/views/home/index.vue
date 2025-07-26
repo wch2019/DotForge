@@ -1,118 +1,132 @@
 <template>
   <div class="p-6">
-    <!-- 页面标题和操作按钮 -->
-    <div class="flex items-center justify-between mb-6">
-      <h2 class="text-2xl font-bold">我的项目</h2>
-      <div class="flex gap-2">
-        <n-button type="primary" @click="goAddProject">
+    <h2 class="text-2xl font-bold mb-6">欢迎使用 DotForge</h2>
+    
+    <!-- 统计卡片 -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <n-card>
+        <div class="text-center">
+          <div class="text-2xl font-bold text-blue-500">{{ stats.totalProjects }}</div>
+          <div class="text-gray-500">总项目数</div>
+        </div>
+      </n-card>
+      <n-card>
+        <div class="text-center">
+          <div class="text-2xl font-bold text-green-500">{{ stats.successBuilds }}</div>
+          <div class="text-gray-500">成功构建</div>
+        </div>
+      </n-card>
+      <n-card>
+        <div class="text-center">
+          <div class="text-2xl font-bold text-red-500">{{ stats.failedBuilds }}</div>
+          <div class="text-gray-500">失败构建</div>
+        </div>
+      </n-card>
+      <n-card>
+        <div class="text-center">
+          <div class="text-2xl font-bold text-orange-500">{{ stats.buildingNow }}</div>
+          <div class="text-gray-500">正在构建</div>
+        </div>
+      </n-card>
+    </div>
+
+    <!-- 快速操作 -->
+    <n-card title="快速操作" class="mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <n-button type="primary" size="large" @click="goToProjects">
+          <template #icon>
+            <n-icon><FolderOutline /></n-icon>
+          </template>
+          项目管理
+        </n-button>
+        <n-button type="success" size="large" @click="addNewProject">
           <template #icon>
             <n-icon><AddOutline /></n-icon>
           </template>
           添加项目
         </n-button>
-        <n-button type="success" @click="buildAll">
-          构建全部项目
+        <n-button type="info" size="large" @click="goToSettings">
+          <template #icon>
+            <n-icon><SettingsOutline /></n-icon>
+          </template>
+          应用设置
         </n-button>
       </div>
-    </div>
+    </n-card>
 
-    <!-- 项目卡片列表 -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      <n-card
-        v-for="project in projects"
-        :key="project.id"
-        class="flex flex-col"
-        :title="project.name"
-      >
-        <div class="mb-2 text-gray-500 text-sm truncate">
-          路径：{{ project.path }}
-        </div>
-        <div class="flex items-center mb-2 gap-2">
-          <n-tag
-            :type="statusTypeMap[project.status]"
-            size="small"
-            round
-          >
-            {{ statusTextMap[project.status] }}
-          </n-tag>
-          <span class="text-xs text-gray-400">上次构建：{{ project.lastBuildTime }}</span>
-        </div>
-        <div class="flex gap-2 mt-2">
-          <n-button size="small" @click="build(project)">构建</n-button>
-          <n-button size="small" @click="viewLogs(project)">查看日志</n-button>
-          <n-button size="small" @click="edit(project)">编辑</n-button>
-          <n-button size="small" type="error" @click="remove(project)">删除</n-button>
-        </div>
-      </n-card>
-    </div>
+    <!-- 最近构建 -->
+    <n-card title="最近构建" class="mb-6">
+      <n-list>
+        <n-list-item v-for="build in recentBuilds" :key="build.id">
+          <template #prefix>
+            <n-icon :color="build.status === 'success' ? '#18a058' : '#d03050'">
+              <CheckmarkCircleOutline v-if="build.status === 'success'" />
+              <CloseCircleOutline v-else />
+            </n-icon>
+          </template>
+          <n-thing :title="build.projectName" :description="build.time">
+            <template #description>
+              <span class="text-gray-500">{{ build.time }}</span>
+            </template>
+          </n-thing>
+        </n-list-item>
+      </n-list>
+    </n-card>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { NButton, NCard, NTag, NIcon } from 'naive-ui'
-import { AddOutline } from '@vicons/ionicons5'
-
-// 项目数据示例
-const projects = ref([
-  {
-    id: 1,
-    name: 'AI 自动部署',
-    path: '/Users/xxx/ai-deploy',
-    status: 'success', // success | failed | building
-    lastBuildTime: '3分钟前'
-  },
-  {
-    id: 2,
-    name: '前端平台',
-    path: '/Users/xxx/frontend',
-    status: 'failed',
-    lastBuildTime: '10分钟前'
-  },
-  {
-    id: 3,
-    name: '后端服务',
-    path: '/Users/xxx/backend',
-    status: 'building',
-    lastBuildTime: '1分钟前'
-  }
-])
-
-const statusTextMap = {
-  success: '成功',
-  failed: '失败',
-  building: '构建中'
-}
-const statusTypeMap = {
-  success: 'success',
-  failed: 'error',
-  building: 'warning'
-}
+import { 
+  NButton, NCard, NList, NListItem, NThing, NIcon 
+} from 'naive-ui'
+import { 
+  FolderOutline, AddOutline, SettingsOutline, 
+  CheckmarkCircleOutline, CloseCircleOutline 
+} from '@vicons/ionicons5'
 
 const router = useRouter()
 
-function goAddProject() {
-  router.push({ name: 'add-project' }) // 需在路由中配置对应 name
+// 统计数据
+const stats = ref({
+  totalProjects: 12,
+  successBuilds: 156,
+  failedBuilds: 8,
+  buildingNow: 2
+})
+
+// 最近构建记录
+const recentBuilds = ref([
+  {
+    id: 1,
+    projectName: '前端平台',
+    status: 'success',
+    time: '2分钟前'
+  },
+  {
+    id: 2,
+    projectName: '后端服务',
+    status: 'failed',
+    time: '5分钟前'
+  },
+  {
+    id: 3,
+    projectName: 'AI 自动部署',
+    status: 'success',
+    time: '10分钟前'
+  }
+])
+
+function goToProjects() {
+  router.push({ name: 'Project' })
 }
-function buildAll() {
-  // 触发全部项目构建逻辑
-  window.$message?.info('开始构建全部项目')
+
+function addNewProject() {
+  router.push({ name: 'Project' })
 }
-function build(project: any) {
-  // 单个项目构建逻辑
-  window.$message?.info(`开始构建：${project.name}`)
-}
-function viewLogs(project: any) {
-  // 查看日志逻辑
-  window.$message?.info(`查看日志：${project.name}`)
-}
-function edit(project: any) {
-  // 编辑逻辑
-  router.push({ name: 'edit-project', params: { id: project.id } })
-}
-function remove(project: any) {
-  // 删除逻辑
-  window.$message?.warning(`删除项目：${project.name}`)
+
+function goToSettings() {
+  router.push({ name: 'Settings' })
 }
 </script>

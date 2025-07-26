@@ -7,7 +7,8 @@ export const routes: RouteRecordRaw[] = [
         component: () => import('@/views/home/index.vue'),
         meta: {
             title: '首页',
-            icon: 'home',
+            icon: 'HomeOutline',
+            showInMenu: true,
         },
     },
     {
@@ -15,8 +16,9 @@ export const routes: RouteRecordRaw[] = [
         name: 'Project',
         component: () => import('@/views/project/index.vue'),
         meta: {
-            title: '项目',
-            icon: 'info',
+            title: '项目管理',
+            icon: 'FolderOutline',
+            showInMenu: true,
         },
     },
     {
@@ -25,7 +27,8 @@ export const routes: RouteRecordRaw[] = [
         component: () => import('@/views/setting/index.vue'),
         meta: {
             title: '设置',
-            icon: 'settings',
+            icon: 'SettingsOutline',
+            showInMenu: true,
         }
     }
 ]

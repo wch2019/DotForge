@@ -20,3 +20,12 @@ electron.contextBridge.exposeInMainWorld("ipcRenderer", {
   // You can expose other APTs you need here.
   // ...
 });
+electron.contextBridge.exposeInMainWorld("electronAPI", {
+  minimize: () => electron.ipcRenderer.send("window-minimize"),
+  maximize: () => electron.ipcRenderer.send("window-maximize"),
+  close: () => electron.ipcRenderer.send("window-close"),
+  isMaximized: () => electron.ipcRenderer.invoke("window-is-maximized"),
+  onMaximizeChange: (callback) => {
+    electron.ipcRenderer.on("window-maximize-change", (_, isMaximized) => callback(isMaximized));
+  }
+});

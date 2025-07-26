@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, ipcMain } from 'electron'
 import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
@@ -28,7 +28,12 @@ let win: BrowserWindow | null
 
 function createWindow() {
   win = new BrowserWindow({
-    icon: path.join(process.env.VITE_PUBLIC, 'electron-vite.svg'),
+    title: 'DotForge', // 设置窗口标题
+    frame: false, // 隐藏原生标题栏
+    titleBarStyle: 'hidden', // macOS 额外可加
+    icon: iconPath, // 使用统一的图标路径
+    minWidth: 800, // 最小宽度
+    minHeight: 600, // 最小高度
     webPreferences: {
       preload: path.join(__dirname, 'preload.mjs'),
     },
@@ -65,4 +70,43 @@ app.on('activate', () => {
   }
 })
 
-app.whenReady().then(createWindow)
+// 设置应用名称和图标
+app.setName('DotForge')
+app.setAppUserModelId('DotForge')
+
+// 设置应用图标路径
+const iconPath = path.join(process.env.VITE_PUBLIC, 'dot-forge.png')
+
+app.whenReady().then(() => {
+  createWindow()
+  
+  // 窗口控制事件处理
+  ipcMain.on('window-minimize', () => {
+    win?.minimize()
+  })
+  
+  ipcMain.on('window-maximize', () => {
+    if (win?.isMaximized()) {
+      win.unmaximize()
+    } else {
+      win?.maximize()
+    }
+  })
+  
+  ipcMain.on('window-close', () => {
+    win?.close()
+  })
+  
+  ipcMain.handle('window-is-maximized', () => {
+    return win?.isMaximized()
+  })
+  
+  // 监听窗口最大化状态变化
+  win?.on('maximize', () => {
+    win?.webContents.send('window-maximize-change', true)
+  })
+  
+  win?.on('unmaximize', () => {
+    win?.webContents.send('window-maximize-change', false)
+  })
+})
