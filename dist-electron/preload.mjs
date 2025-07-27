@@ -29,3 +29,9 @@ electron.contextBridge.exposeInMainWorld("electronAPI", {
     electron.ipcRenderer.on("window-maximize-change", (_, isMaximized) => callback(isMaximized));
   }
 });
+electron.contextBridge.exposeInMainWorld("dataAPI", {
+  read: (filename) => electron.ipcRenderer.invoke("data-read", filename),
+  write: (filename, data) => electron.ipcRenderer.invoke("data-write", filename, data),
+  getDataDir: () => electron.ipcRenderer.invoke("data-get-dir"),
+  setDataDir: (newDir) => electron.ipcRenderer.invoke("data-set-dir", newDir)
+});

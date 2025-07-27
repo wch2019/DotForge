@@ -1,7 +1,7 @@
 <template>
   <n-config-provider :theme="isDark ? darkTheme : null">
     <n-layout style="height: 100vh">
-      <n-layout-header bordered class="titleBar" :style="headerStyle">
+      <n-layout-header bordered class="titleBar custom-header">
         <div class="flex items-center justify-between h-12 px-3">
           <div class="flex items-center gap-4">
             <div class="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity no-drag" @click="goToHome">
@@ -10,13 +10,6 @@
             </div>
           </div>
           <div class="flex items-center gap-2 no-drag">
-            <n-button quaternary circle size="large">
-              <template #icon>
-                <n-icon>
-                  <SettingsOutline/>
-                </n-icon>
-              </template>
-            </n-button>
             <n-button quaternary circle size="large" @click="toggleDark">
               <template #icon>
                 <n-icon>
@@ -72,10 +65,10 @@
         </div>
       </n-layout-header>
       <n-layout has-sider style="height: calc(100vh - 49px);">
-        <n-layout-sider width="150" bordered class="sidebar-debug">
+        <n-layout-sider width="160" bordered>
           <AppMenu/>
         </n-layout-sider>
-        <n-layout-content style="padding: 16px;">
+        <n-layout-content >
           <router-view/>
         </n-layout-content>
       </n-layout>
@@ -84,7 +77,7 @@
 </template>
 
 <script setup lang="ts">
-import {ref, onMounted, computed} from 'vue'
+import {ref, watch, onMounted} from 'vue'
 import {useRouter} from 'vue-router'
 import {
   NConfigProvider,
@@ -96,41 +89,22 @@ import {
   NIcon,
   darkTheme
 } from 'naive-ui'
-import {SettingsOutline, Moon, Sunny} from '@vicons/ionicons5'
+import { Moon, Sunny} from '@vicons/ionicons5'
 import {Subtract24Regular, Square24Regular, Dismiss24Regular} from '@vicons/fluent'
 import AppMenu from '@/components/AppMenu.vue'
 
 const router = useRouter()
 const isDark = ref(false)
-const isMaximized = ref(false)
 
-// 头部样式计算属性
-const headerStyle = computed(() => ({
-  background: isDark.value
-      ? 'linear-gradient(135deg, #101014 0%, #1a1a1a 100%)'
-      : 'linear-gradient(135deg, #f0f9ff 0%, #e0e7ff 100%)'
-}))
-
-// 声明全局类型
-declare global {
-  interface Window {
-    electronAPI: {
-      minimize: () => void
-      maximize: () => void
-      close: () => void
-      isMaximized: () => Promise<boolean>
-      onMaximizeChange: (callback: (isMaximized: boolean) => void) => void
-    }
-  }
-}
+watch(isDark, (val) => {
+  document.documentElement.classList.toggle('dark', val)
+})
 
 function toggleDark() {
   isDark.value = !isDark.value
 }
 
-// 跳转到首页
 function goToHome() {
-  console.log('点击了标题，准备跳转到首页')
   router.push({ name: 'Home' })
 }
 
@@ -164,7 +138,7 @@ onMounted(async () => {
 }
 
 .custom-header {
-  background: linear-gradient(135deg, #f0f9ff 0%, #e0e7ff 100%);
+  background: var(--header-bg);
 }
 
 .no-drag {
@@ -196,11 +170,5 @@ onMounted(async () => {
 .no-drag :deep(.n-button__content),
 .window-control-btn :deep(.n-button__content) {
   -webkit-app-region: no-drag;
-}
-
-/* 侧边栏调试样式 */
-.sidebar-debug {
-  background-color: #f5f5f5;
-  min-height: 100%;
 }
 </style>

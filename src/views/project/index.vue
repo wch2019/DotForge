@@ -113,7 +113,6 @@
           v-for="project in filteredProjects"
           :key="project.id"
           class="project-card"
-          :class="{ 'building': project.status === 'building' }"
         >
           <div class="project-header">
             <div class="project-info">
@@ -277,12 +276,12 @@ const filteredProjects = computed(() => {
   )
 })
 
-const statusTextMap = {
+const statusTextMap: Record<string, string> = {
   success: '成功',
   failed: '失败',
   building: '构建中'
 }
-const statusTypeMap = {
+const statusTypeMap: Record<string, 'success' | 'error' | 'warning'> = {
   success: 'success',
   failed: 'error',
   building: 'warning'
@@ -291,7 +290,7 @@ const statusTypeMap = {
 const router = useRouter()
 
 function goAddProject() {
-  console.log('添加项目')
+  router.push({ name: 'ProjectCreate' })
 }
 
 function buildAll() {
@@ -318,7 +317,7 @@ function remove(project: any) {
 <style scoped>
 .project-page {
   padding: 24px;
-  background: #f5f7fa;
+  background: var(--content-bg);
   min-height: 100vh;
 }
 
@@ -431,7 +430,7 @@ function remove(project: any) {
 .stat-number {
   font-size: 28px;
   font-weight: 700;
-  color: #1f2937;
+  color: var(--n-text-color);
   line-height: 1;
 }
 
@@ -443,7 +442,8 @@ function remove(project: any) {
 
 /* 项目列表 */
 .projects-section {
-  background: white;
+  background: var(--content-bg);
+  border: 1px solid var(--n-border-color);
   border-radius: 12px;
   padding: 24px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -459,7 +459,6 @@ function remove(project: any) {
 .section-title {
   font-size: 20px;
   font-weight: 600;
-  color: #1f2937;
   margin: 0;
 }
 
@@ -477,17 +476,11 @@ function remove(project: any) {
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
-  border: 2px solid transparent;
 }
 
 .project-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-}
-
-.project-card.building {
-  border-color: #fbbf24;
-  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
 }
 
 .project-header {
@@ -504,7 +497,6 @@ function remove(project: any) {
 .project-name {
   font-size: 18px;
   font-weight: 600;
-  color: #1f2937;
   margin: 0 0 4px 0;
 }
 

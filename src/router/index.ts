@@ -22,15 +22,42 @@ export const routes: RouteRecordRaw[] = [
         },
     },
     {
-        path: '/settings',
-        name: 'Settings',
-        component: () => import('@/views/setting/index.vue'),
+        path: '/project/create',
+        name: 'ProjectCreate',
+        component: () => import('@/views/project/editor.vue'),
         meta: {
-            title: '设置',
+            title: '新建项目',
+            showInMenu: false,
+        },
+    },
+    {
+        path: '/project/edit',
+        name: 'ProjectEdit',
+        component: () => import('@/views/project/editor.vue'),
+        meta: {
+            title: '编辑项目',
+            showInMenu: false,
+        },
+    },
+    {
+        path: '/project/log',
+        name: 'ProjectLog',
+        component: () => import('@/views/project/BuildLog.vue'),
+        meta: {
+            title: '构建日志',
+            showInMenu: false,
+        },
+    },
+    {
+        path:'/setting',
+        name: 'Setting', 
+        component: () => import('@/views/setting/index.vue'), 
+        meta: { 
+            title: '应用设置',
             icon: 'SettingsOutline',
-            showInMenu: true,
-        }
-    }
+            showInMenu: false,
+        },
+     },
 ]
 
 const router = createRouter({

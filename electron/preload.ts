@@ -33,3 +33,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('window-maximize-change', (_, isMaximized) => callback(isMaximized))
   }
 })
+
+// 暴露数据存储API
+contextBridge.exposeInMainWorld('dataAPI', {
+  read: (filename: string) => ipcRenderer.invoke('data-read', filename),
+  write: (filename: string, data: any) => ipcRenderer.invoke('data-write', filename, data),
+  getDataDir: () => ipcRenderer.invoke('data-get-dir'),
+  setDataDir: (newDir: string) => ipcRenderer.invoke('data-set-dir', newDir)
+})

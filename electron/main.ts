@@ -1,9 +1,8 @@
 import { app, BrowserWindow, ipcMain } from 'electron'
-import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
+import fs from 'node:fs'
 
-const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 // The built directory structure
@@ -26,14 +25,58 @@ process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL ? path.join(process.env.APP_ROOT, 
 
 let win: BrowserWindow | null
 
+// 数据存储相关
+const DEFAULT_DATA_DIR = path.join(app.getPath('documents'), 'DotForge', 'data')
+let dataDir = DEFAULT_DATA_DIR
+
+// 确保数据目录存在
+function ensureDataDir() {
+  if (!fs.existsSync(dataDir)) {
+    fs.mkdirSync(dataDir, { recursive: true })
+  }
+}
+
+// 获取数据文件路径
+function getDataFilePath(filename: string): string {
+  return path.join(dataDir, filename)
+}
+
+// 读取JSON文件
+function readJsonFile(filename: string): any {
+  const filePath = getDataFilePath(filename)
+  if (!fs.existsSync(filePath)) {
+    return null
+  }
+  try {
+    const data = fs.readFileSync(filePath, 'utf8')
+    return JSON.parse(data)
+  } catch (error) {
+    console.error(`读取文件失败: ${filePath}`, error)
+    return null
+  }
+}
+
+// 写入JSON文件
+function writeJsonFile(filename: string, data: any): boolean {
+  try {
+    ensureDataDir()
+    const filePath = getDataFilePath(filename)
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8')
+    return true
+  } catch (error) {
+    console.error(`写入文件失败: ${filename}`, error)
+    return false
+  }
+}
+
 function createWindow() {
   win = new BrowserWindow({
     title: 'DotForge', // 设置窗口标题
     frame: false, // 隐藏原生标题栏
     titleBarStyle: 'hidden', // macOS 额外可加
     icon: iconPath, // 使用统一的图标路径
-    minWidth: 800, // 最小宽度
-    minHeight: 600, // 最小高度
+    minWidth: 830, // 最小宽度
+    minHeight: 750, // 最小高度
     webPreferences: {
       preload: path.join(__dirname, 'preload.mjs'),
     },
@@ -78,6 +121,9 @@ app.setAppUserModelId('DotForge')
 const iconPath = path.join(process.env.VITE_PUBLIC, 'dot-forge.png')
 
 app.whenReady().then(() => {
+  // 确保数据目录存在
+  ensureDataDir()
+  
   createWindow()
   
   // 窗口控制事件处理
@@ -108,5 +154,26 @@ app.whenReady().then(() => {
   
   win?.on('unmaximize', () => {
     win?.webContents.send('window-maximize-change', false)
+  })
+  
+  // 数据存储相关IPC处理
+  ipcMain.handle('data-read', async (_, filename: string) => {
+    return readJsonFile(filename)
+  })
+  
+  ipcMain.handle('data-write', async (_, filename: string, data: any) => {
+    return writeJsonFile(filename, data)
+  })
+  
+  ipcMain.handle('data-get-dir', async () => {
+    return dataDir
+  })
+  
+  ipcMain.handle('data-set-dir', async (_, newDir: string) => {
+    if (fs.existsSync(newDir) || fs.mkdirSync(newDir, { recursive: true })) {
+      dataDir = newDir
+      return true
+    }
+    return false
   })
 })

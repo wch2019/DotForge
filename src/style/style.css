@@ -11,6 +11,26 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  --header-bg: linear-gradient(135deg, #f0f9ff 0%, #e0e7ff 100%);
+  --quick-actions:  oklch(98.5% 0.002 247.839);
+  --n-color: #fff;
+  --n-text-color: rgb(51, 54, 57);
+  --n-border-color: rgb(239, 239, 245);
+  --action-card-bg: #f8fafc;
+  --action-card-bg-hover:#f1f5f9;
+  --action-card-border-color-hover:#e2e8f0;
+}
+.dark {
+  --header-bg: linear-gradient(135deg, #1e1e1e 0%, #2a2a2a 100%);
+  --quick-actions: oklch(25% 0.002 247.839);
+  --n-color: rgb(24, 24, 28);
+  --n-text-color: rgba(255, 255, 255, 0.82);
+  --n-border-color: rgba(255, 255, 255, 0.09);
+  --content-bg:#1a1b1e;
+  --action-card-bg: #1c2434;
+  --action-card-bg-hover: #1e293b;
+  --action-card-border-color-hover: #334155;
 }
 
 body {
@@ -25,29 +45,33 @@ body {
   width: 100%;
   height: 100%;
 }
-/* 针对WebKit浏览器（Chrome, Safari, Edge等）的滚动条样式 */
+
+/* 更细、更短的滚动条（WebKit浏览器） */
 ::-webkit-scrollbar {
-  width: 6px;
-  /* 滚动条的宽度，可以根据需要调整 */
-  height: 6px;
-  /* 垂直滚动条的高度，这里不需要因为只修改了水平滚动条 */
-  background-color: rgba(35, 43, 75, 0);
-  /* 滚动条轨道的背景色，可以设置为与容器背景相近的颜色以隐藏 */
-  border-radius: 4px;
-  /* 使滚动条滑块看起来更圆滑 */
+  width: 5px;
+  height: 5px;
+  background: transparent;
 }
 
+/* 滑块：圆润 + 半透明 + 玻璃感 */
 ::-webkit-scrollbar-thumb {
-  background-color: #d3d5d9;
-  /* 滚动条滑块的颜色 */
-  border-radius: 4px;
-  /* 使滚动条滑块看起来更圆滑 */
-// border: 2px solid transparent; /* 通过增加透明边框来减少滑块的实际可见宽度，从而使其看起来更细 */
+  background: rgba(120, 120, 120, 0.2);
+  border-radius: 8px;
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  transition: background 0.3s ease;
   background-clip: padding-box;
-  /* 确保边框不被背景色覆盖 */
 }
 
+/* 悬停状态：稍微亮一点 */
 ::-webkit-scrollbar-thumb:hover {
-  background-color: #bfc2c7;
-  /* 滚动条滑块在悬停时的颜色，可以比正常时稍深一些 */
+  background: rgba(120, 120, 120, 0.35);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
 }
