@@ -508,7 +508,7 @@ async function onSave() {
 <style scoped>
 .editor-page {
   background: var(--content-bg);
-  min-height: 100vh;
+  min-height: var(--content-height);
   padding: 24px;
 }
 

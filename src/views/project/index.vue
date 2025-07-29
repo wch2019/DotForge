@@ -318,7 +318,7 @@ function remove(project: any) {
 .project-page {
   padding: 24px;
   background: var(--content-bg);
-  min-height: 100vh;
+  min-height: var(--content-height);
 }
 
 /* 页面头部 */

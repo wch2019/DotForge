@@ -12,6 +12,8 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
+  --content-height: calc(100vh - 49px);
+
   --header-bg: linear-gradient(135deg, #f0f9ff 0%, #e0e7ff 100%);
   --quick-actions:  oklch(98.5% 0.002 247.839);
   --n-color: #fff;

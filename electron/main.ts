@@ -76,7 +76,7 @@ function createWindow() {
     titleBarStyle: 'hidden', // macOS 额外可加
     icon: iconPath, // 使用统一的图标路径
     minWidth: 830, // 最小宽度
-    minHeight: 750, // 最小高度
+    minHeight: 640, // 最小高度
     webPreferences: {
       preload: path.join(__dirname, 'preload.mjs'),
     },

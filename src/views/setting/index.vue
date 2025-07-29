@@ -7,7 +7,7 @@
       </div>
       
       <div class="settings-content">
-        <n-tabs type="line" animated>
+        <n-tabs type="line" animated >
           <!-- 配置环境 Tab -->
           <n-tab-pane name="environment" tab="配置环境">
             <div class="tab-content">
@@ -288,8 +288,9 @@ onMounted(() => {
 <style scoped>
 .setting-page {
   background: #f5f7fa;
-  min-height: 100vh;
-  padding: 32px 16px;
+  height: var(--content-height);
+  padding: 16px;
+
 }
 
 .setting-container {
@@ -324,6 +325,8 @@ onMounted(() => {
 }
 
 .tab-content {
+  height: 300px;
+  overflow-y: auto;
   padding: 16px 0;
 }
 
@@ -383,8 +386,7 @@ onMounted(() => {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
-  margin-top: 32px;
-  padding-top: 24px;
+  padding-top: 20px;
   border-top: 1px solid #e5e7eb;
 }
 
