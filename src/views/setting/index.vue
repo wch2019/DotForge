@@ -3,9 +3,8 @@
     <div class="setting-container">
       <div class="setting-header">
         <h1 class="setting-title">应用设置</h1>
-        <p class="setting-description">配置应用环境和系统设置</p>
       </div>
-      
+
       <div class="settings-content">
         <n-tabs type="line" animated >
           <!-- 配置环境 Tab -->
@@ -171,14 +170,14 @@ async function initSettings() {
     await dataStore.init()
     const settings = dataStore.getSettings()
     const environment = dataStore.getEnvironment()
-    
+
     // 加载系统设置
     systemConfig.dataDir = settings.dataDir || await dataStore.getDataDir()
     systemConfig.theme = settings.theme
     systemConfig.autoSave = settings.autoSave
     systemConfig.buildTimeout = settings.buildTimeout
     systemConfig.maxConcurrentBuilds = settings.maxConcurrentBuilds
-    
+
     // 加载环境配置
     Object.assign(envConfig, environment)
   } catch (error) {
@@ -217,13 +216,13 @@ async function exportData() {
   try {
     const projects = dataStore.getProjects()
     const buildLogs = dataStore.getBuildLogs()
-    
+
     const exportData = {
       projects,
       buildLogs,
       exportTime: new Date().toISOString()
     }
-    
+
     const dataStr = JSON.stringify(exportData, null, 2)
     const blob = new Blob([dataStr], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
@@ -234,7 +233,7 @@ async function exportData() {
     a.click()
     document.body.removeChild(a)
     URL.revokeObjectURL(url)
-    
+
     console.log('数据导出成功')
   } catch (error) {
     console.error('导出数据失败:', error)
@@ -270,10 +269,10 @@ async function saveSettings() {
       buildTimeout: systemConfig.buildTimeout,
       maxConcurrentBuilds: systemConfig.maxConcurrentBuilds
     })
-    
+
     // 保存环境配置
     await dataStore.updateEnvironment(envConfig)
-    
+
     console.log('设置保存成功')
   } catch (error) {
     console.error('保存设置失败:', error)
@@ -287,7 +286,7 @@ onMounted(() => {
 
 <style scoped>
 .setting-page {
-  background: #f5f7fa;
+  background: var(--content-bg);
   height: var(--content-height);
   padding: 16px;
 
@@ -296,36 +295,29 @@ onMounted(() => {
 .setting-container {
   max-width: 800px;
   margin: 0 auto;
-  background: white;
+  background: var(--quick-actions);
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  padding: 32px;
+  padding: 20px;
 }
 
 .setting-header {
   text-align: center;
-  margin-bottom: 32px;
+  margin-bottom: 10px;
 }
 
 .setting-title {
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 700;
-  color: #1f2937;
-  margin: 0 0 16px 0;
-}
-
-.setting-description {
-  color: #6b7280;
-  font-size: 16px;
-  margin: 0;
+  margin: 0 0 10px 0;
 }
 
 .settings-content {
-  min-height: 400px;
+  min-height: calc(100vh - 230px);
 }
 
 .tab-content {
-  height: 300px;
+  height: calc(100vh - 290px);
   overflow-y: auto;
   padding: 16px 0;
 }
@@ -336,7 +328,7 @@ onMounted(() => {
   color: var(--n-text-color);
   margin: 24px 0 16px 0;
   padding-bottom: 8px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--n-border-color);
 }
 
 .section-title:first-child {
@@ -354,7 +346,6 @@ onMounted(() => {
 .item-label {
   font-size: 14px;
   font-weight: 500;
-  color: #1f2937;
   margin-bottom: 8px;
 }
 
@@ -387,27 +378,27 @@ onMounted(() => {
   justify-content: flex-end;
   gap: 12px;
   padding-top: 20px;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--n-border-color);
 }
 
 @media (max-width: 768px) {
   .setting-container {
     padding: 24px 16px;
   }
-  
+
   .setting-page {
     padding: 16px 8px;
   }
-  
+
   .item-content {
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .item-content .n-button {
     align-self: flex-start;
   }
-  
+
   .setting-footer {
     flex-direction: column;
   }

@@ -55,7 +55,7 @@ function createWindow() {
     // 使用统一的图标路径
     minWidth: 830,
     // 最小宽度
-    minHeight: 750,
+    minHeight: 640,
     // 最小高度
     webPreferences: {
       preload: path.join(__dirname, "preload.mjs")
