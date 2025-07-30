@@ -2,63 +2,73 @@ import { app, BrowserWindow, ipcMain } from "electron";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import fs from "node:fs";
+const CONFIG_FILE_NAME = "config.json";
+const CONFIG_DIR = app.getPath("userData");
+const CONFIG_PATH = path.join(CONFIG_DIR, CONFIG_FILE_NAME);
+const defaultConfig = {
+  theme: "light",
+  language: "zh-CN",
+  autoUpdate: true,
+  keepArtifacts: true,
+  defaultProjectPath: ""
+};
+function ensureConfigFile() {
+  if (!fs.existsSync(CONFIG_DIR)) {
+    fs.mkdirSync(CONFIG_DIR, { recursive: true });
+  }
+  if (!fs.existsSync(CONFIG_PATH)) {
+    fs.writeFileSync(CONFIG_PATH, JSON.stringify(defaultConfig, null, 2), "utf8");
+  }
+}
+function readConfig() {
+  ensureConfigFile();
+  try {
+    const content = fs.readFileSync(CONFIG_PATH, "utf8");
+    const parsed = JSON.parse(content);
+    return parsed;
+  } catch (e) {
+    console.error("[设置] 读取配置失败，使用默认配置", e);
+    return defaultConfig;
+  }
+}
+function writeConfig(config) {
+  try {
+    ensureConfigFile();
+    fs.writeFileSync(CONFIG_PATH, JSON.stringify(config, null, 2), "utf8");
+    return true;
+  } catch (e) {
+    console.error("[设置] 写入配置失败", e);
+    return false;
+  }
+}
+function getConfigPath() {
+  return CONFIG_PATH;
+}
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 process.env.APP_ROOT = path.join(__dirname, "..");
 const VITE_DEV_SERVER_URL = process.env["VITE_DEV_SERVER_URL"];
 const MAIN_DIST = path.join(process.env.APP_ROOT, "dist-electron");
 const RENDERER_DIST = path.join(process.env.APP_ROOT, "dist");
 process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL ? path.join(process.env.APP_ROOT, "public") : RENDERER_DIST;
+const iconPath = path.join(process.env.VITE_PUBLIC, "dot-forge.png");
 let win;
-const DEFAULT_DATA_DIR = path.join(app.getPath("documents"), "DotForge", "data");
-let dataDir = DEFAULT_DATA_DIR;
-function ensureDataDir() {
-  if (!fs.existsSync(dataDir)) {
-    fs.mkdirSync(dataDir, { recursive: true });
-  }
-}
-function getDataFilePath(filename) {
-  return path.join(dataDir, filename);
-}
-function readJsonFile(filename) {
-  const filePath = getDataFilePath(filename);
-  if (!fs.existsSync(filePath)) {
-    return null;
-  }
-  try {
-    const data = fs.readFileSync(filePath, "utf8");
-    return JSON.parse(data);
-  } catch (error) {
-    console.error(`读取文件失败: ${filePath}`, error);
-    return null;
-  }
-}
-function writeJsonFile(filename, data) {
-  try {
-    ensureDataDir();
-    const filePath = getDataFilePath(filename);
-    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), "utf8");
-    return true;
-  } catch (error) {
-    console.error(`写入文件失败: ${filename}`, error);
-    return false;
-  }
-}
 function createWindow() {
   win = new BrowserWindow({
     title: "DotForge",
-    // 设置窗口标题
+    // 应用窗口标题
     frame: false,
     // 隐藏原生标题栏
     titleBarStyle: "hidden",
-    // macOS 额外可加
+    // macOS 特有样式
     icon: iconPath,
-    // 使用统一的图标路径
+    // 应用图标路径
     minWidth: 830,
-    // 最小宽度
+    // 最小宽度限制
     minHeight: 640,
-    // 最小高度
+    // 最小高度限制
     webPreferences: {
       preload: path.join(__dirname, "preload.mjs")
+      // 预加载脚本
     }
   });
   win.webContents.on("did-finish-load", () => {
@@ -69,6 +79,12 @@ function createWindow() {
   } else {
     win.loadFile(path.join(RENDERER_DIST, "index.html"));
   }
+  win.on("maximize", () => {
+    win == null ? void 0 : win.webContents.send("window-maximize-change", true);
+  });
+  win.on("unmaximize", () => {
+    win == null ? void 0 : win.webContents.send("window-maximize-change", false);
+  });
 }
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {
@@ -83,9 +99,7 @@ app.on("activate", () => {
 });
 app.setName("DotForge");
 app.setAppUserModelId("DotForge");
-const iconPath = path.join(process.env.VITE_PUBLIC, "dot-forge.png");
 app.whenReady().then(() => {
-  ensureDataDir();
   createWindow();
   ipcMain.on("window-minimize", () => {
     win == null ? void 0 : win.minimize();
@@ -100,30 +114,14 @@ app.whenReady().then(() => {
   ipcMain.on("window-close", () => {
     win == null ? void 0 : win.close();
   });
-  ipcMain.handle("window-is-maximized", () => {
-    return win == null ? void 0 : win.isMaximized();
+  ipcMain.handle("config-read", () => {
+    return readConfig();
   });
-  win == null ? void 0 : win.on("maximize", () => {
-    win == null ? void 0 : win.webContents.send("window-maximize-change", true);
+  ipcMain.handle("config-write", (_event, newConfig) => {
+    return writeConfig(newConfig);
   });
-  win == null ? void 0 : win.on("unmaximize", () => {
-    win == null ? void 0 : win.webContents.send("window-maximize-change", false);
-  });
-  ipcMain.handle("data-read", async (_, filename) => {
-    return readJsonFile(filename);
-  });
-  ipcMain.handle("data-write", async (_, filename, data) => {
-    return writeJsonFile(filename, data);
-  });
-  ipcMain.handle("data-get-dir", async () => {
-    return dataDir;
-  });
-  ipcMain.handle("data-set-dir", async (_, newDir) => {
-    if (fs.existsSync(newDir) || fs.mkdirSync(newDir, { recursive: true })) {
-      dataDir = newDir;
-      return true;
-    }
-    return false;
+  ipcMain.handle("config-get-path", () => {
+    return getConfigPath();
   });
 });
 export {

@@ -24,14 +24,8 @@ electron.contextBridge.exposeInMainWorld("electronAPI", {
   minimize: () => electron.ipcRenderer.send("window-minimize"),
   maximize: () => electron.ipcRenderer.send("window-maximize"),
   close: () => electron.ipcRenderer.send("window-close"),
-  isMaximized: () => electron.ipcRenderer.invoke("window-is-maximized"),
-  onMaximizeChange: (callback) => {
-    electron.ipcRenderer.on("window-maximize-change", (_, isMaximized) => callback(isMaximized));
-  }
-});
-electron.contextBridge.exposeInMainWorld("dataAPI", {
-  read: (filename) => electron.ipcRenderer.invoke("data-read", filename),
-  write: (filename, data) => electron.ipcRenderer.invoke("data-write", filename, data),
-  getDataDir: () => electron.ipcRenderer.invoke("data-get-dir"),
-  setDataDir: (newDir) => electron.ipcRenderer.invoke("data-set-dir", newDir)
+  // 配置文件相关
+  readConfig: () => electron.ipcRenderer.invoke("config-read"),
+  writeConfig: (config) => electron.ipcRenderer.invoke("config-write", config),
+  getConfigPath: () => electron.ipcRenderer.invoke("config-get-path")
 });

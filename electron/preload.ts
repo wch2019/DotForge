@@ -1,4 +1,5 @@
 import { ipcRenderer, contextBridge } from 'electron'
+import {AppConfig} from "./store/setting.ts";
 
 // --------- Expose some API to the Renderer process ---------
 contextBridge.exposeInMainWorld('ipcRenderer', {
@@ -28,16 +29,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   minimize: () => ipcRenderer.send('window-minimize'),
   maximize: () => ipcRenderer.send('window-maximize'),
   close: () => ipcRenderer.send('window-close'),
-  isMaximized: () => ipcRenderer.invoke('window-is-maximized'),
-  onMaximizeChange: (callback: (isMaximized: boolean) => void) => {
-    ipcRenderer.on('window-maximize-change', (_, isMaximized) => callback(isMaximized))
-  }
-})
-
-// 暴露数据存储API
-contextBridge.exposeInMainWorld('dataAPI', {
-  read: (filename: string) => ipcRenderer.invoke('data-read', filename),
-  write: (filename: string, data: any) => ipcRenderer.invoke('data-write', filename, data),
-  getDataDir: () => ipcRenderer.invoke('data-get-dir'),
-  setDataDir: (newDir: string) => ipcRenderer.invoke('data-set-dir', newDir)
+  // 配置文件相关
+  readConfig: () => ipcRenderer.invoke('config-read'),
+  writeConfig: (config: AppConfig) => ipcRenderer.invoke('config-write', config),
+  getConfigPath: () => ipcRenderer.invoke('config-get-path'),
 })

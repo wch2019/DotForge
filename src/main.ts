@@ -10,7 +10,7 @@ const app = createApp(App)
 app.use(router)
 
 app.mount('#app').$nextTick(() => {
-  // Use contextBridge
+  // 使用 contextBridge 暴露的 ipcRenderer 来监听主进程发来的消息
   window.ipcRenderer.on('main-process-message', (_event, message) => {
     console.log(message)
   })

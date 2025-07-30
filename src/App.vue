@@ -121,15 +121,18 @@ function closeWindow() {
   window.electronAPI?.close()
 }
 
-// 初始化窗口状态
 onMounted(async () => {
-  if (window.electronAPI) {
-    isMaximized.value = await window.electronAPI.isMaximized()
-    window.electronAPI.onMaximizeChange((maximized) => {
-      isMaximized.value = maximized
-    })
-  }
+  const path = await window.electronAPI.getConfigPath()
+  console.log('配置文件路径:', path)
+
+  const config = await window.electronAPI.readConfig()
+  console.log('配置读取:', config)
+
+  // 保存配置示例
+  config.theme = 'dark'
+  await window.electronAPI.writeConfig(config)
 })
+
 </script>
 
 <style scoped>
