@@ -72,11 +72,11 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref} from 'vue'
+import {onMounted, ref, toRaw} from 'vue'
 import type {AppConfig} from "../../../electron/store/setting.ts";
 
 // 系统配置
-const systemConfig = ref <AppConfig> ({
+const systemConfig = ref<AppConfig>({
   theme: 'light',
   language: 'zh-CN',
   autoUpdate: true,
@@ -147,7 +147,7 @@ function resetSettings() {
 // 保存设置
 async function saveSettings() {
   try {
-    await window.electronAPI.writeConfig(systemConfig.value)
+    await window.electronAPI.writeConfig(toRaw(systemConfig.value))
     console.log('设置保存成功')
   } catch (error) {
     console.error('保存设置失败:', error)
@@ -159,7 +159,7 @@ onMounted(async () => {
   console.log('配置文件路径:', path)
 
   systemConfig.value = await window.electronAPI.readConfig()
-  console.log('配置读取:', systemConfig.value)
+  console.log('配置读取:', systemConfig)
 })
 </script>
 

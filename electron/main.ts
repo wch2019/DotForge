@@ -48,6 +48,8 @@ function createWindow() {
     },
   })
 
+  win.webContents.openDevTools();
+
   // 页面加载完成后，发送消息给渲染进程
   win.webContents.on('did-finish-load', () => {
     win?.webContents.send('main-process-message', (new Date).toLocaleString())
