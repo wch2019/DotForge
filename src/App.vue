@@ -1,5 +1,5 @@
 <template>
-  <n-config-provider :theme="isDark ? darkTheme : null">
+  <n-config-provider :theme="themeStore.naiveTheme">
     <n-layout style="height: 100vh">
       <n-layout-header bordered class="titleBar custom-header">
         <div class="flex items-center justify-between h-12 px-3">
@@ -10,10 +10,10 @@
             </div>
           </div>
           <div class="flex items-center gap-2 no-drag">
-            <n-button quaternary circle size="large" @click="toggleDark">
+            <n-button quaternary circle @click="cycleTheme">
               <template #icon>
                 <n-icon>
-                  <component :is="isDark ? Moon : Sunny"/>
+                  <component :is="currentIcon"/>
                 </n-icon>
               </template>
             </n-button>
@@ -77,31 +77,37 @@
 </template>
 
 <script setup lang="ts">
-import {ref, watch, onMounted} from 'vue'
+import {computed} from 'vue'
 import {useRouter} from 'vue-router'
-import {
-  NConfigProvider,
-  NLayout,
-  NLayoutHeader,
-  NLayoutSider,
-  NLayoutContent,
-  NButton,
-  NIcon,
-  darkTheme
-} from 'naive-ui'
-import { Moon, Sunny} from '@vicons/ionicons5'
+import { Moon, Sunny, Contrast} from '@vicons/ionicons5'
 import {Subtract24Regular, Square24Regular, Dismiss24Regular} from '@vicons/fluent'
 import AppMenu from '@/components/AppMenu.vue'
+import { useThemeStore } from '@/stores/theme'
+
+const themeStore = useThemeStore()
+themeStore.initThemeFromConfig()
 
 const router = useRouter()
-const isDark = ref(false)
 
-watch(isDark, (val) => {
-  document.documentElement.classList.toggle('dark', val)
+
+// 图标根据当前主题变化
+const currentIcon = computed(() => {
+  switch (themeStore.userTheme) {
+    case 'light': return Sunny
+    case 'dark': return Moon
+    case 'auto': return Contrast
+  }
 })
 
-function toggleDark() {
-  isDark.value = !isDark.value
+// 循环切换主题
+function cycleTheme() {
+  const next = {
+    light: 'dark',
+    dark: 'auto',
+    auto: 'light',
+  } as const
+
+  themeStore.setTheme(next[themeStore.userTheme])
 }
 
 function goToHome() {
@@ -120,18 +126,6 @@ function maximizeWindow() {
 function closeWindow() {
   window.electronAPI?.close()
 }
-
-onMounted(async () => {
-  const path = await window.electronAPI.getConfigPath()
-  console.log('配置文件路径:', path)
-
-  const config = await window.electronAPI.readConfig()
-  console.log('配置读取:', config)
-
-  // 保存配置示例
-  config.theme = 'dark'
-  await window.electronAPI.writeConfig(config)
-})
 
 </script>
 

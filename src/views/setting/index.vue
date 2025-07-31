@@ -6,107 +6,43 @@
       </div>
 
       <div class="settings-content">
-        <n-tabs type="line" animated >
-          <!-- 配置环境 Tab -->
-          <n-tab-pane name="environment" tab="配置环境">
+        <n-tabs type="line" animated placement="left">
+          <!-- 系统设置 Tab -->
+          <n-tab-pane name="system" tab="常规设置">
             <div class="tab-content">
-              <div class="section-title">环境配置</div>
+
               <div class="setting-item">
-                <div class="item-label">Node.js 路径</div>
+                <div class="item-label">主题模式</div>
                 <div class="item-content">
-                  <n-input v-model:value="envConfig.nodePath" placeholder="Node.js 可执行文件路径" />
-                  <n-button @click="selectNodePath" type="primary">选择路径</n-button>
+                  <n-select v-model:value="systemConfig.theme" :options="themeOptions"/>
                 </div>
-                <div class="item-desc">指定 Node.js 运行时路径</div>
               </div>
 
               <div class="setting-item">
-                <div class="item-label">Java 路径</div>
+                <div class="item-label">语言</div>
                 <div class="item-content">
-                  <n-input v-model:value="envConfig.javaPath" placeholder="Java 可执行文件路径" />
-                  <n-button @click="selectJavaPath" type="primary">选择路径</n-button>
+                  <n-select v-model:value="systemConfig.language" :options="languageOptions"/>
                 </div>
-                <div class="item-desc">指定 Java 运行时路径</div>
               </div>
 
               <div class="setting-item">
-                <div class="item-label">Maven 路径</div>
+                <div class="item-label">更新</div>
                 <div class="item-content">
-                  <n-input v-model:value="envConfig.mavenPath" placeholder="Maven 可执行文件路径" />
-                  <n-button @click="selectMavenPath" type="primary">选择路径</n-button>
+                  <n-checkbox v-model:checked="systemConfig.autoUpdate">自动检查更新</n-checkbox>
                 </div>
-                <div class="item-desc">指定 Maven 构建工具路径</div>
-              </div>
-
-              <div class="setting-item">
-                <div class="item-label">Docker 路径</div>
-                <div class="item-content">
-                  <n-input v-model:value="envConfig.dockerPath" placeholder="Docker 可执行文件路径" />
-                  <n-button @click="selectDockerPath" type="primary">选择路径</n-button>
-                </div>
-                <div class="item-desc">指定 Docker 容器化工具路径</div>
-              </div>
-
-              <div class="setting-item">
-                <div class="item-label">Git 路径</div>
-                <div class="item-content">
-                  <n-input v-model:value="envConfig.gitPath" placeholder="Git 可执行文件路径" />
-                  <n-button @click="selectGitPath" type="primary">选择路径</n-button>
-                </div>
-                <div class="item-desc">指定 Git 版本控制工具路径</div>
               </div>
             </div>
           </n-tab-pane>
-
-          <!-- 系统设置 Tab -->
-          <n-tab-pane name="system" tab="系统设置">
+          <n-tab-pane name="data" tab="数据管理">
             <div class="tab-content">
-              <div class="section-title">数据存储</div>
               <div class="setting-item">
                 <div class="item-label">数据存储路径</div>
                 <div class="item-content">
-                  <n-input v-model:value="systemConfig.dataDir" placeholder="数据存储路径" readonly />
+                  <n-input v-model:value="systemConfig.defaultProjectPath" placeholder="数据存储路径" readonly/>
                   <n-button @click="selectDataDir" type="primary">选择路径</n-button>
                 </div>
                 <div class="item-desc">应用数据将存储在此目录下</div>
               </div>
-
-              <div class="section-title">外观设置</div>
-              <div class="setting-item">
-                <div class="item-label">主题模式</div>
-                <div class="item-content">
-                  <n-select v-model:value="systemConfig.theme" :options="themeOptions" />
-                </div>
-                <div class="item-desc">选择应用的主题模式</div>
-              </div>
-
-              <div class="section-title">应用设置</div>
-              <div class="setting-item">
-                <div class="item-label">自动保存</div>
-                <div class="item-content">
-                  <n-switch v-model:value="systemConfig.autoSave" />
-                </div>
-                <div class="item-desc">自动保存项目更改</div>
-              </div>
-
-              <div class="setting-item">
-                <div class="item-label">构建超时时间</div>
-                <div class="item-content">
-                  <n-input-number v-model:value="systemConfig.buildTimeout" :min="1" :max="120" />
-                  <span class="unit-text">分钟</span>
-                </div>
-                <div class="item-desc">设置构建任务的超时时间</div>
-              </div>
-
-              <div class="setting-item">
-                <div class="item-label">最大并发构建数</div>
-                <div class="item-content">
-                  <n-input-number v-model:value="systemConfig.maxConcurrentBuilds" :min="1" :max="10" />
-                </div>
-                <div class="item-desc">同时运行的最大构建任务数</div>
-              </div>
-
-              <div class="section-title">数据管理</div>
               <div class="setting-item">
                 <div class="item-label">导出数据</div>
                 <div class="item-content">
@@ -136,76 +72,26 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, onMounted } from 'vue'
-import { NTabs, NTabPane, NInput, NButton, NSelect, NSwitch, NInputNumber } from 'naive-ui'
-import dataStore from '@/utils/dataStore'
-
-// 环境配置
-const envConfig = reactive({
-  nodePath: '',
-  javaPath: '',
-  mavenPath: '',
-  dockerPath: '',
-  gitPath: ''
-})
+import { onMounted, ref} from 'vue'
+import type {AppConfig} from "../../../electron/store/setting.ts";
 
 // 系统配置
-const systemConfig = reactive({
-  dataDir: '',
-  theme: 'auto' as 'light' | 'dark' | 'auto',
-  autoSave: true,
-  buildTimeout: 30,
-  maxConcurrentBuilds: 3
-})
+const systemConfig = ref <AppConfig> ({
+  theme: 'light',
+  language: 'zh-CN',
+  autoUpdate: true,
+  defaultProjectPath: ""
+});
 
 const themeOptions = [
-  { label: '浅色', value: 'light' },
-  { label: '深色', value: 'dark' },
-  { label: '跟随系统', value: 'auto' }
+  {label: '浅色', value: 'light'},
+  {label: '深色', value: 'dark'},
+  {label: '跟随系统', value: 'auto'}
+]
+const languageOptions = [
+  {label: '中文', value: 'zh-CN'}
 ]
 
-// 初始化设置
-async function initSettings() {
-  try {
-    await dataStore.init()
-    const settings = dataStore.getSettings()
-    const environment = dataStore.getEnvironment()
-
-    // 加载系统设置
-    systemConfig.dataDir = settings.dataDir || await dataStore.getDataDir()
-    systemConfig.theme = settings.theme
-    systemConfig.autoSave = settings.autoSave
-    systemConfig.buildTimeout = settings.buildTimeout
-    systemConfig.maxConcurrentBuilds = settings.maxConcurrentBuilds
-
-    // 加载环境配置
-    Object.assign(envConfig, environment)
-  } catch (error) {
-    console.error('加载设置失败:', error)
-  }
-}
-
-// 选择路径函数
-function selectNodePath() {
-  // TODO: 实现文件选择对话框
-  console.log('选择 Node.js 路径')
-}
-
-function selectJavaPath() {
-  console.log('选择 Java 路径')
-}
-
-function selectMavenPath() {
-  console.log('选择 Maven 路径')
-}
-
-function selectDockerPath() {
-  console.log('选择 Docker 路径')
-}
-
-function selectGitPath() {
-  console.log('选择 Git 路径')
-}
 
 function selectDataDir() {
   console.log('选择数据目录')
@@ -213,31 +99,31 @@ function selectDataDir() {
 
 // 导出数据
 async function exportData() {
-  try {
-    const projects = dataStore.getProjects()
-    const buildLogs = dataStore.getBuildLogs()
-
-    const exportData = {
-      projects,
-      buildLogs,
-      exportTime: new Date().toISOString()
-    }
-
-    const dataStr = JSON.stringify(exportData, null, 2)
-    const blob = new Blob([dataStr], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `dotforge-data-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.json`
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
-
-    console.log('数据导出成功')
-  } catch (error) {
-    console.error('导出数据失败:', error)
-  }
+  // try {
+  //   const projects = dataStore.getProjects()
+  //   const buildLogs = dataStore.getBuildLogs()
+  //
+  //   const exportData = {
+  //     projects,
+  //     buildLogs,
+  //     exportTime: new Date().toISOString()
+  //   }
+  //
+  //   const dataStr = JSON.stringify(exportData, null, 2)
+  //   const blob = new Blob([dataStr], {type: 'application/json'})
+  //   const url = URL.createObjectURL(blob)
+  //   const a = document.createElement('a')
+  //   a.href = url
+  //   a.download = `dotforge-data-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.json`
+  //   document.body.appendChild(a)
+  //   a.click()
+  //   document.body.removeChild(a)
+  //   URL.revokeObjectURL(url)
+  //
+  //   console.log('数据导出成功')
+  // } catch (error) {
+  //   console.error('导出数据失败:', error)
+  // }
 }
 
 // 清除数据
@@ -254,33 +140,26 @@ async function clearData() {
 // 重置设置
 function resetSettings() {
   if (confirm('确定要重置所有设置吗？')) {
-    initSettings()
+
   }
 }
 
 // 保存设置
 async function saveSettings() {
   try {
-    // 保存系统设置
-    await dataStore.updateSettings({
-      dataDir: systemConfig.dataDir,
-      theme: systemConfig.theme,
-      autoSave: systemConfig.autoSave,
-      buildTimeout: systemConfig.buildTimeout,
-      maxConcurrentBuilds: systemConfig.maxConcurrentBuilds
-    })
-
-    // 保存环境配置
-    await dataStore.updateEnvironment(envConfig)
-
+    await window.electronAPI.writeConfig(systemConfig.value)
     console.log('设置保存成功')
   } catch (error) {
     console.error('保存设置失败:', error)
   }
 }
 
-onMounted(() => {
-  initSettings()
+onMounted(async () => {
+  const path = await window.electronAPI.getConfigPath()
+  console.log('配置文件路径:', path)
+
+  systemConfig.value = await window.electronAPI.readConfig()
+  console.log('配置读取:', systemConfig.value)
 })
 </script>
 
@@ -297,7 +176,7 @@ onMounted(() => {
   margin: 0 auto;
   background: var(--quick-actions);
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   padding: 20px;
 }
 

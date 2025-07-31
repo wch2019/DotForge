@@ -5,16 +5,19 @@ import fs from "node:fs";
 const CONFIG_FILE_NAME = "config.json";
 const CONFIG_DIR = app.getPath("userData");
 const CONFIG_PATH = path.join(CONFIG_DIR, CONFIG_FILE_NAME);
+const DEFAULT_DATA_DIR = path.join(app.getPath("documents"), "DotForge", "data");
 const defaultConfig = {
   theme: "light",
   language: "zh-CN",
   autoUpdate: true,
-  keepArtifacts: true,
-  defaultProjectPath: ""
+  defaultProjectPath: DEFAULT_DATA_DIR
 };
 function ensureConfigFile() {
   if (!fs.existsSync(CONFIG_DIR)) {
     fs.mkdirSync(CONFIG_DIR, { recursive: true });
+  }
+  if (!fs.existsSync(DEFAULT_DATA_DIR)) {
+    fs.mkdirSync(DEFAULT_DATA_DIR, { recursive: true });
   }
   if (!fs.existsSync(CONFIG_PATH)) {
     fs.writeFileSync(CONFIG_PATH, JSON.stringify(defaultConfig, null, 2), "utf8");

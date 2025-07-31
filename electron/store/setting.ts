@@ -12,21 +12,22 @@ const CONFIG_DIR = app.getPath('userData')
 // 配置文件完整路径
 const CONFIG_PATH = path.join(CONFIG_DIR, CONFIG_FILE_NAME)
 
+// ✅ 设置默认数据目录（文档/DotForge/data）
+const DEFAULT_DATA_DIR = path.join(app.getPath('documents'), 'DotForge', 'data');
+
 // 默认配置内容
 const defaultConfig: AppConfig = {
     theme: 'light',
     language: 'zh-CN',
     autoUpdate: true,
-    keepArtifacts: true,
-    defaultProjectPath: ''
+    defaultProjectPath: DEFAULT_DATA_DIR
 }
 
 // 配置文件类型定义
 export interface AppConfig {
-    theme: 'light' | 'dark'
+    theme: 'light' | 'dark' | 'auto'
     language: string
     autoUpdate: boolean
-    keepArtifacts: boolean
     defaultProjectPath: string
 }
 
@@ -34,6 +35,9 @@ export interface AppConfig {
 function ensureConfigFile(): void {
     if (!fs.existsSync(CONFIG_DIR)) {
         fs.mkdirSync(CONFIG_DIR, { recursive: true })
+    }
+    if (!fs.existsSync(DEFAULT_DATA_DIR)) {
+        fs.mkdirSync(DEFAULT_DATA_DIR, { recursive: true });
     }
     if (!fs.existsSync(CONFIG_PATH)) {
         fs.writeFileSync(CONFIG_PATH, JSON.stringify(defaultConfig, null, 2), 'utf8')
