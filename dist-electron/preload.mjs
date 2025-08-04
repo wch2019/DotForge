@@ -27,5 +27,7 @@ electron.contextBridge.exposeInMainWorld("electronAPI", {
   // 配置文件相关
   readConfig: () => electron.ipcRenderer.invoke("config-read"),
   writeConfig: (config) => electron.ipcRenderer.invoke("config-write", config),
-  getConfigPath: () => electron.ipcRenderer.invoke("config-get-path")
+  getConfigPath: () => electron.ipcRenderer.invoke("config-get-path"),
+  selectPath: (type = "file") => electron.ipcRenderer.invoke("dialog:selectPath", { type }),
+  migrateDataDir: (oldPath, newPath) => electron.ipcRenderer.invoke("config-migrate-data-dir", oldPath, newPath)
 });

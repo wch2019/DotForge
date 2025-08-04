@@ -1,7 +1,7 @@
 import { app, BrowserWindow, ipcMain } from 'electron'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
-import {getConfigPath, readConfig, writeConfig} from './store/setting'
+import { registerAllIpcHandlers } from './ipc'
 
 // 当前文件所在目录
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -119,15 +119,6 @@ app.whenReady().then(() => {
     win?.close()
   })
 
-  ipcMain.handle('config-read', () => {
-    return readConfig()
-  })
-
-  ipcMain.handle('config-write', (_event, newConfig) => {
-    return writeConfig(newConfig)
-  })
-
-  ipcMain.handle('config-get-path', () => {
-    return getConfigPath()
-  })
+  // 集中注册
+  registerAllIpcHandlers()
 })

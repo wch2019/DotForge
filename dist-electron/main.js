@@ -1,11 +1,22 @@
-import { app, BrowserWindow, ipcMain } from "electron";
+import { ipcMain, dialog, app, BrowserWindow } from "electron";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import fs from "node:fs";
+function registerFileDialogHandler() {
+  ipcMain.handle("dialog:selectPath", async (_event, options) => {
+    const properties = options.type === "directory" ? ["openDirectory"] : ["openFile"];
+    const result = await dialog.showOpenDialog({
+      title: options.type === "directory" ? "选择文件夹" : "选择文件",
+      properties
+    });
+    if (result.canceled || result.filePaths.length === 0) return null;
+    return result.filePaths[0];
+  });
+}
 const CONFIG_FILE_NAME = "config.json";
 const CONFIG_DIR = app.getPath("userData");
 const CONFIG_PATH = path.join(CONFIG_DIR, CONFIG_FILE_NAME);
-const DEFAULT_DATA_DIR = path.join(app.getPath("documents"), "DotForge", "data");
+const DEFAULT_DATA_DIR = path.join(app.getPath("documents"), "DotForge");
 const defaultConfig = {
   theme: "light",
   language: "zh-CN",
@@ -22,6 +33,9 @@ function ensureConfigFile() {
   if (!fs.existsSync(CONFIG_PATH)) {
     fs.writeFileSync(CONFIG_PATH, JSON.stringify(defaultConfig, null, 2), "utf8");
   }
+}
+function getConfigPath() {
+  return CONFIG_PATH;
 }
 function readConfig() {
   ensureConfigFile();
@@ -44,8 +58,32 @@ function writeConfig(config) {
     return false;
   }
 }
-function getConfigPath() {
-  return CONFIG_PATH;
+async function migrateDataDir(oldPath, newPath) {
+  try {
+    if (!fs.existsSync(newPath)) {
+      fs.mkdirSync(newPath, { recursive: true });
+    }
+    await fse.copy(oldPath, newPath, {
+      overwrite: true,
+      errorOnExist: false
+    });
+    return true;
+  } catch (e) {
+    console.error("[设置] 数据迁移失败", e);
+    return false;
+  }
+}
+function registerSettingHandler() {
+  ipcMain.handle("config-get-path", () => getConfigPath());
+  ipcMain.handle("config-read", () => readConfig());
+  ipcMain.handle("config-write", (_event, newConfig) => writeConfig(newConfig));
+  ipcMain.handle("config-migrate-data-dir", async (_e, oldPath, newPath) => {
+    return await migrateDataDir(oldPath, newPath);
+  });
+}
+function registerAllIpcHandlers() {
+  registerFileDialogHandler();
+  registerSettingHandler();
 }
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 process.env.APP_ROOT = path.join(__dirname, "..");
@@ -118,15 +156,7 @@ app.whenReady().then(() => {
   ipcMain.on("window-close", () => {
     win == null ? void 0 : win.close();
   });
-  ipcMain.handle("config-read", () => {
-    return readConfig();
-  });
-  ipcMain.handle("config-write", (_event, newConfig) => {
-    return writeConfig(newConfig);
-  });
-  ipcMain.handle("config-get-path", () => {
-    return getConfigPath();
-  });
+  registerAllIpcHandlers();
 });
 export {
   MAIN_DIST,

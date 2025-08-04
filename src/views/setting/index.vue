@@ -14,7 +14,7 @@
               <div class="setting-item">
                 <div class="item-label">主题模式</div>
                 <div class="item-content">
-                  <n-select v-model:value="systemConfig.theme" :options="themeOptions"/>
+                  <n-select v-model:value="systemConfig.theme" :options="themeOptions" @update:value="onThemeChange"/>
                 </div>
               </div>
 
@@ -37,10 +37,11 @@
             <div class="tab-content">
               <div class="setting-item">
                 <div class="item-label">数据存储路径</div>
-                <div class="item-content">
-                  <n-input v-model:value="systemConfig.defaultProjectPath" placeholder="数据存储路径" readonly/>
-                  <n-button @click="selectDataDir" type="primary">选择路径</n-button>
-                </div>
+                <FilePicker
+                    v-model="systemConfig.defaultProjectPath"
+                    type="directory"
+                    placeholder="数据存储路径"
+                />
                 <div class="item-desc">应用数据将存储在此目录下</div>
               </div>
               <div class="setting-item">
@@ -64,8 +65,8 @@
       </div>
 
       <div class="setting-footer">
-        <n-button @click="resetSettings">重置</n-button>
-        <n-button type="primary" @click="saveSettings">保存设置</n-button>
+        <n-button @click="resetSettings">重置为默认设置</n-button>
+        <n-button type="primary" @click="saveSettings">保存</n-button>
       </div>
     </div>
   </div>
@@ -73,8 +74,14 @@
 
 <script setup lang="ts">
 import {onMounted, ref, toRaw} from 'vue'
-import type {AppConfig} from "../../../electron/store/setting.ts";
+import {AppConfig, defaultConfig} from "../../../electron/ipc/setting.ts";
+import FilePicker from "@/components/FilePicker.vue";
+import {useMessage,useDialog} from 'naive-ui'
+import { useThemeStore } from '@/stores/theme'
 
+const themeStore = useThemeStore()
+const dialog = useDialog()
+const message = useMessage()
 // 系统配置
 const systemConfig = ref<AppConfig>({
   theme: 'light',
@@ -91,11 +98,6 @@ const themeOptions = [
 const languageOptions = [
   {label: '中文', value: 'zh-CN'}
 ]
-
-
-function selectDataDir() {
-  console.log('选择数据目录')
-}
 
 // 导出数据
 async function exportData() {
@@ -139,18 +141,35 @@ async function clearData() {
 
 // 重置设置
 function resetSettings() {
-  if (confirm('确定要重置所有设置吗？')) {
+  dialog.warning({
+    title: '警告',
+    content: '确定要重置所有设置吗？',
+    positiveText: '确定',
+    negativeText: '不确定',
+    draggable: true,
+    onPositiveClick: () => {
+      const config= defaultConfig
+      console.log(config)
+      message.success('确定')
+    },
+    onNegativeClick: () => {
+      message.error('不确定')
+    }
+  })
+}
 
-  }
+// 主题保存
+function onThemeChange(theme: any) {
+  themeStore.setTheme(theme)
 }
 
 // 保存设置
 async function saveSettings() {
   try {
     await window.electronAPI.writeConfig(toRaw(systemConfig.value))
-    console.log('设置保存成功')
+    message.success('设置成功')
   } catch (error) {
-    console.error('保存设置失败:', error)
+    message.error('保存设置失败，' + error)
   }
 }
 

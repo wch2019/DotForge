@@ -1,6 +1,6 @@
 /// <reference types="vite/client" />
 
-import {AppConfig} from "../electron/store/setting.ts";
+import {AppConfig} from "../electron/ipc/setting.ts";
 
 export {}
 

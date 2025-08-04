@@ -68,8 +68,14 @@
         <n-layout-sider width="160" bordered>
           <AppMenu/>
         </n-layout-sider>
-        <n-layout-content >
-          <router-view/>
+        <n-layout-content>
+          <n-dialog-provider>
+            <n-notification-provider>
+            <n-message-provider  placement="top-right"  :container-style="{ top: '60px' }">
+             <router-view/>
+            </n-message-provider>
+            </n-notification-provider>
+          </n-dialog-provider>
         </n-layout-content>
       </n-layout>
     </n-layout>
