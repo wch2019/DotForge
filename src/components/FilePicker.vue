@@ -29,18 +29,12 @@ async function handleSelectPath() {
 </script>
 
 <template>
-  <div class="flex  gap-2">
+  <n-input-group>
     <n-input v-model:value="path" :placeholder="placeholder" readonly />
     <n-button type="primary" @click="handleSelectPath">选择路径</n-button>
-  </div>
+  </n-input-group>
 </template>
 
 <style scoped>
-.flex {
-  display: flex;
-  align-items: center;
-}
-.gap-2 {
-  gap: 8px;
-}
+
 </style>

@@ -42,7 +42,9 @@
                     type="directory"
                     placeholder="数据存储路径"
                 />
-                <div class="item-desc">应用数据将存储在此目录下</div>
+                <div class="item-desc">
+                  应用数据将存储在此目录下（<span class="text-red-400">不支持移动到自身子目录中</span>）
+                </div>
               </div>
               <div class="setting-item">
                 <div class="item-label">导出数据</div>
@@ -74,21 +76,18 @@
 
 <script setup lang="ts">
 import {onMounted, ref, toRaw} from 'vue'
-import {AppConfig, defaultConfig} from "../../../electron/ipc/setting.ts";
+import {defaultConfig, type AppConfig} from '../../../shared/default-config'
 import FilePicker from "@/components/FilePicker.vue";
-import {useMessage,useDialog} from 'naive-ui'
-import { useThemeStore } from '@/stores/theme'
+import {useMessage, useDialog} from 'naive-ui'
+import {useThemeStore} from '@/stores/theme'
 
 const themeStore = useThemeStore()
 const dialog = useDialog()
 const message = useMessage()
 // 系统配置
-const systemConfig = ref<AppConfig>({
-  theme: 'light',
-  language: 'zh-CN',
-  autoUpdate: true,
-  defaultProjectPath: ""
-});
+const systemConfig = ref<AppConfig>({...defaultConfig});
+// 目录
+const defaultProjectPath = ref<string>()
 
 const themeOptions = [
   {label: '浅色', value: 'light'},
@@ -101,42 +100,22 @@ const languageOptions = [
 
 // 导出数据
 async function exportData() {
-  // try {
-  //   const projects = dataStore.getProjects()
-  //   const buildLogs = dataStore.getBuildLogs()
-  //
-  //   const exportData = {
-  //     projects,
-  //     buildLogs,
-  //     exportTime: new Date().toISOString()
-  //   }
-  //
-  //   const dataStr = JSON.stringify(exportData, null, 2)
-  //   const blob = new Blob([dataStr], {type: 'application/json'})
-  //   const url = URL.createObjectURL(blob)
-  //   const a = document.createElement('a')
-  //   a.href = url
-  //   a.download = `dotforge-data-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.json`
-  //   document.body.appendChild(a)
-  //   a.click()
-  //   document.body.removeChild(a)
-  //   URL.revokeObjectURL(url)
-  //
-  //   console.log('数据导出成功')
-  // } catch (error) {
-  //   console.error('导出数据失败:', error)
-  // }
+  message.warning('暂未实现')
 }
 
 // 清除数据
 async function clearData() {
-  if (confirm('确定要清除所有数据吗？此操作不可恢复。')) {
-    try {
-      console.log('数据清除成功')
-    } catch (error) {
-      console.error('清除数据失败:', error)
-    }
-  }
+  dialog.warning({
+    title: '警告',
+    content: '确定要清除所有数据吗？此操作不可恢复。',
+    positiveText: '清除',
+    negativeText: '取消',
+    draggable: true,
+    onPositiveClick: () => {
+      message.success('暂未实现')
+    },
+    onNegativeClick: () => {}
+  })
 }
 
 // 重置设置
@@ -144,17 +123,17 @@ function resetSettings() {
   dialog.warning({
     title: '警告',
     content: '确定要重置所有设置吗？',
-    positiveText: '确定',
-    negativeText: '不确定',
+    positiveText: '重置',
+    negativeText: '取消',
     draggable: true,
     onPositiveClick: () => {
-      const config= defaultConfig
-      console.log(config)
-      message.success('确定')
+      const config = defaultConfig
+      config.defaultProjectPath  = defaultProjectPath.value!
+      window.electronAPI.writeConfig(toRaw(config))
+      init()
+      message.success('重置成功')
     },
-    onNegativeClick: () => {
-      message.error('不确定')
-    }
+    onNegativeClick: () => {}
   })
 }
 
@@ -167,18 +146,43 @@ function onThemeChange(theme: any) {
 async function saveSettings() {
   try {
     await window.electronAPI.writeConfig(toRaw(systemConfig.value))
-    message.success('设置成功')
+    if (systemConfig.value.defaultProjectPath != defaultProjectPath.value) {
+      dialog.warning({
+        title: '警告',
+        content: '数据存储目录修改是否迁移目录',
+        positiveText: '迁移',
+        negativeText: '不迁移',
+        draggable: true,
+        onPositiveClick: () => {
+          window.electronAPI.migrateDataDir(defaultProjectPath.value, systemConfig.value.defaultProjectPath)
+          init()
+          message.success('设置成功')
+        },
+        onNegativeClick: () => {
+          message.success('设置成功')
+        }
+      })
+    } else {
+      message.success('设置成功')
+    }
+
   } catch (error) {
     message.error('保存设置失败，' + error)
   }
 }
 
-onMounted(async () => {
-  const path = await window.electronAPI.getConfigPath()
+// 获取目录
+async function init() {
+  const path = window.electronAPI.getConfigPath()
   console.log('配置文件路径:', path)
 
   systemConfig.value = await window.electronAPI.readConfig()
+  defaultProjectPath.value = systemConfig.value.defaultProjectPath
   console.log('配置读取:', systemConfig)
+}
+
+onMounted(async () => {
+  await init()
 })
 </script>
 

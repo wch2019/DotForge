@@ -1,8 +1,8 @@
-// src/main/services/setting.ts
 import fs from 'node:fs'
 import path from 'node:path'
-// import fse from 'fs-extra'
+import fse from 'fs-extra'
 import {app, ipcMain} from 'electron'
+import {defaultConfig, type AppConfig} from '../../shared/default-config'
 
 // 设置文件名称
 const CONFIG_FILE_NAME = 'config.json'
@@ -16,29 +16,14 @@ const CONFIG_PATH = path.join(CONFIG_DIR, CONFIG_FILE_NAME)
 // ✅ 设置默认数据目录（文档/DotForge）
 const DEFAULT_DATA_DIR = path.join(app.getPath('documents'), 'DotForge');
 
-// 默认配置内容
-export const defaultConfig: AppConfig = {
-    theme: 'light',
-    language: 'zh-CN',
-    autoUpdate: true,
-    defaultProjectPath: DEFAULT_DATA_DIR
-}
-
-// 配置文件类型定义
-export interface AppConfig {
-    theme: 'light' | 'dark' | 'auto'
-    language: string
-    autoUpdate: boolean
-    defaultProjectPath: string
-}
-
 // 确保配置文件存在
 function ensureConfigFile(): void {
     if (!fs.existsSync(CONFIG_DIR)) {
-        fs.mkdirSync(CONFIG_DIR, { recursive: true })
+        fs.mkdirSync(CONFIG_DIR, {recursive: true})
     }
     if (!fs.existsSync(DEFAULT_DATA_DIR)) {
-        fs.mkdirSync(DEFAULT_DATA_DIR, { recursive: true });
+        fs.mkdirSync(DEFAULT_DATA_DIR, {recursive: true});
+        defaultConfig.defaultProjectPath = DEFAULT_DATA_DIR
     }
     if (!fs.existsSync(CONFIG_PATH)) {
         fs.writeFileSync(CONFIG_PATH, JSON.stringify(defaultConfig, null, 2), 'utf8')

@@ -47,8 +47,9 @@ function createWindow() {
       preload: path.join(__dirname, 'preload.mjs'), // 预加载脚本
     },
   })
-
-  win.webContents.openDevTools();
+  if (process.env.NODE_ENV === 'development') {
+    win.webContents.openDevTools()
+  }
 
   // 页面加载完成后，发送消息给渲染进程
   win.webContents.on('did-finish-load', () => {

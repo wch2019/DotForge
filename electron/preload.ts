@@ -1,5 +1,5 @@
 import {ipcRenderer, contextBridge} from 'electron'
-import {AppConfig} from "./ipc/setting.ts";
+import {type AppConfig} from '../shared/default-config'
 
 // --------- Expose some API to the Renderer process ---------
 contextBridge.exposeInMainWorld('ipcRenderer', {

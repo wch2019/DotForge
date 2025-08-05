@@ -68,10 +68,11 @@
                 <n-select v-model:value="form.tag" placeholder="选择项目标签" :options="tags"/>
             </n-form-item>
             <n-form-item label="项目路径" path="localPath" required>
-              <n-input-group>
-                <n-input v-model:value="form.localPath" placeholder="请选择项目路径"/>
-                <n-button @click="selectLocalPath" type="primary">选择路径</n-button>
-              </n-input-group>
+                <FilePicker
+                    v-model="form.localPath"
+                    type="directory"
+                    placeholder="请选择项目路径"
+                />
             </n-form-item>
             <n-form-item label="项目描述" path="description">
               <n-input v-model:value="form.description" placeholder="请输入项目描述"/>
@@ -303,6 +304,7 @@ import {
 } from '@vicons/ionicons5'
 import {Edit24Regular} from '@vicons/fluent'
 import dataStore from '@/utils/dataStore'
+import FilePicker from "@/components/FilePicker.vue";
 
 const router = useRouter()
 const route = useRoute()
