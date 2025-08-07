@@ -29,5 +29,9 @@ electron.contextBridge.exposeInMainWorld("electronAPI", {
   writeConfig: (config) => electron.ipcRenderer.invoke("config-write", config),
   getConfigPath: () => electron.ipcRenderer.invoke("config-get-path"),
   selectPath: (type = "file") => electron.ipcRenderer.invoke("dialog:selectPath", { type }),
-  migrateDataDir: (oldPath, newPath) => electron.ipcRenderer.invoke("config-migrate-data-dir", oldPath, newPath)
+  migrateDataDir: (oldPath, newPath) => electron.ipcRenderer.invoke("config-migrate-data-dir", oldPath, newPath),
+  // 添加项目
+  addProject: (projectData) => electron.ipcRenderer.invoke("project:add", projectData),
+  // 获取项目列表
+  getAllProjects: () => electron.ipcRenderer.invoke("project:list")
 });

@@ -8,5 +8,5 @@ export function registerAllIpcHandlers() {
     // 注册设置相关 IPC
     registerSettingHandler()
     // 注册项目相关 IPC
-    // registerProjectHandlers()
+    registerProjectHandlers()
 }

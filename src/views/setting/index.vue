@@ -49,7 +49,7 @@
               <div class="setting-item">
                 <div class="item-label">导出数据</div>
                 <div class="item-content">
-                  <n-button @click="exportData" type="primary">导出所有数据</n-button>
+                  <n-button @click="exportData" type="primary" disabled>导出所有数据</n-button>
                 </div>
                 <div class="item-desc">导出项目列表和构建日志</div>
               </div>
@@ -57,7 +57,7 @@
               <div class="setting-item">
                 <div class="item-label">清除数据</div>
                 <div class="item-content">
-                  <n-button @click="clearData" type="error">清除所有数据</n-button>
+                  <n-button @click="clearData" type="error" disabled>清除所有数据</n-button>
                 </div>
                 <div class="item-desc">清除所有项目数据和构建日志</div>
               </div>
