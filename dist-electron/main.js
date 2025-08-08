@@ -1995,6 +1995,10 @@ function registerSettingHandler() {
     return await migrateDataDir(oldPath, newPath);
   });
 }
+function registerAllIpcHandlers() {
+  registerFileDialogHandler();
+  registerSettingHandler();
+}
 var lib = { exports: {} };
 function commonjsRequire(path2) {
   throw new Error('Could not dynamically require "' + path2 + '". Please configure the dynamicRequireTargets or/and ignoreDynamicRequires option of @rollup/plugin-commonjs appropriately for this require call to work.');
@@ -2269,14 +2273,14 @@ function requireTransaction() {
   const controllers = /* @__PURE__ */ new WeakMap();
   transaction = function transaction2(fn) {
     if (typeof fn !== "function") throw new TypeError("Expected first argument to be a function");
-    const db2 = this[cppdb];
-    const controller = getController(db2, this);
+    const db = this[cppdb];
+    const controller = getController(db, this);
     const { apply } = Function.prototype;
     const properties = {
-      default: { value: wrapTransaction(apply, fn, db2, controller.default) },
-      deferred: { value: wrapTransaction(apply, fn, db2, controller.deferred) },
-      immediate: { value: wrapTransaction(apply, fn, db2, controller.immediate) },
-      exclusive: { value: wrapTransaction(apply, fn, db2, controller.exclusive) },
+      default: { value: wrapTransaction(apply, fn, db, controller.default) },
+      deferred: { value: wrapTransaction(apply, fn, db, controller.deferred) },
+      immediate: { value: wrapTransaction(apply, fn, db, controller.immediate) },
+      exclusive: { value: wrapTransaction(apply, fn, db, controller.exclusive) },
       database: { value: this, enumerable: true }
     };
     Object.defineProperties(properties.default.value, properties);
@@ -2285,28 +2289,28 @@ function requireTransaction() {
     Object.defineProperties(properties.exclusive.value, properties);
     return properties.default.value;
   };
-  const getController = (db2, self2) => {
-    let controller = controllers.get(db2);
+  const getController = (db, self2) => {
+    let controller = controllers.get(db);
     if (!controller) {
       const shared = {
-        commit: db2.prepare("COMMIT", self2, false),
-        rollback: db2.prepare("ROLLBACK", self2, false),
-        savepoint: db2.prepare("SAVEPOINT `	_bs3.	`", self2, false),
-        release: db2.prepare("RELEASE `	_bs3.	`", self2, false),
-        rollbackTo: db2.prepare("ROLLBACK TO `	_bs3.	`", self2, false)
+        commit: db.prepare("COMMIT", self2, false),
+        rollback: db.prepare("ROLLBACK", self2, false),
+        savepoint: db.prepare("SAVEPOINT `	_bs3.	`", self2, false),
+        release: db.prepare("RELEASE `	_bs3.	`", self2, false),
+        rollbackTo: db.prepare("ROLLBACK TO `	_bs3.	`", self2, false)
       };
-      controllers.set(db2, controller = {
-        default: Object.assign({ begin: db2.prepare("BEGIN", self2, false) }, shared),
-        deferred: Object.assign({ begin: db2.prepare("BEGIN DEFERRED", self2, false) }, shared),
-        immediate: Object.assign({ begin: db2.prepare("BEGIN IMMEDIATE", self2, false) }, shared),
-        exclusive: Object.assign({ begin: db2.prepare("BEGIN EXCLUSIVE", self2, false) }, shared)
+      controllers.set(db, controller = {
+        default: Object.assign({ begin: db.prepare("BEGIN", self2, false) }, shared),
+        deferred: Object.assign({ begin: db.prepare("BEGIN DEFERRED", self2, false) }, shared),
+        immediate: Object.assign({ begin: db.prepare("BEGIN IMMEDIATE", self2, false) }, shared),
+        exclusive: Object.assign({ begin: db.prepare("BEGIN EXCLUSIVE", self2, false) }, shared)
       });
     }
     return controller;
   };
-  const wrapTransaction = (apply, fn, db2, { begin, commit, rollback, savepoint, release, rollbackTo }) => function sqliteTransaction() {
+  const wrapTransaction = (apply, fn, db, { begin, commit, rollback, savepoint, release, rollbackTo }) => function sqliteTransaction() {
     let before, after, undo;
-    if (db2.inTransaction) {
+    if (db.inTransaction) {
       before = savepoint;
       after = release;
       undo = rollbackTo;
@@ -2324,7 +2328,7 @@ function requireTransaction() {
       after.run();
       return result;
     } catch (ex) {
-      if (db2.inTransaction) {
+      if (db.inTransaction) {
         undo.run();
         if (undo !== rollback) after.run();
       }
@@ -2747,78 +2751,50 @@ const Database = /* @__PURE__ */ getDefaultExportFromCjs(libExports);
 const config = readConfig();
 const dataDir = config.defaultProjectPath;
 const dbPath = path$d.join(dataDir, "data", "data.db");
-const db = new Database(dbPath);
-db.prepare(`
-  CREATE TABLE IF NOT EXISTS projects (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT,
-    localPath TEXT,
-    description TEXT,
-    tag TEXT,
-
-    buildCmd TEXT,
-    outputDir TEXT,
-
-    deployMethod TEXT,
-    dockerfilePath TEXT,
-    imageName TEXT,
-    registry TEXT,
-    localCommand TEXT,
-    dockerDeployType TEXT,
-    dockerRunCommand TEXT,
-    serverAddress TEXT,
-    serverPort INTEGER,
-    serverUsername TEXT,
-    authType TEXT,
-    serverPassword TEXT,
-    privateKeyPath TEXT,
-    targetPath TEXT,
-    remoteCommand TEXT,
-
-    keepArtifacts INTEGER,
-    keepPath TEXT,
-    keepCount INTEGER
-  )
-`).run();
-function addProject(project) {
-  const stmt = db.prepare(`
-        INSERT INTO projects (name, localPath, description, tag,
-                              buildCmd, outputDir,
-                              deployMethod, dockerfilePath, imageName, registry, localCommand,
-                              dockerDeployType, dockerRunCommand,
-                              serverAddress, serverPort, serverUsername, authType, serverPassword,
-                              privateKeyPath, targetPath, remoteCommand,
-                              keepArtifacts, keepPath, keepCount)
-        VALUES (@name, @localPath, @description, @tag,
-                @buildCmd, @outputDir,
-                @deployMethod, @dockerfilePath, @imageName, @registry, @localCommand,
-                @dockerDeployType, @dockerRunCommand,
-                @serverAddress, @serverPort, @serverUsername, @authType, @serverPassword,
-                @privateKeyPath, @targetPath, @remoteCommand,
-                @keepArtifacts, @keepPath, @keepCount)
+function initDatabase() {
+  try {
+    const dbDir = path$d.dirname(dbPath);
+    if (!fs$j.existsSync(dbDir)) {
+      fs$j.mkdirSync(dbDir, { recursive: true });
+    }
+    const db = new Database(dbPath);
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS projects (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        localPath TEXT NOT NULL,
+        description TEXT,
+        tag TEXT,
+        buildCmd TEXT,
+        outputDir TEXT,
+        deployMethod TEXT CHECK(deployMethod IN ('none', 'local', 'docker', 'remote')),
+        localCommand TEXT,
+        dockerfilePath TEXT,
+        imageName TEXT,
+        registry TEXT,
+        dockerDeployType TEXT CHECK(dockerDeployType IN ('local', 'push')),
+        dockerRunCommand TEXT,
+        serverAddress TEXT,
+        serverPort INTEGER,
+        serverUsername TEXT,
+        authType TEXT CHECK(authType IN ('password', 'privateKey')),
+        serverPassword TEXT,
+        privateKeyPath TEXT,
+        targetPath TEXT,
+        remoteCommand TEXT,
+        keepArtifacts BOOLEAN,
+        keepPath TEXT,
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
     `);
-  stmt.run({
-    ...project,
-    keepArtifacts: project.keepArtifacts ? 1 : 0
-  });
-}
-function getAllProjects() {
-  const stmt = db.prepare(`SELECT * FROM projects`);
-  return stmt.all();
-}
-function registerProjectHandlers() {
-  ipcMain.handle("project:add", (_e, projectData) => {
-    addProject(projectData);
+    console.log("数据库初始化成功，项目表已创建");
+    db.close();
     return true;
-  });
-  ipcMain.handle("project:list", () => {
-    return getAllProjects();
-  });
-}
-function registerAllIpcHandlers() {
-  registerFileDialogHandler();
-  registerSettingHandler();
-  registerProjectHandlers();
+  } catch (error) {
+    console.error("数据库初始化失败:", error);
+    return false;
+  }
 }
 const __dirname = path$d.dirname(fileURLToPath(import.meta.url));
 process.env.APP_ROOT = path$d.join(__dirname, "..");
@@ -2879,6 +2855,8 @@ app.on("activate", () => {
 app.setName("DotForge");
 app.setAppUserModelId("DotForge");
 app.whenReady().then(() => {
+  console.log("start...");
+  initDatabase();
   createWindow();
   ipcMain.on("window-minimize", () => {
     win == null ? void 0 : win.minimize();

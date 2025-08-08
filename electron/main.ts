@@ -2,7 +2,7 @@ import { app, BrowserWindow, ipcMain } from 'electron'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import { registerAllIpcHandlers } from './ipc'
-
+import { initDatabase } from './db/initDatabase'
 // 当前文件所在目录
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -74,8 +74,6 @@ function createWindow() {
   })
 }
 
-
-
 // 当所有窗口关闭时退出应用（macOS 除外）
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
@@ -98,6 +96,9 @@ app.setAppUserModelId('DotForge')
 
 // 应用启动完成时初始化窗口和监听
 app.whenReady().then(() => {
+// 添加这两行代码
+  console.log('start...')
+  initDatabase()
 
   createWindow()
 

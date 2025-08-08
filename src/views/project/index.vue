@@ -6,7 +6,7 @@
         <div class="header-left">
           <h1 class="page-title">
             <n-icon size="28" class="title-icon">
-              <FolderOutline />
+              <FolderOutline/>
             </n-icon>
             项目管理
           </h1>
@@ -15,13 +15,17 @@
         <div class="header-actions">
           <n-button type="primary" size="large" @click="goAddProject" class="action-btn">
             <template #icon>
-              <n-icon><AddOutline /></n-icon>
+              <n-icon>
+                <AddOutline/>
+              </n-icon>
             </template>
             添加项目
           </n-button>
           <n-button type="success" size="large" @click="buildAll" class="action-btn">
             <template #icon>
-              <n-icon><PlayOutline /></n-icon>
+              <n-icon>
+                <PlayOutline/>
+              </n-icon>
             </template>
             构建全部
           </n-button>
@@ -36,7 +40,7 @@
           <div class="stat-content">
             <div class="stat-icon success">
               <n-icon size="24">
-                <CheckmarkCircleOutline />
+                <CheckmarkCircleOutline/>
               </n-icon>
             </div>
             <div class="stat-info">
@@ -49,7 +53,7 @@
           <div class="stat-content">
             <div class="stat-icon building">
               <n-icon size="24">
-                <SyncOutline />
+                <SyncOutline/>
               </n-icon>
             </div>
             <div class="stat-info">
@@ -62,7 +66,7 @@
           <div class="stat-content">
             <div class="stat-icon failed">
               <n-icon size="24">
-                <CloseCircleOutline />
+                <CloseCircleOutline/>
               </n-icon>
             </div>
             <div class="stat-info">
@@ -75,7 +79,7 @@
           <div class="stat-content">
             <div class="stat-icon total">
               <n-icon size="24">
-                <AppsOutline />
+                <AppsOutline/>
               </n-icon>
             </div>
             <div class="stat-info">
@@ -95,12 +99,16 @@
           <n-input-group>
             <n-input v-model:value="searchKeyword" placeholder="搜索项目..." class="search-input">
               <template #prefix>
-                <n-icon><SearchOutline /></n-icon>
+                <n-icon>
+                  <SearchOutline/>
+                </n-icon>
               </template>
             </n-input>
             <n-button type="primary" ghost>
               <template #icon>
-                <n-icon><FilterOutline /></n-icon>
+                <n-icon>
+                  <FilterOutline/>
+                </n-icon>
               </template>
               筛选
             </n-button>
@@ -110,9 +118,9 @@
 
       <div class="projects-grid">
         <n-card
-          v-for="project in filteredProjects"
-          :key="project.id"
-          class="project-card"
+            v-for="project in filteredProjects"
+            :key="project.id"
+            class="project-card"
         >
           <div class="project-header">
             <div class="project-info">
@@ -121,14 +129,14 @@
             </div>
             <div class="project-status">
               <n-tag
-                :type="statusTypeMap[project.status]"
-                size="medium"
-                round
-                :bordered="false"
+                  :type="statusTypeMap[project.status]"
+                  size="medium"
+                  round
+                  :bordered="false"
               >
                 <template #icon>
                   <n-icon v-if="project.status === 'building'">
-                    <SyncOutline class="spinning" />
+                    <SyncOutline class="spinning"/>
                   </n-icon>
                 </template>
                 {{ statusTextMap[project.status] }}
@@ -139,13 +147,13 @@
           <div class="project-details">
             <div class="detail-item">
               <n-icon size="16" class="detail-icon">
-                <TimeOutline />
+                <TimeOutline/>
               </n-icon>
               <span class="detail-text">上次构建：{{ project.lastBuildTime }}</span>
             </div>
             <div class="detail-item">
               <n-icon size="16" class="detail-icon">
-                <GitBranchOutline />
+                <GitBranchOutline/>
               </n-icon>
               <span class="detail-text">分支：{{ project.branch || 'main' }}</span>
             </div>
@@ -154,25 +162,33 @@
           <div class="project-actions">
             <n-button size="small" type="primary" @click="build(project)" class="action-btn">
               <template #icon>
-                <n-icon><PlayOutline /></n-icon>
+                <n-icon>
+                  <PlayOutline/>
+                </n-icon>
               </template>
               构建
             </n-button>
             <n-button size="small" @click="viewLogs(project)" class="action-btn">
               <template #icon>
-                <n-icon><DocumentTextOutline /></n-icon>
+                <n-icon>
+                  <DocumentTextOutline/>
+                </n-icon>
               </template>
               日志
             </n-button>
             <n-button size="small" @click="edit(project)" class="action-btn">
               <template #icon>
-                <n-icon><CreateOutline /></n-icon>
+                <n-icon>
+                  <CreateOutline/>
+                </n-icon>
               </template>
               编辑
             </n-button>
             <n-button size="small" type="error" @click="remove(project)" class="action-btn">
               <template #icon>
-                <n-icon><TrashOutline /></n-icon>
+                <n-icon>
+                  <TrashOutline/>
+                </n-icon>
               </template>
               删除
             </n-button>
@@ -183,13 +199,15 @@
       <!-- 空状态 -->
       <div v-if="filteredProjects.length === 0" class="empty-state">
         <n-icon size="64" class="empty-icon">
-          <FolderOutline />
+          <FolderOutline/>
         </n-icon>
         <h3 class="empty-title">暂无项目</h3>
         <p class="empty-description">点击"添加项目"开始创建您的第一个CI/CD项目</p>
         <n-button type="primary" size="large" @click="goAddProject">
           <template #icon>
-            <n-icon><AddOutline /></n-icon>
+            <n-icon>
+              <AddOutline/>
+            </n-icon>
           </template>
           添加项目
         </n-button>
@@ -199,12 +217,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
-import { 
-  NButton, NCard, NTag, NIcon, NInput, NInputGroup 
+import {ref, computed, onMounted} from 'vue'
+import {useRouter} from 'vue-router'
+import {
+  NButton, NCard, NTag, NIcon, NInput, NInputGroup
 } from 'naive-ui'
-import { 
+import {
   AddOutline, PlayOutline, FolderOutline, CheckmarkCircleOutline,
   SyncOutline, CloseCircleOutline, AppsOutline, SearchOutline,
   FilterOutline, TimeOutline, GitBranchOutline, DocumentTextOutline,
@@ -270,9 +288,9 @@ const filteredProjects = computed(() => {
   if (!searchKeyword.value) {
     return projects.value
   }
-  return projects.value.filter(project => 
-    project.name.toLowerCase().includes(searchKeyword.value.toLowerCase()) ||
-    project.path.toLowerCase().includes(searchKeyword.value.toLowerCase())
+  return projects.value.filter(project =>
+      project.name.toLowerCase().includes(searchKeyword.value.toLowerCase()) ||
+      project.path.toLowerCase().includes(searchKeyword.value.toLowerCase())
   )
 })
 
@@ -290,7 +308,7 @@ const statusTypeMap: Record<string, 'success' | 'error' | 'warning'> = {
 const router = useRouter()
 
 function goAddProject() {
-  router.push({ name: 'ProjectCreate' })
+  router.push({name: 'ProjectCreate'})
 }
 
 function buildAll() {
@@ -584,31 +602,31 @@ function remove(project: any) {
   .project-page {
     padding: 16px;
   }
-  
+
   .header-content {
     flex-direction: column;
     gap: 20px;
     text-align: center;
   }
-  
+
   .page-title {
     font-size: 24px;
   }
-  
+
   .stats-grid {
     grid-template-columns: repeat(2, 1fr);
   }
-  
+
   .projects-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .section-header {
     flex-direction: column;
     gap: 16px;
     align-items: stretch;
   }
-  
+
   .search-input {
     width: 100%;
   }

@@ -1,6 +1,6 @@
 import { registerFileDialogHandler } from './fileDialog'
 import { registerSettingHandler } from './setting'
-import {registerProjectHandlers} from "./projectHandler.ts";
+import {registerProjectHandlers} from "./project.ts";
 
 export function registerAllIpcHandlers() {
     // 注册文件选择相关 IPC
