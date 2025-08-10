@@ -1,8 +1,9 @@
-import Database from 'better-sqlite3';
 import path from 'node:path';
 import fs from 'node:fs'
 import { readConfig } from '../ipc/setting';
-
+import {createRequire} from "module";
+const require = createRequire(import.meta.url)
+const Database = require('better-sqlite3')
 // 获取数据库配置
 const config = readConfig();
 const dataDir = config.defaultProjectPath;
