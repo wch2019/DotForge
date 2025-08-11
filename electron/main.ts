@@ -2,7 +2,7 @@ import {app, BrowserWindow, ipcMain} from 'electron'
 import {fileURLToPath} from 'node:url'
 import path from 'node:path'
 import {registerAllIpcHandlers} from './ipc'
-import {getDatabase} from "./db/db.ts";
+import {getDb} from "./db";
 // 当前文件所在目录
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -96,15 +96,8 @@ app.setAppUserModelId('DotForge')
 
 // 应用启动完成时初始化窗口和监听
 app.whenReady().then(() => {
-// 添加这两行代码
-    console.log('start...')
-// 初始化数据库
-    const db = getDatabase()
-    console.log('数据库已连接')
-
-    // 测试查询
-    const row = db.prepare('SELECT 1 AS value').get()
-    console.log('SQLite 测试结果:', row)
+    // 初始化数据库（会自动建表）
+    getDb();
     createWindow()
 
     // ====================
