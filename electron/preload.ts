@@ -36,4 +36,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
     selectPath: (type = 'file') => ipcRenderer.invoke('dialog:selectPath', {type}),
     migrateDataDir: (oldPath: string, newPath: string) => ipcRenderer.invoke('config-migrate-data-dir', oldPath, newPath),
     // 项目数据库操作
+    createProject: (projectData) => ipcRenderer.invoke('project:create', projectData),
+    updateProject: (id, projectData) => ipcRenderer.invoke('project:update', id, projectData),
 })

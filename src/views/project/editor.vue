@@ -36,6 +36,14 @@
               </template>
               保存项目
             </n-button>
+            <n-button
+                type="success"
+                size="large"
+                @click="saveToDatabase"
+                :disabled="!canSave"
+            >
+              保存到数据库
+            </n-button>
           </div>
         </div>
       </div>
@@ -292,7 +300,8 @@ import {
   NSelect,
   NStep,
   NSteps,
-  NSwitch
+  NSwitch,
+  useMessage
 } from 'naive-ui'
 import {
   AddOutline,
@@ -303,9 +312,11 @@ import {
   InformationCircleOutline
 } from '@vicons/ionicons5'
 import {Edit24Regular} from '@vicons/fluent'
+
 import dataStore from '@/utils/dataStore'
 import FilePicker from "@/components/FilePicker.vue";
 
+const message = useMessage()
 const router = useRouter()
 const route = useRoute()
 const id = route.query.id as string | undefined
@@ -459,6 +470,25 @@ onMounted(async () => {
 
 function onCancel() {
   router.push({name: 'Project'})
+}
+
+async function saveToDatabase() {
+  if (!form.value.name || !form.value.localPath) return
+
+  try {
+    saving.value = true
+    if (isEdit.value && id) {
+      await window.electronAPI.updateProject(parseInt(id), form.value);
+    } else {
+      await window.electronAPI.createProject(form.value);
+    }
+    message.success('项目已成功保存到数据库');
+  } catch (error) {
+    console.error('保存到数据库失败:', error);
+    message.error('保存到数据库失败，请重试');
+  } finally {
+    saving.value = false
+  }
 }
 
 async function onSave() {

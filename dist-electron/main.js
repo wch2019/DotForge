@@ -2001,10 +2001,6 @@ function registerSettingHandler() {
     return await migrateDataDir(oldPath, newPath);
   });
 }
-function registerAllIpcHandlers() {
-  registerFileDialogHandler();
-  registerSettingHandler();
-}
 const entityKind = Symbol.for("drizzle:entityKind");
 function is(value, type) {
   if (!value || typeof value !== "object") {
@@ -6824,6 +6820,14 @@ const schema = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProper
   __proto__: null,
   projects
 }, Symbol.toStringTag, { value: "Module" }));
+function createProject(data) {
+  const db = getDb();
+  return db.insert(projects).values(data).returning();
+}
+function updateProject(id, data) {
+  const db = getDb();
+  return db.update(projects).set(data).where(eq(projects.id, id)).returning();
+}
 const require2 = createRequire(import.meta.url);
 const Database = require2("better-sqlite3");
 function getDb() {
@@ -6850,6 +6854,29 @@ function getDb() {
   sqlite.pragma("journal_mode = WAL");
   const db = drizzle(sqlite, { schema });
   return db;
+}
+function registerProjectHandlers() {
+  ipcMain.handle("project:create", async (_, projectData) => {
+    try {
+      return await createProject(projectData);
+    } catch (error) {
+      console.error("创建项目失败:", error);
+      throw error;
+    }
+  });
+  ipcMain.handle("project:update", async (_, id, projectData) => {
+    try {
+      return await updateProject(id, projectData);
+    } catch (error) {
+      console.error("更新项目失败:", error);
+      throw error;
+    }
+  });
+}
+function registerAllIpcHandlers() {
+  registerFileDialogHandler();
+  registerSettingHandler();
+  registerProjectHandlers();
 }
 const __dirname = path$c.dirname(fileURLToPath(import.meta.url));
 process.env.APP_ROOT = path$c.join(__dirname, "..");
