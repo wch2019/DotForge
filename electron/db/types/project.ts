@@ -45,7 +45,7 @@ export interface ProjectData {
     remoteCommand: string
 
     /** 是否保留构建产物 **/
-    keepArtifacts: boolean
+    keepArtifacts: number
     /** 保留路径 **/
     keepPath: string
     /** 删除策略 **/
@@ -75,7 +75,7 @@ export const defaultProjectData: ProjectData = {
     privateKeyPath: '',
     targetPath: '',
     remoteCommand: '',
-    keepArtifacts: false,
+    keepArtifacts: 0,
     keepPath: '',
     keepCount: 10
 }

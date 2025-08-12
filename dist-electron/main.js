@@ -6814,20 +6814,13 @@ const projects = sqliteTable("projects", {
   keepArtifacts: integer("keepArtifacts"),
   // 0 or 1
   keepPath: text("keepPath"),
-  keepCount: integer("keepCount")
+  keepCount: integer("keepCount"),
+  createdTime: text("createdTime").default(sql`datetime('now')`)
 });
 const schema = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   projects
 }, Symbol.toStringTag, { value: "Module" }));
-function createProject(data) {
-  const db = getDb();
-  return db.insert(projects).values(data).returning();
-}
-function updateProject(id, data) {
-  const db = getDb();
-  return db.update(projects).set(data).where(eq(projects.id, id)).returning();
-}
 const require2 = createRequire(import.meta.url);
 const Database = require2("better-sqlite3");
 function getDb() {
@@ -6852,8 +6845,59 @@ function getDb() {
   }
   const sqlite = new Database(dbPath);
   sqlite.pragma("journal_mode = WAL");
+  sqlite.exec(`
+        CREATE TABLE IF NOT EXISTS projects (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            localPath TEXT NOT NULL,
+            description TEXT,
+            tag TEXT,
+            buildCmd TEXT,
+            outputDir TEXT,
+            deployMethod TEXT,
+            localCommand TEXT,
+            dockerfilePath TEXT,
+            imageName TEXT,
+            registry TEXT,
+            dockerDeployType TEXT,
+            dockerRunCommand TEXT,
+            serverAddress TEXT,
+            serverPort INTEGER,
+            serverUsername TEXT,
+            authType TEXT,
+            serverPassword TEXT,
+            privateKeyPath TEXT,
+            targetPath TEXT,
+            remoteCommand TEXT,
+            keepArtifacts INTEGER,
+            keepPath TEXT,
+            keepCount INTEGER,
+            createdTime TEXT DEFAULT (CURRENT_TIMESTAMP)
+            );
+    `);
   const db = drizzle(sqlite, { schema });
   return db;
+}
+function createProject(data) {
+  console.log("createProject", data);
+  const db = getDb();
+  return db.insert(projects).values(data).returning();
+}
+function getProjects() {
+  const db = getDb();
+  return db.select().from(projects).all();
+}
+function getProjectById(id) {
+  const db = getDb();
+  return db.select().from(projects).where(eq(projects.id, id)).get();
+}
+function updateProject(id, data) {
+  const db = getDb();
+  return db.update(projects).set(data).where(eq(projects.id, id)).returning();
+}
+function deleteProject(id) {
+  const db = getDb();
+  return db.delete(projects).where(eq(projects.id, id)).returning();
 }
 function registerProjectHandlers() {
   ipcMain.handle("project:create", async (_, projectData) => {
@@ -6864,11 +6908,35 @@ function registerProjectHandlers() {
       throw error;
     }
   });
+  ipcMain.handle("project:getAll", async () => {
+    try {
+      return await getProjects();
+    } catch (error) {
+      console.error("获取项目列表失败:", error);
+      throw error;
+    }
+  });
+  ipcMain.handle("project:getById", async (_, id) => {
+    try {
+      return await getProjectById(id);
+    } catch (error) {
+      console.error("获取项目失败:", error);
+      throw error;
+    }
+  });
   ipcMain.handle("project:update", async (_, id, projectData) => {
     try {
       return await updateProject(id, projectData);
     } catch (error) {
       console.error("更新项目失败:", error);
+      throw error;
+    }
+  });
+  ipcMain.handle("project:delete", async (_, id) => {
+    try {
+      return await deleteProject(id);
+    } catch (error) {
+      console.error("删除项目失败:", error);
       throw error;
     }
   });

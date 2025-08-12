@@ -89,15 +89,6 @@ const buildStatusClass = computed(() => {
   }
 })
 
-// 初始化数据
-async function initData() {
-  try {
-    await dataStore.init()
-  } catch (error) {
-    console.error('初始化数据失败:', error)
-  }
-}
-
 function goBack() {
   router.back()
 }
@@ -116,7 +107,7 @@ async function clearLogs() {
 
 function exportLogs() {
   if (logs.value.length === 0) return
-  
+
   const logText = logs.value.join('\n')
   const blob = new Blob([logText], { type: 'text/plain' })
   const url = URL.createObjectURL(blob)
@@ -162,11 +153,11 @@ function scrollToBottom() {
 
 async function saveBuildLog() {
   if (!projectId.value) return
-  
+
   try {
     const buildLogs = dataStore.getBuildLogs(projectId.value)
     const existingLog = buildLogs.find(log => log.status === 'building')
-    
+
     if (existingLog) {
       await dataStore.updateBuildLog(existingLog.id, {
         logs: logs.value,
@@ -189,11 +180,9 @@ async function saveBuildLog() {
 }
 
 onMounted(async () => {
-  await initData()
-  
   if (projectId.value) {
     console.log('加载项目信息:', projectId.value)
-    
+
     // 加载最新的构建日志
     const buildLogs = dataStore.getBuildLogs(projectId.value)
     if (buildLogs.length > 0) {
@@ -202,12 +191,12 @@ onMounted(async () => {
       buildStatus.value = latestLog.status
     }
   }
-  
+
   if (route.query.action === 'build') {
     buildStatus.value = 'building'
     simulateBuildProcess()
   }
-  
+
   scrollToBottom()
 })
 
@@ -222,7 +211,7 @@ function simulateBuildProcess() {
     '[INFO] 生成构建产物...',
     '[INFO] 构建成功完成'
   ]
-  
+
   let stepIndex = 0
   const interval = setInterval(() => {
     if (stepIndex < buildSteps.length) {
@@ -242,7 +231,7 @@ function simulateBuildProcess() {
 <style scoped>
 .build-log-page {
   background: #f5f7fa;
-  min-height: 100vh;
+  height: var(--content-height);
   padding: 16px;
 }
 
@@ -256,7 +245,7 @@ function simulateBuildProcess() {
 }
 
 .build-log-header {
-  padding: 20px 24px;
+  padding: 8px 24px;
   border-bottom: 1px solid #f3f4f6;
   display: flex;
   justify-content: space-between;
@@ -431,18 +420,18 @@ function simulateBuildProcess() {
     align-items: stretch;
     gap: 12px;
   }
-  
+
   .header-actions {
     justify-content: center;
   }
-  
+
   .log-content {
     padding: 12px 16px;
     font-size: 12px;
   }
-  
+
   .build-log-page {
     padding: 8px;
   }
 }
-</style> 
+</style>

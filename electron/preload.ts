@@ -1,5 +1,6 @@
 import {ipcRenderer, contextBridge} from 'electron'
 import {type AppConfig} from '../shared/default-config'
+import {ProjectData} from "./db/types/project.ts";
 
 // --------- Expose some API to the Renderer process ---------
 contextBridge.exposeInMainWorld('ipcRenderer', {
@@ -36,6 +37,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
     selectPath: (type = 'file') => ipcRenderer.invoke('dialog:selectPath', {type}),
     migrateDataDir: (oldPath: string, newPath: string) => ipcRenderer.invoke('config-migrate-data-dir', oldPath, newPath),
     // 项目数据库操作
-    createProject: (projectData) => ipcRenderer.invoke('project:create', projectData),
-    updateProject: (id, projectData) => ipcRenderer.invoke('project:update', id, projectData),
+    createProject: (projectData: ProjectData) => ipcRenderer.invoke('project:create', projectData),
+    updateProject: (id: number, projectData: ProjectData) => ipcRenderer.invoke('project:update', id, projectData),
+    deleteProject: (id: number) => ipcRenderer.invoke('project:delete', id),
+    getProjects: () => ipcRenderer.invoke('project:getAll'),
+    getProjectById: (id: number) => ipcRenderer.invoke('project:getById', id),
 })

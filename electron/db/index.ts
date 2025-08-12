@@ -35,8 +35,39 @@ export function getDb() {
     const sqlite = new Database(dbPath);
     sqlite.pragma("journal_mode = WAL");
 
-    const db = drizzle(sqlite, {schema});
+    // 这里直接创建表（如果不存在）
+    sqlite.exec(`
+        CREATE TABLE IF NOT EXISTS projects (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            localPath TEXT NOT NULL,
+            description TEXT,
+            tag TEXT,
+            buildCmd TEXT,
+            outputDir TEXT,
+            deployMethod TEXT,
+            localCommand TEXT,
+            dockerfilePath TEXT,
+            imageName TEXT,
+            registry TEXT,
+            dockerDeployType TEXT,
+            dockerRunCommand TEXT,
+            serverAddress TEXT,
+            serverPort INTEGER,
+            serverUsername TEXT,
+            authType TEXT,
+            serverPassword TEXT,
+            privateKeyPath TEXT,
+            targetPath TEXT,
+            remoteCommand TEXT,
+            keepArtifacts INTEGER,
+            keepPath TEXT,
+            keepCount INTEGER,
+            createdTime TEXT DEFAULT (CURRENT_TIMESTAMP)
+            );
+    `);
 
+    const db = drizzle(sqlite, {schema});
 
     return db;
 }

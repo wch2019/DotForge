@@ -153,9 +153,9 @@
             </div>
             <div class="detail-item">
               <n-icon size="16" class="detail-icon">
-                <GitBranchOutline/>
+                <PricetagsOutline/>
               </n-icon>
-              <span class="detail-text">分支：{{ project.branch || 'main' }}</span>
+              <span class="detail-text">类型：<n-tag :bordered="false" type="info">{{ project.tag || 'main' }}</n-tag></span>
             </div>
           </div>
 
@@ -217,17 +217,18 @@
 </template>
 
 <script setup lang="ts">
-import {ref, computed, onMounted} from 'vue'
+import {ref, computed, toRaw} from 'vue'
 import {useRouter} from 'vue-router'
 import {
-  NButton, NCard, NTag, NIcon, NInput, NInputGroup
+  NButton, NCard, NTag, NIcon, NInput, NInputGroup, useDialog
 } from 'naive-ui'
 import {
   AddOutline, PlayOutline, FolderOutline, CheckmarkCircleOutline,
   SyncOutline, CloseCircleOutline, AppsOutline, SearchOutline,
   FilterOutline, TimeOutline, GitBranchOutline, DocumentTextOutline,
-  CreateOutline, TrashOutline
+  CreateOutline, TrashOutline, PricetagsOutline
 } from '@vicons/ionicons5'
+const dialog = useDialog()
 
 // 搜索关键词
 const searchKeyword = ref('')
@@ -240,7 +241,7 @@ const projects = ref([
     path: '/Users/xxx/ai-deploy',
     status: 'success',
     lastBuildTime: '3分钟前',
-    branch: 'main'
+    tag: 'main'
   },
   {
     id: 2,
@@ -248,7 +249,7 @@ const projects = ref([
     path: '/Users/xxx/frontend',
     status: 'failed',
     lastBuildTime: '10分钟前',
-    branch: 'develop'
+    tag: 'develop'
   },
   {
     id: 3,
@@ -256,7 +257,7 @@ const projects = ref([
     path: '/Users/xxx/backend',
     status: 'building',
     lastBuildTime: '1分钟前',
-    branch: 'feature/api'
+    tag: 'feature/api'
   },
   {
     id: 4,
@@ -264,7 +265,7 @@ const projects = ref([
     path: '/Users/xxx/mobile-app',
     status: 'success',
     lastBuildTime: '5分钟前',
-    branch: 'main'
+    tag: 'main'
   }
 ])
 
@@ -316,7 +317,18 @@ function buildAll() {
 }
 
 function build(project: any) {
-  console.log(`开始构建：${project.name}`)
+  dialog.warning({
+    title: '构建',
+    content: '确定要进行构建吗？',
+    positiveText: '确定',
+    negativeText: '取消',
+    draggable: true,
+    onPositiveClick: () => {
+      router.push({name: 'ProjectLog', query: { id: project.id ,name: project.name}})
+    },
+    onNegativeClick: () => {}
+  })
+
 }
 
 function viewLogs(project: any) {
@@ -324,7 +336,7 @@ function viewLogs(project: any) {
 }
 
 function edit(project: any) {
-  console.log(`编辑项目：${project.name}`)
+  router.push({name: 'ProjectEdit', query: { id: project.id } })
 }
 
 function remove(project: any) {

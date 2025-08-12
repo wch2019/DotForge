@@ -14,7 +14,7 @@
             <p class="page-subtitle">配置您的CI/CD项目，支持多种构建方式</p>
           </div>
           <div class="header-actions">
-            <n-button @click="onCancel" size="large"  type="warning" >
+            <n-button @click="onCancel" size="large" type="warning">
               <template #icon>
                 <n-icon>
                   <CloseOutline/>
@@ -35,14 +35,6 @@
                 </n-icon>
               </template>
               保存项目
-            </n-button>
-            <n-button
-                type="success"
-                size="large"
-                @click="saveToDatabase"
-                :disabled="!canSave"
-            >
-              保存到数据库
             </n-button>
           </div>
         </div>
@@ -73,14 +65,14 @@
               <n-input v-model:value="form.name" placeholder="请输入项目名称"/>
             </n-form-item>
             <n-form-item label="项目标签" path="tags">
-                <n-select v-model:value="form.tag" placeholder="选择项目标签" :options="tags"/>
+              <n-select v-model:value="form.tag" placeholder="选择项目标签" :options="tags"/>
             </n-form-item>
             <n-form-item label="项目路径" path="localPath" required>
-                <FilePicker
-                    v-model="form.localPath"
-                    type="directory"
-                    placeholder="请选择项目路径"
-                />
+              <FilePicker
+                  v-model="form.localPath"
+                  type="directory"
+                  placeholder="请选择项目路径"
+              />
             </n-form-item>
             <n-form-item label="项目描述" path="description">
               <n-input v-model:value="form.description" placeholder="请输入项目描述"/>
@@ -213,7 +205,7 @@
               </div>
 
               <n-form-item label="上传后执行命令" path="remoteCommand">
-                <n-input v-model:value="form.remoteCommand" type="textarea"  rows="3" placeholder="上传后要执行的命令"/>
+                <n-input v-model:value="form.remoteCommand" type="textarea" rows="3" placeholder="上传后要执行的命令"/>
               </n-form-item>
             </div>
           </n-form>
@@ -229,7 +221,7 @@
           <n-form :model="form" label-placement="top" class="step-form">
             <div class="form-row">
               <n-form-item label="保留产物" path="keepArtifacts">
-                <n-switch v-model:value="form.keepArtifacts"/>
+                <n-switch v-model:value="form.keepArtifacts" :checked-value="1" :unchecked-value="0"/>
                 <span class="switch-label">保留构建产物</span>
               </n-form-item>
             </div>
@@ -284,7 +276,7 @@
 </template>
 
 <script setup lang="ts">
-import {computed, onMounted, ref} from 'vue'
+import {computed, onMounted, ref, toRaw} from 'vue'
 import {useRoute, useRouter} from 'vue-router'
 import {
   NAlert,
@@ -293,7 +285,6 @@ import {
   NFormItem,
   NIcon,
   NInput,
-  NInputGroup,
   NInputNumber,
   NRadio,
   NRadioGroup,
@@ -313,8 +304,8 @@ import {
 } from '@vicons/ionicons5'
 import {Edit24Regular} from '@vicons/fluent'
 
-import dataStore from '@/utils/dataStore'
 import FilePicker from "@/components/FilePicker.vue";
+import {defaultProjectData} from "../../../electron/db/types/project.ts";
 
 const message = useMessage()
 const router = useRouter()
@@ -350,39 +341,7 @@ const tags = [
 ]
 
 // 表单数据
-const form = ref({
-  // 基础信息
-  name: '',
-  localPath: '',
-  description: '',
-  tag: 'java',
-
-  // 构建流程
-  buildCmd: 'mvn clean package',
-  outputDir: '',
-
-  // 发布操作
-  deployMethod: 'none',
-  dockerfilePath: './Dockerfile',
-  imageName: '',
-  registry: '',
-  localCommand: '',
-  dockerDeployType: 'local',
-  dockerRunCommand: '',
-  serverAddress: '',
-  serverPort: 22,
-  serverUsername: '',
-  authType: 'password',
-  serverPassword: '',
-  privateKeyPath: '',
-  targetPath: '',
-  remoteCommand: '',
-
-  // 其他配置
-  keepArtifacts: false,
-  keepPath: '',
-  keepCount: 10
-})
+const form = ref({...defaultProjectData});
 
 // 表单验证规则
 const basicRules = {
@@ -422,18 +381,13 @@ const canSave = computed(() => {
   return form.value.name && form.value.localPath && form.value.buildCmd && form.value.outputDir
 })
 
-// 方法
-
-function selectLocalPath() {
-  // TODO: 实现文件选择对话框
-  console.log('选择本地路径')
-}
 // 下一步
 function nextStep() {
   if (currentStep.value < steps.length) {
     currentStep.value++
   }
 }
+
 // 上一步
 function prevStep() {
   if (currentStep.value > 0) {
@@ -441,29 +395,13 @@ function prevStep() {
   }
 }
 
-// 初始化数据
-async function initData() {
-  try {
-    await dataStore.init()
-  } catch (error) {
-    console.error('初始化数据失败:', error)
-  }
-}
-
 onMounted(async () => {
-  await initData()
-
   if (isEdit.value && id) {
-    const project = dataStore.getProject(id)
+    const project = await window.electronAPI.getProjectById(id)
+    console.log("project", project)
     if (project) {
-      Object.assign(form.value, {
-        name: project.name,
-        localPath: project.localPath,
-        buildCmd: project.buildCmd,
-        outputDir: project.outputDir || '',
-        dockerfilePath: project.dockerfilePath,
-        imageName: project.imageName
-      })
+      Object.assign(form.value, project)
+      console.log("form.value", form.value)
     }
   }
 })
@@ -472,67 +410,21 @@ function onCancel() {
   router.push({name: 'Project'})
 }
 
-async function saveToDatabase() {
-  if (!form.value.name || !form.value.localPath) return
-
-  try {
-    saving.value = true
-    if (isEdit.value && id) {
-      await window.electronAPI.updateProject(parseInt(id), form.value);
-    } else {
-      await window.electronAPI.createProject(form.value);
-    }
-    message.success('项目已成功保存到数据库');
-  } catch (error) {
-    console.error('保存到数据库失败:', error);
-    message.error('保存到数据库失败，请重试');
-  } finally {
-    saving.value = false
-  }
-}
-
 async function onSave() {
   if (!form.value.name || !form.value.localPath) return
-
+  const plainData = JSON.parse(JSON.stringify(toRaw(form.value)))
+  console.log('plainData', plainData)
   try {
     if (isEdit.value && id) {
-      await dataStore.updateProject(id, {
-        name: form.value.name,
-        localPath: form.value.localPath,
-        buildCmd: form.value.buildCmd,
-        outputDir: form.value.outputDir,
-        dockerfilePath: form.value.dockerfilePath,
-        imageName: form.value.imageName
-      })
+      await window.electronAPI.updateProject(parseInt(id), plainData);
     } else {
-      await dataStore.addProject({
-        name: form.value.name,
-        localPath: form.value.localPath,
-        buildCmd: form.value.buildCmd,
-        outputDir: form.value.outputDir,
-        deployMethod: form.value.deployMethod as 'none' | 'local' | 'docker' | 'remote',
-        dockerfilePath: form.value.dockerfilePath,
-        imageName: form.value.imageName,
-        localCommand: form.value.localCommand,
-        dockerDeployType: form.value.dockerDeployType as 'local' | 'push',
-        dockerRunCommand: form.value.dockerRunCommand,
-        serverAddress: form.value.serverAddress,
-        serverPort: form.value.serverPort,
-        serverUsername: form.value.serverUsername,
-        authType: form.value.authType as 'password' | 'privateKey',
-        serverPassword: form.value.serverPassword,
-        privateKeyPath: form.value.privateKeyPath,
-        targetPath: form.value.targetPath,
-        remoteCommand: form.value.remoteCommand,
-        keepArtifacts: form.value.keepArtifacts,
-        keepPath: form.value.keepPath,
-        keepCount: form.value.keepCount,
-        status: 'idle'
-      })
+      await window.electronAPI.createProject(plainData);
     }
+    message.success('项目保存成功');
     router.push({name: 'Project'})
   } catch (error) {
     console.error('保存项目失败:', error)
+    message.error('保存到数据库失败，请重试');
   }
 }
 </script>
@@ -660,6 +552,7 @@ async function onSave() {
   border: 1px solid var(--n-border-color);
   border-radius: 8px;
 }
+
 .dark .deploy-section {
   background: var(--content-bg);
 }

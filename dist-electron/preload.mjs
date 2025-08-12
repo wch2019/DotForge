@@ -32,5 +32,8 @@ electron.contextBridge.exposeInMainWorld("electronAPI", {
   migrateDataDir: (oldPath, newPath) => electron.ipcRenderer.invoke("config-migrate-data-dir", oldPath, newPath),
   // 项目数据库操作
   createProject: (projectData) => electron.ipcRenderer.invoke("project:create", projectData),
-  updateProject: (id, projectData) => electron.ipcRenderer.invoke("project:update", id, projectData)
+  updateProject: (id, projectData) => electron.ipcRenderer.invoke("project:update", id, projectData),
+  deleteProject: (id) => electron.ipcRenderer.invoke("project:delete", id),
+  getProjects: () => electron.ipcRenderer.invoke("project:getAll"),
+  getProjectById: (id) => electron.ipcRenderer.invoke("project:getById", id)
 });
