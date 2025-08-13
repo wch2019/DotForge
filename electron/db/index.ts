@@ -39,6 +39,7 @@ export function getDb() {
     sqlite.exec(`
         CREATE TABLE IF NOT EXISTS projects (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            createdTime TEXT,
             name TEXT NOT NULL,
             localPath TEXT NOT NULL,
             description TEXT,
@@ -63,7 +64,8 @@ export function getDb() {
             keepArtifacts INTEGER,
             keepPath TEXT,
             keepCount INTEGER,
-            createdTime TEXT DEFAULT (CURRENT_TIMESTAMP)
+            lastBuildTime TEXT,
+            status TEXT
             );
     `);
 

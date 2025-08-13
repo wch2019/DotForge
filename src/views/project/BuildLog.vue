@@ -61,6 +61,7 @@ import {
   DocumentTextOutline
 } from '@vicons/ionicons5'
 import dataStore from '@/utils/dataStore'
+import {defaultProjectData} from "../../../electron/db/types/project.ts";
 
 const router = useRouter()
 const route = useRoute()
@@ -70,6 +71,7 @@ const projectId = computed(() => route.query.id as string)
 const projectName = ref(route.query.name as string || 'MyApp')
 const buildStatus = ref<'building' | 'success' | 'failed'>('building')
 const logs = ref<string[]>([])
+const project = ref({...defaultProjectData});
 
 const buildStatusText = computed(() => {
   switch (buildStatus.value) {
@@ -127,9 +129,11 @@ function stopBuild() {
   saveBuildLog()
 }
 
+// 片段颜色
 function formatLogLine(line: string) {
   // 简单的ANSI颜色模拟
   return line
+    .replace(/\[INFO\]/g, '<span style="color: #22c55e">[INFO]</span>')
     .replace(/\x1b\[32m/g, '<span style="color: #22c55e">')
     .replace(/\x1b\[31m/g, '<span style="color: #ef4444">')
     .replace(/\x1b\[33m/g, '<span style="color: #f59e0b">')
@@ -143,6 +147,7 @@ function getLogLineClass(line: string) {
   return ''
 }
 
+// 滚动到底部
 function scrollToBottom() {
   nextTick(() => {
     if (logContent.value) {
@@ -181,7 +186,8 @@ async function saveBuildLog() {
 
 onMounted(async () => {
   if (projectId.value) {
-    console.log('加载项目信息:', projectId.value)
+    // 加载项目信息
+    await getProjectInfo()
 
     // 加载最新的构建日志
     const buildLogs = dataStore.getBuildLogs(projectId.value)
@@ -194,7 +200,7 @@ onMounted(async () => {
 
   if (route.query.action === 'build') {
     buildStatus.value = 'building'
-    simulateBuildProcess()
+    runBuild()
   }
 
   scrollToBottom()
@@ -211,21 +217,40 @@ function simulateBuildProcess() {
     '[INFO] 生成构建产物...',
     '[INFO] 构建成功完成'
   ]
-
-  let stepIndex = 0
-  const interval = setInterval(() => {
-    if (stepIndex < buildSteps.length) {
-      logs.value.push(buildSteps[stepIndex])
-      stepIndex++
-      scrollToBottom()
-    } else {
-      clearInterval(interval)
-      buildStatus.value = 'success'
-      logs.value.push('[INFO] 构建成功完成')
-      saveBuildLog()
-    }
-  }, 1000)
 }
+
+function runBuild() {
+  if (!projectId.value) return
+
+  buildStatus.value = 'building'
+
+  // 执行命令，比如 mvn clean package
+  window.electronAPI.runCommand('java -version', { cwd: '' })
+
+  window.electronAPI.onCommandOutput((line: string) => {
+    console.log('命令输出:', line)
+    logs.value.push(line)
+    scrollToBottom()
+  })
+
+  window.electronAPI.onCommandFinished((code: number) => {
+    if (code === 0) {
+      buildStatus.value = 'success'
+    } else {
+      buildStatus.value = 'failed'
+    }
+    saveBuildLog()
+  })
+}
+
+// 获取项目信息
+async function getProjectInfo() {
+  const projectInfo = await window.electronAPI.getProjectById(projectId.value)
+  if (projectInfo) {
+    Object.assign(project.value, projectInfo)
+  }
+}
+
 </script>
 
 <style scoped>

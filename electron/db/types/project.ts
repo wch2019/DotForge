@@ -1,4 +1,6 @@
 export interface ProjectData {
+    /** 项目ID **/
+    id?: number
     /** 项目名称 **/
     name: string
     /** 项目路径 **/
@@ -50,6 +52,10 @@ export interface ProjectData {
     keepPath: string
     /** 删除策略 **/
     keepCount: number
+    /** 项目状态 **/
+    status?: string
+    /** 最近构建 **/
+    lastBuildTime?: string
 }
 
 
@@ -77,5 +83,7 @@ export const defaultProjectData: ProjectData = {
     remoteCommand: '',
     keepArtifacts: 0,
     keepPath: '',
-    keepCount: 10
+    keepCount: 10,
+    status: '',
+    lastBuildTime: ''
 }

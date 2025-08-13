@@ -14,6 +14,7 @@ import require$$5 from "assert";
 import require$$1 from "path";
 import { createRequire } from "module";
 import Client from "better-sqlite3";
+import { spawn } from "child_process";
 function registerFileDialogHandler() {
   ipcMain.handle("dialog:selectPath", async (_event, options) => {
     const properties = options.type === "directory" ? ["openDirectory"] : ["openFile"];
@@ -6787,6 +6788,7 @@ function drizzle(...params) {
 })(drizzle || (drizzle = {}));
 const projects = sqliteTable("projects", {
   id: integer("id").primaryKey({ autoIncrement: true }),
+  createdTime: text("createdTime").default(sql`datetime('now')`),
   name: text("name").notNull(),
   localPath: text("localPath").notNull(),
   description: text("description"),
@@ -6815,7 +6817,8 @@ const projects = sqliteTable("projects", {
   // 0 or 1
   keepPath: text("keepPath"),
   keepCount: integer("keepCount"),
-  createdTime: text("createdTime").default(sql`datetime('now')`)
+  lastBuildTime: text("lastBuildTime"),
+  status: text("status")
 });
 const schema = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
@@ -6848,6 +6851,7 @@ function getDb() {
   sqlite.exec(`
         CREATE TABLE IF NOT EXISTS projects (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            createdTime TEXT,
             name TEXT NOT NULL,
             localPath TEXT NOT NULL,
             description TEXT,
@@ -6872,7 +6876,8 @@ function getDb() {
             keepArtifacts INTEGER,
             keepPath TEXT,
             keepCount INTEGER,
-            createdTime TEXT DEFAULT (CURRENT_TIMESTAMP)
+            lastBuildTime TEXT,
+            status TEXT
             );
     `);
   const db = drizzle(sqlite, { schema });
@@ -6941,10 +6946,28 @@ function registerProjectHandlers() {
     }
   });
 }
+function registerCommandHandlers() {
+  ipcMain.on("run-command", (event, fullCommand, options) => {
+    const parts = fullCommand.split(" ");
+    const command = parts[0];
+    const args = parts.slice(1);
+    const child = spawn(command, args, { shell: true, ...options });
+    child.stdout.on("data", (data) => {
+      event.sender.send("command-output", data.toString());
+    });
+    child.stderr.on("data", (data) => {
+      event.sender.send("command-output", data.toString());
+    });
+    child.on("close", (code) => {
+      event.sender.send("command-finished", code);
+    });
+  });
+}
 function registerAllIpcHandlers() {
   registerFileDialogHandler();
   registerSettingHandler();
   registerProjectHandlers();
+  registerCommandHandlers();
 }
 const __dirname = path$c.dirname(fileURLToPath(import.meta.url));
 process.env.APP_ROOT = path$c.join(__dirname, "..");

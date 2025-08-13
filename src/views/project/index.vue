@@ -125,9 +125,9 @@
           <div class="project-header">
             <div class="project-info">
               <h4 class="project-name">{{ project.name }}</h4>
-              <p class="project-path">{{ project.path }}</p>
+              <p class="project-path">{{ project.localPath }}</p>
             </div>
-            <div class="project-status">
+            <div class="project-status" v-if="project.status">
               <n-tag
                   :type="statusTypeMap[project.status]"
                   size="medium"
@@ -145,17 +145,17 @@
           </div>
 
           <div class="project-details">
-            <div class="detail-item">
+            <div class="detail-item" v-if="project.lastBuildTime">
               <n-icon size="16" class="detail-icon">
                 <TimeOutline/>
               </n-icon>
-              <span class="detail-text">上次构建：{{ project.lastBuildTime }}</span>
+              <span class="detail-text">上次构建：{{ project.lastBuildTime}}</span>
             </div>
             <div class="detail-item">
               <n-icon size="16" class="detail-icon">
                 <PricetagsOutline/>
               </n-icon>
-              <span class="detail-text">类型：<n-tag :bordered="false" type="info">{{ project.tag || 'main' }}</n-tag></span>
+              <span class="detail-text">类型：<n-tag :bordered="false" type="info">{{ project.tag || '未知' }}</n-tag></span>
             </div>
           </div>
 
@@ -225,49 +225,17 @@ import {
 import {
   AddOutline, PlayOutline, FolderOutline, CheckmarkCircleOutline,
   SyncOutline, CloseCircleOutline, AppsOutline, SearchOutline,
-  FilterOutline, TimeOutline, GitBranchOutline, DocumentTextOutline,
+  FilterOutline, TimeOutline, DocumentTextOutline,
   CreateOutline, TrashOutline, PricetagsOutline
 } from '@vicons/ionicons5'
+import {ProjectData} from "../../../electron/db/types/project.ts";
 const dialog = useDialog()
 
 // 搜索关键词
 const searchKeyword = ref('')
 
 // 项目数据示例
-const projects = ref([
-  {
-    id: 1,
-    name: 'AI 自动部署',
-    path: '/Users/xxx/ai-deploy',
-    status: 'success',
-    lastBuildTime: '3分钟前',
-    tag: 'main'
-  },
-  {
-    id: 2,
-    name: '前端平台',
-    path: '/Users/xxx/frontend',
-    status: 'failed',
-    lastBuildTime: '10分钟前',
-    tag: 'develop'
-  },
-  {
-    id: 3,
-    name: '后端服务',
-    path: '/Users/xxx/backend',
-    status: 'building',
-    lastBuildTime: '1分钟前',
-    tag: 'feature/api'
-  },
-  {
-    id: 4,
-    name: '移动端应用',
-    path: '/Users/xxx/mobile-app',
-    status: 'success',
-    lastBuildTime: '5分钟前',
-    tag: 'main'
-  }
-])
+const projects = ref<ProjectData[]>([])
 
 // 统计数据
 const stats = computed(() => {
@@ -308,6 +276,13 @@ const statusTypeMap: Record<string, 'success' | 'error' | 'warning'> = {
 
 const router = useRouter()
 
+async function initProjects() {
+  const project = await window.electronAPI.getProjects()
+  if (project) {
+    Object.assign(projects.value, project)
+  }
+}
+
 function goAddProject() {
   router.push({name: 'ProjectCreate'})
 }
@@ -324,7 +299,15 @@ function build(project: any) {
     negativeText: '取消',
     draggable: true,
     onPositiveClick: () => {
-      router.push({name: 'ProjectLog', query: { id: project.id ,name: project.name}})
+      project.lastBuildTime= new Date().toLocaleString()
+      project.status = 'building'
+      console.log('开始构建项目', project)
+      try {
+         window.electronAPI.updateProject(parseInt(project.id), project);
+      } catch (error) {
+        console.error('保存项目失败:', error)
+      }
+      router.push({name: 'ProjectLog', query: { id: project.id ,name: project.name,action:'build'}})
     },
     onNegativeClick: () => {}
   })
@@ -341,7 +324,21 @@ function edit(project: any) {
 
 function remove(project: any) {
   console.log(`删除项目：${project.name}`)
+  dialog.warning({
+    title: '删除',
+    content: '确定要删除项目吗？',
+    positiveText: '确定',
+    negativeText: '取消',
+    draggable: true,
+    onPositiveClick: () => {
+      projects.value = projects.value.filter(p => p.id !== project.id)
+      // todo：物理删除项目所有关联数据
+    },
+    onNegativeClick: () => {}
+  })
 }
+
+initProjects()
 </script>
 
 <style scoped>

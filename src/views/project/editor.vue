@@ -398,10 +398,8 @@ function prevStep() {
 onMounted(async () => {
   if (isEdit.value && id) {
     const project = await window.electronAPI.getProjectById(id)
-    console.log("project", project)
     if (project) {
       Object.assign(form.value, project)
-      console.log("form.value", form.value)
     }
   }
 })
@@ -424,7 +422,7 @@ async function onSave() {
     router.push({name: 'Project'})
   } catch (error) {
     console.error('保存项目失败:', error)
-    message.error('保存到数据库失败，请重试');
+    message.error('保存项目失败，请重试');
   }
 }
 </script>
