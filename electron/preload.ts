@@ -43,7 +43,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getProjects: () => ipcRenderer.invoke('project:getAll'),
     getProjectById: (id: number) => ipcRenderer.invoke('project:getById', id),
     // cmd 执行
-    runCommand: (cmd: string, options: any) => ipcRenderer.send('run-command', cmd, options),
+    runCommand: (cmd: string, options: any) => ipcRenderer.invoke('run-command', cmd, options),
     onCommandOutput: (callback: any) => ipcRenderer.on('command-output', (_, data) => callback(data)),
     onCommandFinished: (callback: any) => ipcRenderer.on('command-finished', (_, code) => callback(code))
 })

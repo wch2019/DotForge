@@ -85,7 +85,7 @@
           <n-form :model="form" :rules="buildRules" label-placement="top" class="step-form">
 
             <n-form-item label="构建命令" path="buildCmd" required>
-              <n-input v-model:value="form.buildCmd" type="textarea" rows="10" placeholder="如 mvn clean package"/>
+              <n-input v-model:value="form.buildCmd" type="textarea" rows="10" placeholder="如 mvn clean package.多行命令请用换行分隔"/>
             </n-form-item>
 
             <n-form-item label="构建输出目录" path="outputDir" required>
@@ -335,6 +335,7 @@ const deployMethods = [
 
 const tags = [
   {label: 'Java', value: 'java'},
+  {label: 'Vue', value: 'vue'},
   {label: 'Node', value: 'node'},
   {label: 'Python', value: 'python'},
   {label: 'Go', value: 'go'},

@@ -1,5 +1,5 @@
 
-# DotForge
+## 🖥️ DotForge
 
 一个基于 **Electron + Vue 3 + Naive UI** 构建的本地化桌面端 CI/CD 工具，用于离线打包、构建并部署 Java 项目，适用于内网环境或私有部署场景。
 

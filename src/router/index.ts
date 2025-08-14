@@ -42,7 +42,7 @@ export const routes: RouteRecordRaw[] = [
     {
         path: '/project/log',
         name: 'ProjectLog',
-        component: () => import('@/views/project/BuildLog.vue'),
+        component: () => import('@/views/project/buildLog.vue'),
         meta: {
             title: '构建日志',
             showInMenu: false,
@@ -50,9 +50,9 @@ export const routes: RouteRecordRaw[] = [
     },
     {
         path:'/setting',
-        name: 'Setting', 
-        component: () => import('@/views/setting/index.vue'), 
-        meta: { 
+        name: 'Setting',
+        component: () => import('@/views/setting/index.vue'),
+        meta: {
             title: '应用设置',
             icon: 'SettingsOutline',
             showInMenu: false,

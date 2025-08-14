@@ -5,15 +5,19 @@
       <div class="build-log-header">
         <div class="header-left">
           <n-button quaternary circle size="large" @click="goBack" class="back-btn">
-            <template #icon><n-icon><ArrowBackOutline /></n-icon></template>
+            <template #icon>
+              <n-icon>
+                <ArrowBackOutline/>
+              </n-icon>
+            </template>
           </n-button>
           <div class="header-info">
             <h1 class="project-title">{{ projectName }} 构建日志</h1>
             <p class="build-status" :class="buildStatusClass">
               <n-icon size="16" class="status-icon">
-                <CheckmarkCircleOutline v-if="buildStatus === 'success'" />
-                <CloseCircleOutline v-else-if="buildStatus === 'failed'" />
-                <SyncOutline v-else class="spinning" />
+                <CheckmarkCircleOutline v-if="buildStatus === 'success'"/>
+                <CloseCircleOutline v-else-if="buildStatus === 'failed'"/>
+                <SyncOutline v-else class="spinning"/>
               </n-icon>
               {{ buildStatusText }}
             </p>
@@ -21,13 +25,28 @@
         </div>
         <div class="header-actions">
           <n-button quaternary size="small" @click="clearLogs" :disabled="!logs.length">
-            <template #icon><n-icon><TrashOutline /></n-icon></template>清除日志
+            <template #icon>
+              <n-icon>
+                <TrashOutline/>
+              </n-icon>
+            </template>
+            清除日志
           </n-button>
           <n-button quaternary size="small" @click="exportLogs" :disabled="!logs.length">
-            <template #icon><n-icon><DownloadOutline /></n-icon></template>导出日志
+            <template #icon>
+              <n-icon>
+                <DownloadOutline/>
+              </n-icon>
+            </template>
+            导出日志
           </n-button>
           <n-button type="error" size="small" @click="stopBuild" :disabled="buildStatus !== 'building'">
-            <template #icon><n-icon><StopOutline /></n-icon></template>停止构建
+            <template #icon>
+              <n-icon>
+                <StopOutline/>
+              </n-icon>
+            </template>
+            停止构建
           </n-button>
         </div>
       </div>
@@ -36,7 +55,9 @@
       <div class="log-container">
         <div class="log-content" ref="logContent">
           <div v-if="logs.length === 0" class="empty-logs">
-            <n-icon size="48" class="empty-icon"><DocumentTextOutline /></n-icon>
+            <n-icon size="48" class="empty-icon">
+              <DocumentTextOutline/>
+            </n-icon>
             <p class="empty-text">暂无构建日志</p>
           </div>
           <div v-else class="log-lines">
@@ -52,9 +73,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, nextTick } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { NButton, NIcon } from 'naive-ui'
+import {ref, computed, onMounted, nextTick} from 'vue'
+import {useRoute, useRouter} from 'vue-router'
+import {NButton, NIcon} from 'naive-ui'
 import {
   ArrowBackOutline, CheckmarkCircleOutline, CloseCircleOutline,
   SyncOutline, TrashOutline, DownloadOutline, StopOutline,
@@ -75,19 +96,27 @@ const project = ref({...defaultProjectData});
 
 const buildStatusText = computed(() => {
   switch (buildStatus.value) {
-    case 'building': return '构建中...'
-    case 'success': return '构建成功'
-    case 'failed': return '构建失败'
-    default: return '未知状态'
+    case 'building':
+      return '构建中...'
+    case 'success':
+      return '构建成功'
+    case 'failed':
+      return '构建失败'
+    default:
+      return '未知状态'
   }
 })
 
 const buildStatusClass = computed(() => {
   switch (buildStatus.value) {
-    case 'building': return 'status-building'
-    case 'success': return 'status-success'
-    case 'failed': return 'status-failed'
-    default: return ''
+    case 'building':
+      return 'status-building'
+    case 'success':
+      return 'status-success'
+    case 'failed':
+      return 'status-failed'
+    default:
+      return ''
   }
 })
 
@@ -102,7 +131,7 @@ async function clearLogs() {
     const buildLogs = dataStore.getBuildLogs(projectId.value)
     if (buildLogs.length > 0) {
       const latestLog = buildLogs[buildLogs.length - 1]
-      await dataStore.updateBuildLog(latestLog.id, { logs: [] })
+      await dataStore.updateBuildLog(latestLog.id, {logs: []})
     }
   }
 }
@@ -111,7 +140,7 @@ function exportLogs() {
   if (logs.value.length === 0) return
 
   const logText = logs.value.join('\n')
-  const blob = new Blob([logText], { type: 'text/plain' })
+  const blob = new Blob([logText], {type: 'text/plain'})
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
@@ -133,11 +162,12 @@ function stopBuild() {
 function formatLogLine(line: string) {
   // 简单的ANSI颜色模拟
   return line
-    .replace(/\[INFO\]/g, '<span style="color: #22c55e">[INFO]</span>')
-    .replace(/\x1b\[32m/g, '<span style="color: #22c55e">')
-    .replace(/\x1b\[31m/g, '<span style="color: #ef4444">')
-    .replace(/\x1b\[33m/g, '<span style="color: #f59e0b">')
-    .replace(/\x1b\[0m/g, '</span>')
+      .replace(/\[INFO\]/g, '<span style="color: #22c55e">[INFO]</span>')
+      .replace(/\x1b\[32m/g, '<span style="color: #22c55e">')
+      .replace(/\x1b\[31m/g, '<span style="color: #ef4444">')
+      .replace(/\[ERROR\]/g, '<span style="color: #ef4444">[ERROR]</span>')
+      .replace(/\x1b\[33m/g, '<span style="color: #f59e0b">')
+      .replace(/\x1b\[0m/g, '</span>')
 }
 
 function getLogLineClass(line: string) {
@@ -157,31 +187,31 @@ function scrollToBottom() {
 }
 
 async function saveBuildLog() {
-  if (!projectId.value) return
-
-  try {
-    const buildLogs = dataStore.getBuildLogs(projectId.value)
-    const existingLog = buildLogs.find(log => log.status === 'building')
-
-    if (existingLog) {
-      await dataStore.updateBuildLog(existingLog.id, {
-        logs: logs.value,
-        status: buildStatus.value,
-        endTime: buildStatus.value !== 'building' ? Date.now() : undefined
-      })
-    } else {
-      await dataStore.addBuildLog({
-        projectId: projectId.value,
-        projectName: projectName.value,
-        status: buildStatus.value,
-        logs: logs.value,
-        startTime: Date.now(),
-        endTime: buildStatus.value !== 'building' ? Date.now() : undefined
-      })
-    }
-  } catch (error) {
-    console.error('保存构建日志失败:', error)
-  }
+  // if (!projectId.value) return
+  //
+  // try {
+  //   const buildLogs = dataStore.getBuildLogs(projectId.value)
+  //   const existingLog = buildLogs.find(log => log.status === 'building')
+  //
+  //   if (existingLog) {
+  //     await dataStore.updateBuildLog(existingLog.id, {
+  //       logs: logs.value,
+  //       status: buildStatus.value,
+  //       endTime: buildStatus.value !== 'building' ? Date.now() : undefined
+  //     })
+  //   } else {
+  //     await dataStore.addBuildLog({
+  //       projectId: projectId.value,
+  //       projectName: projectName.value,
+  //       status: buildStatus.value,
+  //       logs: logs.value,
+  //       startTime: Date.now(),
+  //       endTime: buildStatus.value !== 'building' ? Date.now() : undefined
+  //     })
+  //   }
+  // } catch (error) {
+  //   console.error('保存构建日志失败:', error)
+  // }
 }
 
 onMounted(async () => {
@@ -200,49 +230,61 @@ onMounted(async () => {
 
   if (route.query.action === 'build') {
     buildStatus.value = 'building'
-    runBuild()
+    await runBuild()
   }
 
   scrollToBottom()
 })
 
-function simulateBuildProcess() {
-  const buildSteps = [
-    '[INFO] 开始构建项目...',
-    '[INFO] 检查项目配置...',
-    '[INFO] 拉取最新代码...',
-    '[INFO] 安装依赖包...',
-    '[INFO] 运行测试...',
-    '[INFO] 执行构建命令...',
-    '[INFO] 生成构建产物...',
-    '[INFO] 构建成功完成'
-  ]
-}
+const buildSteps = [
+  '[INFO] 开始构建项目...',
+  '[INFO] 获取项目路径...',
+  '[INFO] 执行构建命令...',
+  '[INFO] 生成构建产物...',
+  '[INFO] 构建成功完成'
+]
 
-function runBuild() {
+
+async function runBuild() {
   if (!projectId.value) return
-
   buildStatus.value = 'building'
+  // 一个工具函数，用于延时
+  const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+  logs.value.push(buildSteps[0])
+  await delay(500)
+  const localPath = project.value.localPath
+  logs.value.push(buildSteps[1])
+  await delay(500)
+  logs.value.push("[INFO] " +localPath)
+  await delay(500)
+  logs.value.push(buildSteps[2])
+  await delay(500)
+  let buildCmd = project.value.buildCmd
+  // 按换行分割命令
+  const commands = buildCmd
+      .split(/\r?\n/) // 按换行符切割
+      .map(cmd => cmd.trim()) // 去掉首尾空格
+      .filter(cmd => cmd.length > 0) // 过滤空行
 
-  // 执行命令，比如 mvn clean package
-  window.electronAPI.runCommand('java -version', { cwd: '' })
-
-  window.electronAPI.onCommandOutput((line: string) => {
-    console.log('命令输出:', line)
-    logs.value.push(line)
-    scrollToBottom()
-  })
-
-  window.electronAPI.onCommandFinished((code: number) => {
-    if (code === 0) {
-      buildStatus.value = 'success'
-    } else {
+  // 逐行执行命令
+  for (const cmd of commands) {
+    logs.value.push(`[INFO] 执行命令: ${cmd}`)
+    await delay(300)
+    const code = await window.electronAPI.runCommand(cmd, { cwd: localPath })
+    if (code !== 0) {
       buildStatus.value = 'failed'
+      logs.value.push(`[ERROR] 命令失败: ${cmd}`)
+      return
     }
-    saveBuildLog()
-  })
+  }
+  logs.value.push('[INFO] 所有命令执行完成')
+  buildStatus.value = 'success'
 }
-
+window.electronAPI.onCommandOutput((line: string) => {
+  console.log('命令输出:', line)
+  logs.value.push(line)
+  scrollToBottom()
+})
 // 获取项目信息
 async function getProjectInfo() {
   const projectInfo = await window.electronAPI.getProjectById(projectId.value)
@@ -265,7 +307,7 @@ async function getProjectInfo() {
   margin: 0 auto;
   background: white;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   overflow: hidden;
 }
 
@@ -372,6 +414,8 @@ async function getProjectInfo() {
 .log-lines {
   display: flex;
   flex-direction: column;
+  overflow-x: auto;       /* 横向滚动 */
+  white-space: nowrap;    /* 不换行，超出时出现横向滚动条 */
 }
 
 .log-line {
@@ -391,11 +435,14 @@ async function getProjectInfo() {
   min-width: 40px;
   text-align: right;
   user-select: none;
+  flex: 0 0 auto;
 }
 
 .line-content {
-  flex: 1;
-  word-break: break-all;
+  flex: 0 0 auto;         /* 不压缩内容 */
+  word-break: keep-all;   /* 保留单词，避免自动断行 */
+  white-space: pre;       /* 保留空格和换行格式 */
+  font-family: monospace; /* 等宽字体，日志更好看 */
 }
 
 .log-info {
