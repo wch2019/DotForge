@@ -152,8 +152,14 @@ function exportLogs() {
 }
 
 function stopBuild() {
-  buildStatus.value = 'failed'
-  logs.value.push('[INFO] 构建已停止')
+  window.electronAPI.stopCommand().then((stopped: any) => {
+    if (stopped) {
+      logs.value.push('[INFO] 构建已停止')
+      buildStatus.value = 'failed'
+    } else {
+      logs.value.push('[WARN] 没有正在运行的构建任务')
+    }
+  })
   // 保存构建日志
   saveBuildLog()
 }

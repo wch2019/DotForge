@@ -36,8 +36,8 @@ universalify$1.fromCallback = function(fn) {
   return Object.defineProperty(function(...args) {
     if (typeof args[args.length - 1] === "function") fn.apply(this, args);
     else {
-      return new Promise((resolve, reject) => {
-        args.push((err, res) => err != null ? reject(err) : resolve(res));
+      return new Promise((resolve, reject2) => {
+        args.push((err, res) => err != null ? reject2(err) : resolve(res));
         fn.apply(this, args);
       });
     }
@@ -864,9 +864,9 @@ function retry() {
     if (typeof callback === "function") {
       return fs2.read(fd, buffer, offset, length, position, callback);
     }
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve, reject2) => {
       fs2.read(fd, buffer, offset, length, position, (err, bytesRead, buffer2) => {
-        if (err) return reject(err);
+        if (err) return reject2(err);
         resolve({ bytesRead, buffer: buffer2 });
       });
     });
@@ -875,9 +875,9 @@ function retry() {
     if (typeof args[args.length - 1] === "function") {
       return fs2.write(fd, buffer, ...args);
     }
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve, reject2) => {
       fs2.write(fd, buffer, ...args, (err, bytesWritten, buffer2) => {
-        if (err) return reject(err);
+        if (err) return reject2(err);
         resolve({ bytesWritten, buffer: buffer2 });
       });
     });
@@ -886,9 +886,9 @@ function retry() {
     if (typeof args[args.length - 1] === "function") {
       return fs2.readv(fd, buffers, ...args);
     }
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve, reject2) => {
       fs2.readv(fd, buffers, ...args, (err, bytesRead, buffers2) => {
-        if (err) return reject(err);
+        if (err) return reject2(err);
         resolve({ bytesRead, buffers: buffers2 });
       });
     });
@@ -897,9 +897,9 @@ function retry() {
     if (typeof args[args.length - 1] === "function") {
       return fs2.writev(fd, buffers, ...args);
     }
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve, reject2) => {
       fs2.writev(fd, buffers, ...args, (err, bytesWritten, buffers2) => {
-        if (err) return reject(err);
+        if (err) return reject2(err);
         resolve({ bytesWritten, buffers: buffers2 });
       });
     });
@@ -6946,24 +6946,38 @@ function registerProjectHandlers() {
     }
   });
 }
+let currentProcess = null;
 function registerCommandHandlers() {
   ipcMain.handle("run-command", (event, fullCommand, options) => {
     return new Promise((resolve) => {
       const parts = fullCommand.split(" ");
       const command = parts[0];
       const args = parts.slice(1);
-      const child = spawn(command, args, { shell: true, ...options });
-      child.stdout.on("data", (data) => {
+      currentProcess = spawn(command, args, { shell: true, ...options });
+      currentProcess.stdout.on("data", (data) => {
         event.sender.send("command-output", data.toString());
       });
-      child.stderr.on("data", (data) => {
+      currentProcess.stderr.on("data", (data) => {
         event.sender.send("command-output", data.toString());
       });
-      child.on("close", (code) => {
+      currentProcess.on("close", (code) => {
+        currentProcess = null;
         event.sender.send("command-finished", code);
         resolve(code);
       });
+      currentProcess.on("error", (err) => {
+        currentProcess = null;
+        reject(err);
+      });
     });
+  });
+  ipcMain.handle("stop-command", () => {
+    if (currentProcess) {
+      currentProcess.kill("SIGTERM");
+      currentProcess = null;
+      return true;
+    }
+    return false;
   });
 }
 function registerAllIpcHandlers() {

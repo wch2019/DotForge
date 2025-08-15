@@ -1,6 +1,8 @@
 import {ipcMain} from 'electron';
-import {spawn} from "child_process";
+import {spawn, ChildProcessWithoutNullStreams} from "child_process";
 
+// ✅ 全局变量，供 run-command 和 stop-command 共用
+let currentProcess: ChildProcessWithoutNullStreams | null = null
 
 // CICD 命令执行
 export function registerCommandHandlers() {
@@ -11,20 +13,30 @@ export function registerCommandHandlers() {
             const command = parts[0]
             const args = parts.slice(1)
 
-            const child = spawn(command, args, {shell: true, ...options})
+            currentProcess = spawn(command, args, {shell: true, ...options})
 
-            child.stdout.on('data', (data) => {
+            currentProcess.stdout.on('data', (data) => {
                 event.sender.send('command-output', data.toString())
             })
 
-            child.stderr.on('data', (data) => {
+            currentProcess.stderr.on('data', (data) => {
                 event.sender.send('command-output', data.toString())
             })
 
-            child.on('close', (code) => {
+            currentProcess.on('close', (code) => {
+                currentProcess = null
                 event.sender.send('command-finished', code)
                 resolve(code)
             })
         })
+    })
+    // 停止命令
+    ipcMain.handle('stop-command', () => {
+        if (currentProcess) {
+            currentProcess.kill('SIGTERM') // 或 'SIGKILL' 强制结束
+            currentProcess = null
+            return true
+        }
+        return false
     })
 }

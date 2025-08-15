@@ -160,7 +160,7 @@
           </div>
 
           <div class="project-actions">
-            <n-button size="small" type="primary" @click="build(project)" class="action-btn">
+            <n-button size="small" type="primary" @click="build(project)" class="action-btn" :disabled="project.status === 'building'">
               <template #icon>
                 <n-icon>
                   <PlayOutline/>
@@ -259,7 +259,7 @@ const filteredProjects = computed(() => {
   }
   return projects.value.filter(project =>
       project.name.toLowerCase().includes(searchKeyword.value.toLowerCase()) ||
-      project.path.toLowerCase().includes(searchKeyword.value.toLowerCase())
+      project.localPath.toLowerCase().includes(searchKeyword.value.toLowerCase())
   )
 })
 
@@ -303,7 +303,7 @@ function build(project: any) {
       project.status = 'building'
       console.log('开始构建项目', project)
       try {
-         window.electronAPI.updateProject(parseInt(project.id), project);
+         window.electronAPI.updateProject(parseInt(project.id), toRaw(project));
       } catch (error) {
         console.error('保存项目失败:', error)
       }
