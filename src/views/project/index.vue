@@ -315,7 +315,7 @@ function build(project: any) {
 }
 
 function viewLogs(project: any) {
-  console.log(`查看日志：${project.name}`)
+  router.push({name: 'ProjectLogsList', query: { id: project.id, name: project.name }})
 }
 
 function edit(project: any) {

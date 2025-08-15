@@ -36,8 +36,8 @@ universalify$1.fromCallback = function(fn) {
   return Object.defineProperty(function(...args) {
     if (typeof args[args.length - 1] === "function") fn.apply(this, args);
     else {
-      return new Promise((resolve, reject2) => {
-        args.push((err, res) => err != null ? reject2(err) : resolve(res));
+      return new Promise((resolve, reject) => {
+        args.push((err, res) => err != null ? reject(err) : resolve(res));
         fn.apply(this, args);
       });
     }
@@ -864,9 +864,9 @@ function retry() {
     if (typeof callback === "function") {
       return fs2.read(fd, buffer, offset, length, position, callback);
     }
-    return new Promise((resolve, reject2) => {
+    return new Promise((resolve, reject) => {
       fs2.read(fd, buffer, offset, length, position, (err, bytesRead, buffer2) => {
-        if (err) return reject2(err);
+        if (err) return reject(err);
         resolve({ bytesRead, buffer: buffer2 });
       });
     });
@@ -875,9 +875,9 @@ function retry() {
     if (typeof args[args.length - 1] === "function") {
       return fs2.write(fd, buffer, ...args);
     }
-    return new Promise((resolve, reject2) => {
+    return new Promise((resolve, reject) => {
       fs2.write(fd, buffer, ...args, (err, bytesWritten, buffer2) => {
-        if (err) return reject2(err);
+        if (err) return reject(err);
         resolve({ bytesWritten, buffer: buffer2 });
       });
     });
@@ -886,9 +886,9 @@ function retry() {
     if (typeof args[args.length - 1] === "function") {
       return fs2.readv(fd, buffers, ...args);
     }
-    return new Promise((resolve, reject2) => {
+    return new Promise((resolve, reject) => {
       fs2.readv(fd, buffers, ...args, (err, bytesRead, buffers2) => {
-        if (err) return reject2(err);
+        if (err) return reject(err);
         resolve({ bytesRead, buffers: buffers2 });
       });
     });
@@ -897,9 +897,9 @@ function retry() {
     if (typeof args[args.length - 1] === "function") {
       return fs2.writev(fd, buffers, ...args);
     }
-    return new Promise((resolve, reject2) => {
+    return new Promise((resolve, reject) => {
       fs2.writev(fd, buffers, ...args, (err, bytesWritten, buffers2) => {
-        if (err) return reject2(err);
+        if (err) return reject(err);
         resolve({ bytesWritten, buffers: buffers2 });
       });
     });
@@ -6964,10 +6964,6 @@ function registerCommandHandlers() {
         currentProcess = null;
         event.sender.send("command-finished", code);
         resolve(code);
-      });
-      currentProcess.on("error", (err) => {
-        currentProcess = null;
-        reject(err);
       });
     });
   });

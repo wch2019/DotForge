@@ -49,6 +49,15 @@ export const routes: RouteRecordRaw[] = [
         },
     },
     {
+        path: '/project/logs',
+        name: 'ProjectLogsList',
+        component: () => import('@/views/project/logsList.vue'),
+        meta: {
+            title: '构建日志列表',
+            showInMenu: false,
+        },
+    },
+    {
         path:'/setting',
         name: 'Setting',
         component: () => import('@/views/setting/index.vue'),
