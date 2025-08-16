@@ -155,12 +155,18 @@
               <n-icon size="16" class="detail-icon">
                 <PricetagsOutline/>
               </n-icon>
-              <span class="detail-text">类型：<n-tag :bordered="false" type="info">{{ project.tag || '未知' }}</n-tag></span>
+              <span class="detail-text">标签：<n-tag :bordered="false" type="info">{{ project.tag || '未知' }}</n-tag></span>
+            </div>
+            <div class="detail-item">
+              <n-icon size="16" class="detail-icon">
+                <DocumentTextOutline/>
+              </n-icon>
+              <span class="detail-text">描述：{{ project.description }}</span>
             </div>
           </div>
 
           <div class="project-actions">
-            <n-button size="small" type="primary" @click="build(project)" class="action-btn" :disabled="project.status === 'building'">
+            <n-button size="small" type="primary" @click="build(project)" class="action-btn" >
               <template #icon>
                 <n-icon>
                   <PlayOutline/>

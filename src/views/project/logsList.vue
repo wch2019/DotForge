@@ -45,33 +45,36 @@
           </div>
           <div class="list-filters">
             <n-select
-              v-model:value="statusFilter"
-              placeholder="构建状态"
-              :options="statusOptions"
-              size="medium"
-              clearable
-              class="filter-select"
+                v-model:value="statusFilter"
+                placeholder="构建状态"
+                :options="statusOptions"
+                size="medium"
+                clearable
+                class="filter-select"
             />
-            <n-date-picker
-              v-model:value="dateRange"
-              type="daterange"
-              placeholder="构建时间范围"
-              size="medium"
-              clearable
-              class="filter-date"
-            />
+            <n-config-provider :locale="zhCN">
+              <n-date-picker
+                  v-model:value="dateRange"
+                  type="daterange"
+                  placeholder="构建时间范围"
+                  size="medium"
+                  clearable
+                  class="filter-date"
+              />
+            </n-config-provider>
           </div>
         </div>
 
         <div class="logs-table">
           <n-data-table
-            :columns="columns"
-            :data="filteredLogs"
-            :pagination="pagination"
-            :bordered="false"
-            :single-line="false"
-            size="medium"
-            class="logs-data-table"
+              :columns="columns"
+              :data="filteredLogs"
+              :pagination="pagination"
+              :bordered="false"
+              :single-line="false"
+              :style="{ height: `calc(100vh - 300px)` }"
+              flex-height
+              size="medium"
           />
         </div>
 
@@ -100,10 +103,10 @@
               <h2 class="detail-title">构建日志详情</h2>
               <div class="detail-status">
                 <n-tag
-                  :type="getStatusType(selectedLog.status)"
-                  size="medium"
-                  round
-                  :bordered="false"
+                    :type="getStatusType(selectedLog.status)"
+                    size="medium"
+                    round
+                    :bordered="false"
                 >
                   <template #icon>
                     <n-icon v-if="selectedLog.status === 'building'">
@@ -151,7 +154,8 @@
               <p class="empty-text">暂无日志内容</p>
             </div>
             <div v-else class="log-lines">
-              <div v-for="(line, index) in selectedLog.logs" :key="index" class="log-line" :class="getLogLineClass(line)">
+              <div v-for="(line, index) in selectedLog.logs" :key="index" class="log-line"
+                   :class="getLogLineClass(line)">
                 <span class="line-number">{{ index + 1 }}</span>
                 <span class="line-content" v-html="formatLogLine(line)"></span>
               </div>
@@ -164,14 +168,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, nextTick, h } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { NButton, NIcon, NTag, NSelect, NDatePicker, NDataTable, useMessage } from 'naive-ui'
+import {ref, computed, onMounted, nextTick, h} from 'vue'
+import {useRoute, useRouter} from 'vue-router'
+import {NButton, NIcon, NTag, NSelect, NDatePicker, NDataTable, NConfigProvider, zhCN, useMessage} from 'naive-ui'
 import {
   ArrowBackOutline, DocumentTextOutline, RefreshOutline, SyncOutline,
   CheckmarkCircleOutline, CloseCircleOutline, DownloadOutline, CopyOutline
 } from '@vicons/ionicons5'
-import type { BuildLog } from '@/types/buildLog'
+import type {BuildLog} from '@/types/buildLog'
 
 const router = useRouter()
 const route = useRoute()
@@ -193,9 +197,7 @@ const dateRange = ref<[number, number] | null>(null)
 // 分页配置
 const pagination = ref({
   page: 1,
-  pageSize: 20,
-  showSizePicker: true,
-  pageSizes: [10, 20, 50, 100],
+  pageSize: 10,
   onChange: (page: number) => {
     pagination.value.page = page
   },
@@ -207,9 +209,9 @@ const pagination = ref({
 
 // 状态选项
 const statusOptions = [
-  { label: '构建中', value: 'building' },
-  { label: '构建成功', value: 'success' },
-  { label: '构建失败', value: 'failed' }
+  {label: '构建中', value: 'building'},
+  {label: '构建成功', value: 'success'},
+  {label: '构建失败', value: 'failed'}
 ]
 
 // 表格列定义
@@ -217,12 +219,14 @@ const columns = [
   {
     title: '构建时间',
     key: 'startTime',
+    align: 'center',
     width: 180,
     render: (row: any) => formatBuildTime(row.startTime)
   },
   {
     title: '构建状态',
     key: 'status',
+    align: 'center',
     width: 120,
     render: (row: any) => {
       const statusType = getStatusType(row.status)
@@ -233,7 +237,7 @@ const columns = [
         round: true,
         bordered: false
       }, {
-        icon: () => row.status === 'building' ? h(SyncOutline, { class: 'spinning' }) : null,
+        icon: () => row.status === 'building' ? h(SyncOutline, {class: 'spinning'}) : null,
         default: () => statusText
       })
     }
@@ -241,6 +245,7 @@ const columns = [
   {
     title: '构建时长',
     key: 'duration',
+    align: 'center',
     width: 120,
     render: (row: any) => {
       if (row.status === 'building') return '进行中...'
@@ -254,15 +259,16 @@ const columns = [
   {
     title: '操作',
     key: 'actions',
+    align: 'center',
     width: 120,
     render: (row: any) => {
-      return h('div', { class: 'action-buttons' }, [
+      return h('div', {class: 'action-buttons'}, [
         h(NButton, {
           size: 'small',
           type: 'primary',
           ghost: true,
           onClick: () => viewLogDetail(row)
-        }, { default: () => '查看详情' })
+        }, {default: () => '查看详情'})
       ])
     }
   }
@@ -292,20 +298,28 @@ const filteredLogs = computed(() => {
 // 获取状态类型
 function getStatusType(status: string) {
   switch (status) {
-    case 'success': return 'success'
-    case 'failed': return 'error'
-    case 'building': return 'warning'
-    default: return 'default'
+    case 'success':
+      return 'success'
+    case 'failed':
+      return 'error'
+    case 'building':
+      return 'warning'
+    default:
+      return 'default'
   }
 }
 
 // 获取状态文本
 function getStatusText(status: string) {
   switch (status) {
-    case 'success': return '构建成功'
-    case 'failed': return '构建失败'
-    case 'building': return '构建中'
-    default: return '未知状态'
+    case 'success':
+      return '构建成功'
+    case 'failed':
+      return '构建失败'
+    case 'building':
+      return '构建中'
+    default:
+      return '未知状态'
   }
 }
 
@@ -359,7 +373,7 @@ function exportLog() {
   if (!selectedLog.value?.logs?.length) return
 
   const logText = selectedLog.value.logs.join('\n')
-  const blob = new Blob([logText], { type: 'text/plain' })
+  const blob = new Blob([logText], {type: 'text/plain'})
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
@@ -388,10 +402,10 @@ async function copyLog() {
 // 格式化日志行
 function formatLogLine(line: string) {
   return line
-    .replace(/\[INFO\]/g, '<span style="color: #22c55e">[INFO]</span>')
-    .replace(/\[ERROR\]/g, '<span style="color: #ef4444">[ERROR]</span>')
-    .replace(/\[WARNING\]/g, '<span style="color: #f59e0b">[WARNING]</span>')
-    .replace(/\[SUCCESS\]/g, '<span style="color: #22c55e">[SUCCESS]</span>')
+      .replace(/\[INFO\]/g, '<span style="color: #22c55e">[INFO]</span>')
+      .replace(/\[ERROR\]/g, '<span style="color: #ef4444">[ERROR]</span>')
+      .replace(/\[WARNING\]/g, '<span style="color: #f59e0b">[WARNING]</span>')
+      .replace(/\[SUCCESS\]/g, '<span style="color: #22c55e">[SUCCESS]</span>')
 }
 
 // 获取日志行样式类
@@ -450,7 +464,55 @@ function loadBuildLogs() {
       projectName: projectName.value,
       status: 'building',
       startTime: Date.now() - 300000,  // 5分钟前
-             endTime: undefined,
+      endTime: undefined,
+      logs: [
+        '[INFO] 开始构建项目...',
+        '[INFO] 获取项目路径...',
+        '[INFO] 执行构建命令...'
+      ]
+    }, {
+      id: 3,
+      projectId: projectId.value,
+      projectName: projectName.value,
+      status: 'building',
+      startTime: Date.now() - 300000,  // 5分钟前
+      endTime: undefined,
+      logs: [
+        '[INFO] 开始构建项目...',
+        '[INFO] 获取项目路径...',
+        '[INFO] 执行构建命令...'
+      ]
+    }, {
+      id: 3,
+      projectId: projectId.value,
+      projectName: projectName.value,
+      status: 'building',
+      startTime: Date.now() - 300000,  // 5分钟前
+      endTime: undefined,
+      logs: [
+        '[INFO] 开始构建项目...',
+        '[INFO] 获取项目路径...',
+        '[INFO] 执行构建命令...'
+      ]
+    }, {
+      id: 3,
+      projectId: projectId.value,
+      projectName: projectName.value,
+      status: 'building',
+      startTime: Date.now() - 300000,  // 5分钟前
+      endTime: undefined,
+      logs: [
+        '[INFO] 开始构建项目...',
+        '[INFO] 获取项目路径...',
+        '[INFO] 执行构建命令...'
+      ]
+    }, {
+      id: 3,
+      projectId: projectId.value,
+      projectName: projectName.value,
+      status: 'building',
+      startTime: Date.now() - 300000,  // 5分钟前
+      endTime: undefined,
       logs: [
         '[INFO] 开始构建项目...',
         '[INFO] 获取项目路径...',
@@ -467,7 +529,8 @@ onMounted(() => {
 
 <style scoped>
 .logs-list-page {
-  background: #f5f7fa;
+  background: var(--content-bg);
+  min-height: var(--content-height);
   height: var(--content-height);
   padding: 16px;
 }
@@ -475,8 +538,9 @@ onMounted(() => {
 .logs-container {
   max-width: 1200px;
   margin: 0 auto;
-  background: white;
+  background: var(--content-bg);
   border-radius: 12px;
+  border: 1px solid var(--n-border-color);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   overflow: hidden;
 }
@@ -539,6 +603,7 @@ onMounted(() => {
 
 /* 日志列表视图 */
 .logs-list-view {
+  height: calc(100vh - 200px);
   padding: 24px;
 }
 
@@ -565,16 +630,11 @@ onMounted(() => {
 }
 
 .filter-date {
-  width: 200px;
+  width: 250px;
 }
 
 .logs-table {
-  margin-bottom: 24px;
-}
-
-.logs-data-table {
-  border-radius: 8px;
-  overflow: hidden;
+  height: calc(100vh - 300px);
 }
 
 .action-buttons {

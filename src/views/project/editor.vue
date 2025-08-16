@@ -335,7 +335,6 @@ const deployMethods = [
 
 const tags = [
   {label: 'Java', value: 'java'},
-  {label: 'Vue', value: 'vue'},
   {label: 'Node', value: 'node'},
   {label: 'Python', value: 'python'},
   {label: 'Go', value: 'go'},

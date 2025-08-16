@@ -64,7 +64,7 @@ export const defaultProjectData: ProjectData = {
     localPath: '',
     description: '',
     tag: 'java',
-    buildCmd: 'mvn clean package',
+    buildCmd: '',
     outputDir: '',
     deployMethod: 'none',
     dockerfilePath: './Dockerfile',
