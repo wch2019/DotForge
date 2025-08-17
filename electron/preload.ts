@@ -1,6 +1,6 @@
 import {ipcRenderer, contextBridge} from 'electron'
-import {type AppConfig} from '../shared/default-config'
-import {ProjectData} from "./db/types/project.ts";
+import {type AppConfig} from '@/types/defaultConfig.ts'
+import {ProjectData} from "@/types/project.ts";
 
 // --------- Expose some API to the Renderer process ---------
 contextBridge.exposeInMainWorld('ipcRenderer', {
@@ -46,5 +46,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
     runCommand: (cmd: string, options: any) => ipcRenderer.invoke('run-command', cmd, options),
     stopCommand: () => ipcRenderer.invoke('stop-command'),
     onCommandOutput: (callback: any) => ipcRenderer.on('command-output', (_, data) => callback(data)),
-    onCommandFinished: (callback: any) => ipcRenderer.on('command-finished', (_, code) => callback(code))
+    onCommandFinished: (callback: any) => ipcRenderer.on('command-finished', (_, code) => callback(code)),
+    // 构建日志相关
+    getBuildLogs: () => ipcRenderer.invoke('build:getAll'),
+    getBuildLogById: (id: number) => ipcRenderer.invoke('build:getById', id),
+    createBuildLog: (logData: any) => ipcRenderer.invoke('build:create', logData),
+    updateBuildLog: (id: number, logData: any) => ipcRenderer.invoke('build:update', id, logData),
+    deleteBuildLog: (id: number) => ipcRenderer.invoke('build:delete', id),
 })

@@ -234,7 +234,7 @@ import {
   FilterOutline, TimeOutline, DocumentTextOutline,
   CreateOutline, TrashOutline, PricetagsOutline
 } from '@vicons/ionicons5'
-import {ProjectData} from "../../../electron/db/types/project.ts";
+import {ProjectData} from "../../types/project.ts";
 const dialog = useDialog()
 
 // 搜索关键词

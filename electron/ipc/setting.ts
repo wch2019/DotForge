@@ -2,7 +2,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import fse from 'fs-extra'
 import {app, ipcMain} from 'electron'
-import {defaultConfig, type AppConfig} from '../../shared/default-config'
+import {defaultConfig, type AppConfig} from '../../src/types/defaultConfig.ts'
 
 // 设置文件名称
 const CONFIG_FILE_NAME = 'config.json'

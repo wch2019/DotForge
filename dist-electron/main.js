@@ -2027,100 +2027,6 @@ function is(value, type) {
   return false;
 }
 _a = entityKind;
-class ConsoleLogWriter {
-  write(message) {
-    console.log(message);
-  }
-}
-__publicField(ConsoleLogWriter, _a, "ConsoleLogWriter");
-_b = entityKind;
-class DefaultLogger {
-  constructor(config) {
-    __publicField(this, "writer");
-    this.writer = (config == null ? void 0 : config.writer) ?? new ConsoleLogWriter();
-  }
-  logQuery(query, params) {
-    const stringifiedParams = params.map((p) => {
-      try {
-        return JSON.stringify(p);
-      } catch {
-        return String(p);
-      }
-    });
-    const paramsStr = stringifiedParams.length ? ` -- params: [${stringifiedParams.join(", ")}]` : "";
-    this.writer.write(`Query: ${query}${paramsStr}`);
-  }
-}
-__publicField(DefaultLogger, _b, "DefaultLogger");
-_c = entityKind;
-class NoopLogger {
-  logQuery() {
-  }
-}
-__publicField(NoopLogger, _c, "NoopLogger");
-const TableName = Symbol.for("drizzle:Name");
-const Schema = Symbol.for("drizzle:Schema");
-const Columns = Symbol.for("drizzle:Columns");
-const ExtraConfigColumns = Symbol.for("drizzle:ExtraConfigColumns");
-const OriginalName = Symbol.for("drizzle:OriginalName");
-const BaseName = Symbol.for("drizzle:BaseName");
-const IsAlias = Symbol.for("drizzle:IsAlias");
-const ExtraConfigBuilder = Symbol.for("drizzle:ExtraConfigBuilder");
-const IsDrizzleTable = Symbol.for("drizzle:IsDrizzleTable");
-_m = entityKind, _l = TableName, _k = OriginalName, _j = Schema, _i = Columns, _h = ExtraConfigColumns, _g = BaseName, _f = IsAlias, _e = IsDrizzleTable, _d = ExtraConfigBuilder;
-class Table {
-  constructor(name, schema2, baseName) {
-    /**
-     * @internal
-     * Can be changed if the table is aliased.
-     */
-    __publicField(this, _l);
-    /**
-     * @internal
-     * Used to store the original name of the table, before any aliasing.
-     */
-    __publicField(this, _k);
-    /** @internal */
-    __publicField(this, _j);
-    /** @internal */
-    __publicField(this, _i);
-    /** @internal */
-    __publicField(this, _h);
-    /**
-     *  @internal
-     * Used to store the table name before the transformation via the `tableCreator` functions.
-     */
-    __publicField(this, _g);
-    /** @internal */
-    __publicField(this, _f, false);
-    /** @internal */
-    __publicField(this, _e, true);
-    /** @internal */
-    __publicField(this, _d);
-    this[TableName] = this[OriginalName] = name;
-    this[Schema] = schema2;
-    this[BaseName] = baseName;
-  }
-}
-__publicField(Table, _m, "Table");
-/** @internal */
-__publicField(Table, "Symbol", {
-  Name: TableName,
-  Schema,
-  OriginalName,
-  Columns,
-  ExtraConfigColumns,
-  BaseName,
-  IsAlias,
-  ExtraConfigBuilder
-});
-function getTableName(table) {
-  return table[TableName];
-}
-function getTableUniqueName(table) {
-  return `${table[Schema] ?? "public"}.${table[TableName]}`;
-}
-_n = entityKind;
 class Column {
   constructor(table, config) {
     __publicField(this, "name");
@@ -2169,8 +2075,8 @@ class Column {
     return this.config.generated !== void 0 && this.config.generated.type !== "byDefault";
   }
 }
-__publicField(Column, _n, "Column");
-_o = entityKind;
+__publicField(Column, _a, "Column");
+_b = entityKind;
 class ColumnBuilder {
   constructor(name, dataType, columnType) {
     __publicField(this, "config");
@@ -2271,12 +2177,13 @@ class ColumnBuilder {
     this.config.name = name;
   }
 }
-__publicField(ColumnBuilder, _o, "ColumnBuilder");
+__publicField(ColumnBuilder, _b, "ColumnBuilder");
+const TableName = Symbol.for("drizzle:Name");
 const isPgEnumSym = Symbol.for("drizzle:isPgEnum");
 function isPgEnum(obj) {
   return !!obj && typeof obj === "function" && isPgEnumSym in obj && obj[isPgEnumSym] === true;
 }
-_p = entityKind;
+_c = entityKind;
 class Subquery {
   constructor(sql2, fields, alias, isWith = false, usedTables = []) {
     this._ = {
@@ -2292,10 +2199,10 @@ class Subquery {
   // 	return new SQL([this]);
   // }
 }
-__publicField(Subquery, _p, "Subquery");
-class WithSubquery extends (_r = Subquery, _q = entityKind, _r) {
+__publicField(Subquery, _c, "Subquery");
+class WithSubquery extends (_e = Subquery, _d = entityKind, _e) {
 }
-__publicField(WithSubquery, _q, "WithSubquery");
+__publicField(WithSubquery, _d, "WithSubquery");
 const tracer = {
   startActiveSpan(name, fn) {
     {
@@ -2304,6 +2211,67 @@ const tracer = {
   }
 };
 const ViewBaseConfig = Symbol.for("drizzle:ViewBaseConfig");
+const Schema = Symbol.for("drizzle:Schema");
+const Columns = Symbol.for("drizzle:Columns");
+const ExtraConfigColumns = Symbol.for("drizzle:ExtraConfigColumns");
+const OriginalName = Symbol.for("drizzle:OriginalName");
+const BaseName = Symbol.for("drizzle:BaseName");
+const IsAlias = Symbol.for("drizzle:IsAlias");
+const ExtraConfigBuilder = Symbol.for("drizzle:ExtraConfigBuilder");
+const IsDrizzleTable = Symbol.for("drizzle:IsDrizzleTable");
+_o = entityKind, _n = TableName, _m = OriginalName, _l = Schema, _k = Columns, _j = ExtraConfigColumns, _i = BaseName, _h = IsAlias, _g = IsDrizzleTable, _f = ExtraConfigBuilder;
+class Table {
+  constructor(name, schema2, baseName) {
+    /**
+     * @internal
+     * Can be changed if the table is aliased.
+     */
+    __publicField(this, _n);
+    /**
+     * @internal
+     * Used to store the original name of the table, before any aliasing.
+     */
+    __publicField(this, _m);
+    /** @internal */
+    __publicField(this, _l);
+    /** @internal */
+    __publicField(this, _k);
+    /** @internal */
+    __publicField(this, _j);
+    /**
+     *  @internal
+     * Used to store the table name before the transformation via the `tableCreator` functions.
+     */
+    __publicField(this, _i);
+    /** @internal */
+    __publicField(this, _h, false);
+    /** @internal */
+    __publicField(this, _g, true);
+    /** @internal */
+    __publicField(this, _f);
+    this[TableName] = this[OriginalName] = name;
+    this[Schema] = schema2;
+    this[BaseName] = baseName;
+  }
+}
+__publicField(Table, _o, "Table");
+/** @internal */
+__publicField(Table, "Symbol", {
+  Name: TableName,
+  Schema,
+  OriginalName,
+  Columns,
+  ExtraConfigColumns,
+  BaseName,
+  IsAlias,
+  ExtraConfigBuilder
+});
+function getTableName(table) {
+  return table[TableName];
+}
+function getTableUniqueName(table) {
+  return `${table[Schema] ?? "public"}.${table[TableName]}`;
+}
 function isSQLWrapper(value) {
   return value !== null && value !== void 0 && typeof value.getSQL === "function";
 }
@@ -2322,7 +2290,7 @@ function mergeQueries(queries) {
   }
   return result;
 }
-_s = entityKind;
+_p = entityKind;
 class StringChunk {
   constructor(value) {
     __publicField(this, "value");
@@ -2332,8 +2300,8 @@ class StringChunk {
     return new SQL([this]);
   }
 }
-__publicField(StringChunk, _s, "StringChunk");
-_t = entityKind;
+__publicField(StringChunk, _p, "StringChunk");
+_q = entityKind;
 const _SQL = class _SQL {
   constructor(queryChunks) {
     /** @internal */
@@ -2535,9 +2503,9 @@ const _SQL = class _SQL {
     return condition ? this : void 0;
   }
 };
-__publicField(_SQL, _t, "SQL");
+__publicField(_SQL, _q, "SQL");
 let SQL = _SQL;
-_u = entityKind;
+_r = entityKind;
 class Name {
   constructor(value) {
     __publicField(this, "brand");
@@ -2547,7 +2515,7 @@ class Name {
     return new SQL([this]);
   }
 }
-__publicField(Name, _u, "Name");
+__publicField(Name, _r, "Name");
 function isDriverValueEncoder(value) {
   return typeof value === "object" && value !== null && "mapToDriverValue" in value && typeof value.mapToDriverValue === "function";
 }
@@ -2561,7 +2529,7 @@ const noopEncoder = {
   ...noopDecoder,
   ...noopEncoder
 });
-_v = entityKind;
+_s = entityKind;
 class Param {
   /**
    * @param value - Parameter value
@@ -2576,7 +2544,7 @@ class Param {
     return new SQL([this]);
   }
 }
-__publicField(Param, _v, "Param");
+__publicField(Param, _s, "Param");
 function sql(strings, ...params) {
   const queryChunks = [];
   if (params.length > 0 || strings.length > 0 && strings[0] !== "") {
@@ -2646,7 +2614,7 @@ function sql(strings, ...params) {
   let Aliased = _Aliased;
   SQL2.Aliased = Aliased;
 })(SQL || (SQL = {}));
-_w = entityKind;
+_t = entityKind;
 class Placeholder {
   constructor(name2) {
     this.name = name2;
@@ -2655,7 +2623,7 @@ class Placeholder {
     return new SQL([this]);
   }
 }
-__publicField(Placeholder, _w, "Placeholder");
+__publicField(Placeholder, _t, "Placeholder");
 function fillPlaceholders(params, values) {
   return params.map((p) => {
     if (is(p, Placeholder)) {
@@ -2674,13 +2642,13 @@ function fillPlaceholders(params, values) {
   });
 }
 const IsDrizzleView = Symbol.for("drizzle:IsDrizzleView");
-_z = entityKind, _y = ViewBaseConfig, _x = IsDrizzleView;
+_w = entityKind, _v = ViewBaseConfig, _u = IsDrizzleView;
 class View {
   constructor({ name: name2, schema: schema2, selectedFields, query }) {
     /** @internal */
-    __publicField(this, _y);
+    __publicField(this, _v);
     /** @internal */
-    __publicField(this, _x, true);
+    __publicField(this, _u, true);
     this[ViewBaseConfig] = {
       name: name2,
       originalName: name2,
@@ -2695,7 +2663,7 @@ class View {
     return new SQL([this]);
   }
 }
-__publicField(View, _z, "View");
+__publicField(View, _w, "View");
 Column.prototype.getSQL = function() {
   return new SQL([this]);
 };
@@ -2705,6 +2673,90 @@ Table.prototype.getSQL = function() {
 Subquery.prototype.getSQL = function() {
   return new SQL([this]);
 };
+_x = entityKind;
+class ColumnAliasProxyHandler {
+  constructor(table) {
+    this.table = table;
+  }
+  get(columnObj, prop) {
+    if (prop === "table") {
+      return this.table;
+    }
+    return columnObj[prop];
+  }
+}
+__publicField(ColumnAliasProxyHandler, _x, "ColumnAliasProxyHandler");
+_y = entityKind;
+class TableAliasProxyHandler {
+  constructor(alias, replaceOriginalName) {
+    this.alias = alias;
+    this.replaceOriginalName = replaceOriginalName;
+  }
+  get(target, prop) {
+    if (prop === Table.Symbol.IsAlias) {
+      return true;
+    }
+    if (prop === Table.Symbol.Name) {
+      return this.alias;
+    }
+    if (this.replaceOriginalName && prop === Table.Symbol.OriginalName) {
+      return this.alias;
+    }
+    if (prop === ViewBaseConfig) {
+      return {
+        ...target[ViewBaseConfig],
+        name: this.alias,
+        isAlias: true
+      };
+    }
+    if (prop === Table.Symbol.Columns) {
+      const columns = target[Table.Symbol.Columns];
+      if (!columns) {
+        return columns;
+      }
+      const proxiedColumns = {};
+      Object.keys(columns).map((key) => {
+        proxiedColumns[key] = new Proxy(
+          columns[key],
+          new ColumnAliasProxyHandler(new Proxy(target, this))
+        );
+      });
+      return proxiedColumns;
+    }
+    const value = target[prop];
+    if (is(value, Column)) {
+      return new Proxy(value, new ColumnAliasProxyHandler(new Proxy(target, this)));
+    }
+    return value;
+  }
+}
+__publicField(TableAliasProxyHandler, _y, "TableAliasProxyHandler");
+function aliasedTable(table, tableAlias) {
+  return new Proxy(table, new TableAliasProxyHandler(tableAlias, false));
+}
+function aliasedTableColumn(column, tableAlias) {
+  return new Proxy(
+    column,
+    new ColumnAliasProxyHandler(new Proxy(column.table, new TableAliasProxyHandler(tableAlias, false)))
+  );
+}
+function mapColumnsInAliasedSQLToAlias(query, alias) {
+  return new SQL.Aliased(mapColumnsInSQLToAlias(query.sql, alias), query.fieldAlias);
+}
+function mapColumnsInSQLToAlias(query, alias) {
+  return sql.join(query.queryChunks.map((c) => {
+    if (is(c, Column)) {
+      return aliasedTableColumn(c, alias);
+    }
+    if (is(c, SQL)) {
+      return mapColumnsInSQLToAlias(c, alias);
+    }
+    if (is(c, SQL.Aliased)) {
+      return mapColumnsInAliasedSQLToAlias(c, alias);
+    }
+    return c;
+  }));
+}
 function mapResultRow(columns, row, joinsNotNullableMap) {
   const nullifyMap = {};
   const result = columns.reduce(
@@ -2851,28 +2903,891 @@ function isConfig(data) {
   if (Object.keys(data).length === 0) return true;
   return false;
 }
-const InlineForeignKeys$1 = Symbol.for("drizzle:PgInlineForeignKeys");
+_z = entityKind;
+class ForeignKeyBuilder {
+  constructor(config, actions) {
+    /** @internal */
+    __publicField(this, "reference");
+    /** @internal */
+    __publicField(this, "_onUpdate");
+    /** @internal */
+    __publicField(this, "_onDelete");
+    this.reference = () => {
+      const { name, columns, foreignColumns } = config();
+      return { name, columns, foreignTable: foreignColumns[0].table, foreignColumns };
+    };
+    if (actions) {
+      this._onUpdate = actions.onUpdate;
+      this._onDelete = actions.onDelete;
+    }
+  }
+  onUpdate(action) {
+    this._onUpdate = action;
+    return this;
+  }
+  onDelete(action) {
+    this._onDelete = action;
+    return this;
+  }
+  /** @internal */
+  build(table) {
+    return new ForeignKey(table, this);
+  }
+}
+__publicField(ForeignKeyBuilder, _z, "SQLiteForeignKeyBuilder");
+_A = entityKind;
+class ForeignKey {
+  constructor(table, builder) {
+    __publicField(this, "reference");
+    __publicField(this, "onUpdate");
+    __publicField(this, "onDelete");
+    this.table = table;
+    this.reference = builder.reference;
+    this.onUpdate = builder._onUpdate;
+    this.onDelete = builder._onDelete;
+  }
+  getName() {
+    const { name, columns, foreignColumns } = this.reference();
+    const columnNames = columns.map((column) => column.name);
+    const foreignColumnNames = foreignColumns.map((column) => column.name);
+    const chunks = [
+      this.table[TableName],
+      ...columnNames,
+      foreignColumns[0].table[TableName],
+      ...foreignColumnNames
+    ];
+    return name ?? `${chunks.join("_")}_fk`;
+  }
+}
+__publicField(ForeignKey, _A, "SQLiteForeignKey");
+function uniqueKeyName(table, columns) {
+  return `${table[TableName]}_${columns.join("_")}_unique`;
+}
+class SQLiteColumnBuilder extends (_C = ColumnBuilder, _B = entityKind, _C) {
+  constructor() {
+    super(...arguments);
+    __publicField(this, "foreignKeyConfigs", []);
+  }
+  references(ref, actions = {}) {
+    this.foreignKeyConfigs.push({ ref, actions });
+    return this;
+  }
+  unique(name) {
+    this.config.isUnique = true;
+    this.config.uniqueName = name;
+    return this;
+  }
+  generatedAlwaysAs(as, config) {
+    this.config.generated = {
+      as,
+      type: "always",
+      mode: (config == null ? void 0 : config.mode) ?? "virtual"
+    };
+    return this;
+  }
+  /** @internal */
+  buildForeignKeys(column, table) {
+    return this.foreignKeyConfigs.map(({ ref, actions }) => {
+      return ((ref2, actions2) => {
+        const builder = new ForeignKeyBuilder(() => {
+          const foreignColumn = ref2();
+          return { columns: [column], foreignColumns: [foreignColumn] };
+        });
+        if (actions2.onUpdate) {
+          builder.onUpdate(actions2.onUpdate);
+        }
+        if (actions2.onDelete) {
+          builder.onDelete(actions2.onDelete);
+        }
+        return builder.build(table);
+      })(ref, actions);
+    });
+  }
+}
+__publicField(SQLiteColumnBuilder, _B, "SQLiteColumnBuilder");
+class SQLiteColumn extends (_E = Column, _D = entityKind, _E) {
+  constructor(table, config) {
+    if (!config.uniqueName) {
+      config.uniqueName = uniqueKeyName(table, [config.name]);
+    }
+    super(table, config);
+    this.table = table;
+  }
+}
+__publicField(SQLiteColumn, _D, "SQLiteColumn");
+class SQLiteBigIntBuilder extends (_G = SQLiteColumnBuilder, _F = entityKind, _G) {
+  constructor(name) {
+    super(name, "bigint", "SQLiteBigInt");
+  }
+  /** @internal */
+  build(table) {
+    return new SQLiteBigInt(table, this.config);
+  }
+}
+__publicField(SQLiteBigIntBuilder, _F, "SQLiteBigIntBuilder");
+class SQLiteBigInt extends (_I = SQLiteColumn, _H = entityKind, _I) {
+  getSQLType() {
+    return "blob";
+  }
+  mapFromDriverValue(value) {
+    if (Buffer.isBuffer(value)) {
+      return BigInt(value.toString());
+    }
+    if (value instanceof ArrayBuffer) {
+      const decoder = new TextDecoder();
+      return BigInt(decoder.decode(value));
+    }
+    return BigInt(String.fromCodePoint(...value));
+  }
+  mapToDriverValue(value) {
+    return Buffer.from(value.toString());
+  }
+}
+__publicField(SQLiteBigInt, _H, "SQLiteBigInt");
+class SQLiteBlobJsonBuilder extends (_K = SQLiteColumnBuilder, _J = entityKind, _K) {
+  constructor(name) {
+    super(name, "json", "SQLiteBlobJson");
+  }
+  /** @internal */
+  build(table) {
+    return new SQLiteBlobJson(
+      table,
+      this.config
+    );
+  }
+}
+__publicField(SQLiteBlobJsonBuilder, _J, "SQLiteBlobJsonBuilder");
+class SQLiteBlobJson extends (_M = SQLiteColumn, _L = entityKind, _M) {
+  getSQLType() {
+    return "blob";
+  }
+  mapFromDriverValue(value) {
+    if (Buffer.isBuffer(value)) {
+      return JSON.parse(value.toString());
+    }
+    if (value instanceof ArrayBuffer) {
+      const decoder = new TextDecoder();
+      return JSON.parse(decoder.decode(value));
+    }
+    return JSON.parse(String.fromCodePoint(...value));
+  }
+  mapToDriverValue(value) {
+    return Buffer.from(JSON.stringify(value));
+  }
+}
+__publicField(SQLiteBlobJson, _L, "SQLiteBlobJson");
+class SQLiteBlobBufferBuilder extends (_O = SQLiteColumnBuilder, _N = entityKind, _O) {
+  constructor(name) {
+    super(name, "buffer", "SQLiteBlobBuffer");
+  }
+  /** @internal */
+  build(table) {
+    return new SQLiteBlobBuffer(table, this.config);
+  }
+}
+__publicField(SQLiteBlobBufferBuilder, _N, "SQLiteBlobBufferBuilder");
+class SQLiteBlobBuffer extends (_Q = SQLiteColumn, _P = entityKind, _Q) {
+  mapFromDriverValue(value) {
+    if (Buffer.isBuffer(value)) {
+      return value;
+    }
+    return Buffer.from(value);
+  }
+  getSQLType() {
+    return "blob";
+  }
+}
+__publicField(SQLiteBlobBuffer, _P, "SQLiteBlobBuffer");
+function blob(a, b) {
+  const { name, config } = getColumnNameAndConfig(a, b);
+  if ((config == null ? void 0 : config.mode) === "json") {
+    return new SQLiteBlobJsonBuilder(name);
+  }
+  if ((config == null ? void 0 : config.mode) === "bigint") {
+    return new SQLiteBigIntBuilder(name);
+  }
+  return new SQLiteBlobBufferBuilder(name);
+}
+class SQLiteCustomColumnBuilder extends (_S = SQLiteColumnBuilder, _R = entityKind, _S) {
+  constructor(name, fieldConfig, customTypeParams) {
+    super(name, "custom", "SQLiteCustomColumn");
+    this.config.fieldConfig = fieldConfig;
+    this.config.customTypeParams = customTypeParams;
+  }
+  /** @internal */
+  build(table) {
+    return new SQLiteCustomColumn(
+      table,
+      this.config
+    );
+  }
+}
+__publicField(SQLiteCustomColumnBuilder, _R, "SQLiteCustomColumnBuilder");
+class SQLiteCustomColumn extends (_U = SQLiteColumn, _T = entityKind, _U) {
+  constructor(table, config) {
+    super(table, config);
+    __publicField(this, "sqlName");
+    __publicField(this, "mapTo");
+    __publicField(this, "mapFrom");
+    this.sqlName = config.customTypeParams.dataType(config.fieldConfig);
+    this.mapTo = config.customTypeParams.toDriver;
+    this.mapFrom = config.customTypeParams.fromDriver;
+  }
+  getSQLType() {
+    return this.sqlName;
+  }
+  mapFromDriverValue(value) {
+    return typeof this.mapFrom === "function" ? this.mapFrom(value) : value;
+  }
+  mapToDriverValue(value) {
+    return typeof this.mapTo === "function" ? this.mapTo(value) : value;
+  }
+}
+__publicField(SQLiteCustomColumn, _T, "SQLiteCustomColumn");
+function customType(customTypeParams) {
+  return (a, b) => {
+    const { name, config } = getColumnNameAndConfig(a, b);
+    return new SQLiteCustomColumnBuilder(
+      name,
+      config,
+      customTypeParams
+    );
+  };
+}
+class SQLiteBaseIntegerBuilder extends (_W = SQLiteColumnBuilder, _V = entityKind, _W) {
+  constructor(name, dataType, columnType) {
+    super(name, dataType, columnType);
+    this.config.autoIncrement = false;
+  }
+  primaryKey(config) {
+    if (config == null ? void 0 : config.autoIncrement) {
+      this.config.autoIncrement = true;
+    }
+    this.config.hasDefault = true;
+    return super.primaryKey();
+  }
+}
+__publicField(SQLiteBaseIntegerBuilder, _V, "SQLiteBaseIntegerBuilder");
+class SQLiteBaseInteger extends (_Y = SQLiteColumn, _X = entityKind, _Y) {
+  constructor() {
+    super(...arguments);
+    __publicField(this, "autoIncrement", this.config.autoIncrement);
+  }
+  getSQLType() {
+    return "integer";
+  }
+}
+__publicField(SQLiteBaseInteger, _X, "SQLiteBaseInteger");
+class SQLiteIntegerBuilder extends (__ = SQLiteBaseIntegerBuilder, _Z = entityKind, __) {
+  constructor(name) {
+    super(name, "number", "SQLiteInteger");
+  }
+  build(table) {
+    return new SQLiteInteger(
+      table,
+      this.config
+    );
+  }
+}
+__publicField(SQLiteIntegerBuilder, _Z, "SQLiteIntegerBuilder");
+class SQLiteInteger extends (_aa = SQLiteBaseInteger, _$ = entityKind, _aa) {
+}
+__publicField(SQLiteInteger, _$, "SQLiteInteger");
+class SQLiteTimestampBuilder extends (_ca = SQLiteBaseIntegerBuilder, _ba = entityKind, _ca) {
+  constructor(name, mode) {
+    super(name, "date", "SQLiteTimestamp");
+    this.config.mode = mode;
+  }
+  /**
+   * @deprecated Use `default()` with your own expression instead.
+   *
+   * Adds `DEFAULT (cast((julianday('now') - 2440587.5)*86400000 as integer))` to the column, which is the current epoch timestamp in milliseconds.
+   */
+  defaultNow() {
+    return this.default(sql`(cast((julianday('now') - 2440587.5)*86400000 as integer))`);
+  }
+  build(table) {
+    return new SQLiteTimestamp(
+      table,
+      this.config
+    );
+  }
+}
+__publicField(SQLiteTimestampBuilder, _ba, "SQLiteTimestampBuilder");
+class SQLiteTimestamp extends (_ea = SQLiteBaseInteger, _da = entityKind, _ea) {
+  constructor() {
+    super(...arguments);
+    __publicField(this, "mode", this.config.mode);
+  }
+  mapFromDriverValue(value) {
+    if (this.config.mode === "timestamp") {
+      return new Date(value * 1e3);
+    }
+    return new Date(value);
+  }
+  mapToDriverValue(value) {
+    const unix = value.getTime();
+    if (this.config.mode === "timestamp") {
+      return Math.floor(unix / 1e3);
+    }
+    return unix;
+  }
+}
+__publicField(SQLiteTimestamp, _da, "SQLiteTimestamp");
+class SQLiteBooleanBuilder extends (_ga = SQLiteBaseIntegerBuilder, _fa = entityKind, _ga) {
+  constructor(name, mode) {
+    super(name, "boolean", "SQLiteBoolean");
+    this.config.mode = mode;
+  }
+  build(table) {
+    return new SQLiteBoolean(
+      table,
+      this.config
+    );
+  }
+}
+__publicField(SQLiteBooleanBuilder, _fa, "SQLiteBooleanBuilder");
+class SQLiteBoolean extends (_ia = SQLiteBaseInteger, _ha = entityKind, _ia) {
+  constructor() {
+    super(...arguments);
+    __publicField(this, "mode", this.config.mode);
+  }
+  mapFromDriverValue(value) {
+    return Number(value) === 1;
+  }
+  mapToDriverValue(value) {
+    return value ? 1 : 0;
+  }
+}
+__publicField(SQLiteBoolean, _ha, "SQLiteBoolean");
+function integer(a, b) {
+  const { name, config } = getColumnNameAndConfig(a, b);
+  if ((config == null ? void 0 : config.mode) === "timestamp" || (config == null ? void 0 : config.mode) === "timestamp_ms") {
+    return new SQLiteTimestampBuilder(name, config.mode);
+  }
+  if ((config == null ? void 0 : config.mode) === "boolean") {
+    return new SQLiteBooleanBuilder(name, config.mode);
+  }
+  return new SQLiteIntegerBuilder(name);
+}
+class SQLiteNumericBuilder extends (_ka = SQLiteColumnBuilder, _ja = entityKind, _ka) {
+  constructor(name) {
+    super(name, "string", "SQLiteNumeric");
+  }
+  /** @internal */
+  build(table) {
+    return new SQLiteNumeric(
+      table,
+      this.config
+    );
+  }
+}
+__publicField(SQLiteNumericBuilder, _ja, "SQLiteNumericBuilder");
+class SQLiteNumeric extends (_ma = SQLiteColumn, _la = entityKind, _ma) {
+  mapFromDriverValue(value) {
+    if (typeof value === "string") return value;
+    return String(value);
+  }
+  getSQLType() {
+    return "numeric";
+  }
+}
+__publicField(SQLiteNumeric, _la, "SQLiteNumeric");
+class SQLiteNumericNumberBuilder extends (_oa = SQLiteColumnBuilder, _na = entityKind, _oa) {
+  constructor(name) {
+    super(name, "number", "SQLiteNumericNumber");
+  }
+  /** @internal */
+  build(table) {
+    return new SQLiteNumericNumber(
+      table,
+      this.config
+    );
+  }
+}
+__publicField(SQLiteNumericNumberBuilder, _na, "SQLiteNumericNumberBuilder");
+class SQLiteNumericNumber extends (_qa = SQLiteColumn, _pa = entityKind, _qa) {
+  constructor() {
+    super(...arguments);
+    __publicField(this, "mapToDriverValue", String);
+  }
+  mapFromDriverValue(value) {
+    if (typeof value === "number") return value;
+    return Number(value);
+  }
+  getSQLType() {
+    return "numeric";
+  }
+}
+__publicField(SQLiteNumericNumber, _pa, "SQLiteNumericNumber");
+class SQLiteNumericBigIntBuilder extends (_sa = SQLiteColumnBuilder, _ra = entityKind, _sa) {
+  constructor(name) {
+    super(name, "bigint", "SQLiteNumericBigInt");
+  }
+  /** @internal */
+  build(table) {
+    return new SQLiteNumericBigInt(
+      table,
+      this.config
+    );
+  }
+}
+__publicField(SQLiteNumericBigIntBuilder, _ra, "SQLiteNumericBigIntBuilder");
+class SQLiteNumericBigInt extends (_ua = SQLiteColumn, _ta = entityKind, _ua) {
+  constructor() {
+    super(...arguments);
+    __publicField(this, "mapFromDriverValue", BigInt);
+    __publicField(this, "mapToDriverValue", String);
+  }
+  getSQLType() {
+    return "numeric";
+  }
+}
+__publicField(SQLiteNumericBigInt, _ta, "SQLiteNumericBigInt");
+function numeric(a, b) {
+  const { name, config } = getColumnNameAndConfig(a, b);
+  const mode = config == null ? void 0 : config.mode;
+  return mode === "number" ? new SQLiteNumericNumberBuilder(name) : mode === "bigint" ? new SQLiteNumericBigIntBuilder(name) : new SQLiteNumericBuilder(name);
+}
+class SQLiteRealBuilder extends (_wa = SQLiteColumnBuilder, _va = entityKind, _wa) {
+  constructor(name) {
+    super(name, "number", "SQLiteReal");
+  }
+  /** @internal */
+  build(table) {
+    return new SQLiteReal(table, this.config);
+  }
+}
+__publicField(SQLiteRealBuilder, _va, "SQLiteRealBuilder");
+class SQLiteReal extends (_ya = SQLiteColumn, _xa = entityKind, _ya) {
+  getSQLType() {
+    return "real";
+  }
+}
+__publicField(SQLiteReal, _xa, "SQLiteReal");
+function real(name) {
+  return new SQLiteRealBuilder(name ?? "");
+}
+class SQLiteTextBuilder extends (_Aa = SQLiteColumnBuilder, _za = entityKind, _Aa) {
+  constructor(name, config) {
+    super(name, "string", "SQLiteText");
+    this.config.enumValues = config.enum;
+    this.config.length = config.length;
+  }
+  /** @internal */
+  build(table) {
+    return new SQLiteText(
+      table,
+      this.config
+    );
+  }
+}
+__publicField(SQLiteTextBuilder, _za, "SQLiteTextBuilder");
+class SQLiteText extends (_Ca = SQLiteColumn, _Ba = entityKind, _Ca) {
+  constructor(table, config) {
+    super(table, config);
+    __publicField(this, "enumValues", this.config.enumValues);
+    __publicField(this, "length", this.config.length);
+  }
+  getSQLType() {
+    return `text${this.config.length ? `(${this.config.length})` : ""}`;
+  }
+}
+__publicField(SQLiteText, _Ba, "SQLiteText");
+class SQLiteTextJsonBuilder extends (_Ea = SQLiteColumnBuilder, _Da = entityKind, _Ea) {
+  constructor(name) {
+    super(name, "json", "SQLiteTextJson");
+  }
+  /** @internal */
+  build(table) {
+    return new SQLiteTextJson(
+      table,
+      this.config
+    );
+  }
+}
+__publicField(SQLiteTextJsonBuilder, _Da, "SQLiteTextJsonBuilder");
+class SQLiteTextJson extends (_Ga = SQLiteColumn, _Fa = entityKind, _Ga) {
+  getSQLType() {
+    return "text";
+  }
+  mapFromDriverValue(value) {
+    return JSON.parse(value);
+  }
+  mapToDriverValue(value) {
+    return JSON.stringify(value);
+  }
+}
+__publicField(SQLiteTextJson, _Fa, "SQLiteTextJson");
+function text(a, b = {}) {
+  const { name, config } = getColumnNameAndConfig(a, b);
+  if (config.mode === "json") {
+    return new SQLiteTextJsonBuilder(name);
+  }
+  return new SQLiteTextBuilder(name, config);
+}
+_Ha = entityKind;
+const _SelectionProxyHandler = class _SelectionProxyHandler {
+  constructor(config) {
+    __publicField(this, "config");
+    this.config = { ...config };
+  }
+  get(subquery, prop) {
+    if (prop === "_") {
+      return {
+        ...subquery["_"],
+        selectedFields: new Proxy(
+          subquery._.selectedFields,
+          this
+        )
+      };
+    }
+    if (prop === ViewBaseConfig) {
+      return {
+        ...subquery[ViewBaseConfig],
+        selectedFields: new Proxy(
+          subquery[ViewBaseConfig].selectedFields,
+          this
+        )
+      };
+    }
+    if (typeof prop === "symbol") {
+      return subquery[prop];
+    }
+    const columns = is(subquery, Subquery) ? subquery._.selectedFields : is(subquery, View) ? subquery[ViewBaseConfig].selectedFields : subquery;
+    const value = columns[prop];
+    if (is(value, SQL.Aliased)) {
+      if (this.config.sqlAliasedBehavior === "sql" && !value.isSelectionField) {
+        return value.sql;
+      }
+      const newValue = value.clone();
+      newValue.isSelectionField = true;
+      return newValue;
+    }
+    if (is(value, SQL)) {
+      if (this.config.sqlBehavior === "sql") {
+        return value;
+      }
+      throw new Error(
+        `You tried to reference "${prop}" field from a subquery, which is a raw SQL field, but it doesn't have an alias declared. Please add an alias to the field using ".as('alias')" method.`
+      );
+    }
+    if (is(value, Column)) {
+      if (this.config.alias) {
+        return new Proxy(
+          value,
+          new ColumnAliasProxyHandler(
+            new Proxy(
+              value.table,
+              new TableAliasProxyHandler(this.config.alias, this.config.replaceOriginalName ?? false)
+            )
+          )
+        );
+      }
+      return value;
+    }
+    if (typeof value !== "object" || value === null) {
+      return value;
+    }
+    return new Proxy(value, new _SelectionProxyHandler(this.config));
+  }
+};
+__publicField(_SelectionProxyHandler, _Ha, "SelectionProxyHandler");
+let SelectionProxyHandler = _SelectionProxyHandler;
+_Ja = entityKind, _Ia = Symbol.toStringTag;
+class QueryPromise {
+  constructor() {
+    __publicField(this, _Ia, "QueryPromise");
+  }
+  catch(onRejected) {
+    return this.then(void 0, onRejected);
+  }
+  finally(onFinally) {
+    return this.then(
+      (value) => {
+        onFinally == null ? void 0 : onFinally();
+        return value;
+      },
+      (reason) => {
+        onFinally == null ? void 0 : onFinally();
+        throw reason;
+      }
+    );
+  }
+  then(onFulfilled, onRejected) {
+    return this.execute().then(onFulfilled, onRejected);
+  }
+}
+__publicField(QueryPromise, _Ja, "QueryPromise");
+function getSQLiteColumnBuilders() {
+  return {
+    blob,
+    customType,
+    integer,
+    numeric,
+    real,
+    text
+  };
+}
+const InlineForeignKeys$1 = Symbol.for("drizzle:SQLiteInlineForeignKeys");
+class SQLiteTable extends (_Oa = Table, _Na = entityKind, _Ma = Table.Symbol.Columns, _La = InlineForeignKeys$1, _Ka = Table.Symbol.ExtraConfigBuilder, _Oa) {
+  constructor() {
+    super(...arguments);
+    /** @internal */
+    __publicField(this, _Ma);
+    /** @internal */
+    __publicField(this, _La, []);
+    /** @internal */
+    __publicField(this, _Ka);
+  }
+}
+__publicField(SQLiteTable, _Na, "SQLiteTable");
+/** @internal */
+__publicField(SQLiteTable, "Symbol", Object.assign({}, Table.Symbol, {
+  InlineForeignKeys: InlineForeignKeys$1
+}));
+function sqliteTableBase(name, columns, extraConfig, schema2, baseName = name) {
+  const rawTable = new SQLiteTable(name, schema2, baseName);
+  const parsedColumns = typeof columns === "function" ? columns(getSQLiteColumnBuilders()) : columns;
+  const builtColumns = Object.fromEntries(
+    Object.entries(parsedColumns).map(([name2, colBuilderBase]) => {
+      const colBuilder = colBuilderBase;
+      colBuilder.setName(name2);
+      const column = colBuilder.build(rawTable);
+      rawTable[InlineForeignKeys$1].push(...colBuilder.buildForeignKeys(column, rawTable));
+      return [name2, column];
+    })
+  );
+  const table = Object.assign(rawTable, builtColumns);
+  table[Table.Symbol.Columns] = builtColumns;
+  table[Table.Symbol.ExtraConfigColumns] = builtColumns;
+  return table;
+}
+const sqliteTable = (name, columns, extraConfig) => {
+  return sqliteTableBase(name, columns);
+};
+function extractUsedTable(table) {
+  if (is(table, SQLiteTable)) {
+    return [`${table[Table.Symbol.BaseName]}`];
+  }
+  if (is(table, Subquery)) {
+    return table._.usedTables ?? [];
+  }
+  if (is(table, SQL)) {
+    return table.usedTables ?? [];
+  }
+  return [];
+}
+class SQLiteDeleteBase extends (_Qa = QueryPromise, _Pa = entityKind, _Qa) {
+  constructor(table, session, dialect, withList) {
+    super();
+    /** @internal */
+    __publicField(this, "config");
+    __publicField(this, "run", (placeholderValues) => {
+      return this._prepare().run(placeholderValues);
+    });
+    __publicField(this, "all", (placeholderValues) => {
+      return this._prepare().all(placeholderValues);
+    });
+    __publicField(this, "get", (placeholderValues) => {
+      return this._prepare().get(placeholderValues);
+    });
+    __publicField(this, "values", (placeholderValues) => {
+      return this._prepare().values(placeholderValues);
+    });
+    this.table = table;
+    this.session = session;
+    this.dialect = dialect;
+    this.config = { table, withList };
+  }
+  /**
+   * Adds a `where` clause to the query.
+   *
+   * Calling this method will delete only those rows that fulfill a specified condition.
+   *
+   * See docs: {@link https://orm.drizzle.team/docs/delete}
+   *
+   * @param where the `where` clause.
+   *
+   * @example
+   * You can use conditional operators and `sql function` to filter the rows to be deleted.
+   *
+   * ```ts
+   * // Delete all cars with green color
+   * db.delete(cars).where(eq(cars.color, 'green'));
+   * // or
+   * db.delete(cars).where(sql`${cars.color} = 'green'`)
+   * ```
+   *
+   * You can logically combine conditional operators with `and()` and `or()` operators:
+   *
+   * ```ts
+   * // Delete all BMW cars with a green color
+   * db.delete(cars).where(and(eq(cars.color, 'green'), eq(cars.brand, 'BMW')));
+   *
+   * // Delete all cars with the green or blue color
+   * db.delete(cars).where(or(eq(cars.color, 'green'), eq(cars.color, 'blue')));
+   * ```
+   */
+  where(where) {
+    this.config.where = where;
+    return this;
+  }
+  orderBy(...columns) {
+    if (typeof columns[0] === "function") {
+      const orderBy = columns[0](
+        new Proxy(
+          this.config.table[Table.Symbol.Columns],
+          new SelectionProxyHandler({ sqlAliasedBehavior: "alias", sqlBehavior: "sql" })
+        )
+      );
+      const orderByArray = Array.isArray(orderBy) ? orderBy : [orderBy];
+      this.config.orderBy = orderByArray;
+    } else {
+      const orderByArray = columns;
+      this.config.orderBy = orderByArray;
+    }
+    return this;
+  }
+  limit(limit) {
+    this.config.limit = limit;
+    return this;
+  }
+  returning(fields = this.table[SQLiteTable.Symbol.Columns]) {
+    this.config.returning = orderSelectedFields(fields);
+    return this;
+  }
+  /** @internal */
+  getSQL() {
+    return this.dialect.buildDeleteQuery(this.config);
+  }
+  toSQL() {
+    const { typings: _typings, ...rest } = this.dialect.sqlToQuery(this.getSQL());
+    return rest;
+  }
+  /** @internal */
+  _prepare(isOneTimeQuery = true) {
+    return this.session[isOneTimeQuery ? "prepareOneTimeQuery" : "prepareQuery"](
+      this.dialect.sqlToQuery(this.getSQL()),
+      this.config.returning,
+      this.config.returning ? "all" : "run",
+      true,
+      void 0,
+      {
+        type: "delete",
+        tables: extractUsedTable(this.config.table)
+      }
+    );
+  }
+  prepare() {
+    return this._prepare(false);
+  }
+  async execute(placeholderValues) {
+    return this._prepare().execute(placeholderValues);
+  }
+  $dynamic() {
+    return this;
+  }
+}
+__publicField(SQLiteDeleteBase, _Pa, "SQLiteDelete");
+function toSnakeCase(input) {
+  const words = input.replace(/['\u2019]/g, "").match(/[\da-z]+|[A-Z]+(?![a-z])|[A-Z][\da-z]+/g) ?? [];
+  return words.map((word) => word.toLowerCase()).join("_");
+}
+function toCamelCase(input) {
+  const words = input.replace(/['\u2019]/g, "").match(/[\da-z]+|[A-Z]+(?![a-z])|[A-Z][\da-z]+/g) ?? [];
+  return words.reduce((acc, word, i) => {
+    const formattedWord = i === 0 ? word.toLowerCase() : `${word[0].toUpperCase()}${word.slice(1)}`;
+    return acc + formattedWord;
+  }, "");
+}
+function noopCase(input) {
+  return input;
+}
+_Ra = entityKind;
+class CasingCache {
+  constructor(casing) {
+    /** @internal */
+    __publicField(this, "cache", {});
+    __publicField(this, "cachedTables", {});
+    __publicField(this, "convert");
+    this.convert = casing === "snake_case" ? toSnakeCase : casing === "camelCase" ? toCamelCase : noopCase;
+  }
+  getColumnCasing(column) {
+    if (!column.keyAsName) return column.name;
+    const schema2 = column.table[Table.Symbol.Schema] ?? "public";
+    const tableName = column.table[Table.Symbol.OriginalName];
+    const key = `${schema2}.${tableName}.${column.name}`;
+    if (!this.cache[key]) {
+      this.cacheTable(column.table);
+    }
+    return this.cache[key];
+  }
+  cacheTable(table) {
+    const schema2 = table[Table.Symbol.Schema] ?? "public";
+    const tableName = table[Table.Symbol.OriginalName];
+    const tableKey = `${schema2}.${tableName}`;
+    if (!this.cachedTables[tableKey]) {
+      for (const column of Object.values(table[Table.Symbol.Columns])) {
+        const columnKey = `${tableKey}.${column.name}`;
+        this.cache[columnKey] = this.convert(column.name);
+      }
+      this.cachedTables[tableKey] = true;
+    }
+  }
+  clearCache() {
+    this.cache = {};
+    this.cachedTables = {};
+  }
+}
+__publicField(CasingCache, _Ra, "CasingCache");
+class DrizzleError extends (_Ta = Error, _Sa = entityKind, _Ta) {
+  constructor({ message, cause }) {
+    super(message);
+    this.name = "DrizzleError";
+    this.cause = cause;
+  }
+}
+__publicField(DrizzleError, _Sa, "DrizzleError");
+class DrizzleQueryError extends Error {
+  constructor(query, params, cause) {
+    super(`Failed query: ${query}
+params: ${params}`);
+    this.query = query;
+    this.params = params;
+    this.cause = cause;
+    Error.captureStackTrace(this, DrizzleQueryError);
+    if (cause) this.cause = cause;
+  }
+}
+class TransactionRollbackError extends (_Va = DrizzleError, _Ua = entityKind, _Va) {
+  constructor() {
+    super({ message: "Rollback" });
+  }
+}
+__publicField(TransactionRollbackError, _Ua, "TransactionRollbackError");
+const InlineForeignKeys = Symbol.for("drizzle:PgInlineForeignKeys");
 const EnableRLS = Symbol.for("drizzle:EnableRLS");
-class PgTable extends (_F = Table, _E = entityKind, _D = InlineForeignKeys$1, _C = EnableRLS, _B = Table.Symbol.ExtraConfigBuilder, _A = Table.Symbol.ExtraConfigColumns, _F) {
+class PgTable extends (_$a = Table, __a = entityKind, _Za = InlineForeignKeys, _Ya = EnableRLS, _Xa = Table.Symbol.ExtraConfigBuilder, _Wa = Table.Symbol.ExtraConfigColumns, _$a) {
   constructor() {
     super(...arguments);
     /**@internal */
-    __publicField(this, _D, []);
+    __publicField(this, _Za, []);
     /** @internal */
-    __publicField(this, _C, false);
+    __publicField(this, _Ya, false);
     /** @internal */
-    __publicField(this, _B);
+    __publicField(this, _Xa);
     /** @internal */
-    __publicField(this, _A, {});
+    __publicField(this, _Wa, {});
   }
 }
-__publicField(PgTable, _E, "PgTable");
+__publicField(PgTable, __a, "PgTable");
 /** @internal */
 __publicField(PgTable, "Symbol", Object.assign({}, Table.Symbol, {
-  InlineForeignKeys: InlineForeignKeys$1,
+  InlineForeignKeys,
   EnableRLS
 }));
-_G = entityKind;
+_ab = entityKind;
 class PrimaryKeyBuilder {
   constructor(columns, name) {
     /** @internal */
@@ -2887,8 +3802,8 @@ class PrimaryKeyBuilder {
     return new PrimaryKey(table, this.columns, this.name);
   }
 }
-__publicField(PrimaryKeyBuilder, _G, "PgPrimaryKeyBuilder");
-_H = entityKind;
+__publicField(PrimaryKeyBuilder, _ab, "PgPrimaryKeyBuilder");
+_bb = entityKind;
 class PrimaryKey {
   constructor(table, columns, name) {
     __publicField(this, "columns");
@@ -2901,7 +3816,7 @@ class PrimaryKey {
     return this.name ?? `${this.table[PgTable.Symbol.Name]}_${this.columns.map((column) => column.name).join("_")}_pk`;
   }
 }
-__publicField(PrimaryKey, _H, "PgPrimaryKey");
+__publicField(PrimaryKey, _bb, "PgPrimaryKey");
 function bindIfParam(value, column) {
   if (isDriverValueEncoder(column) && !isSQLWrapper(value) && !is(value, Param) && !is(value, Placeholder) && !is(value, Column) && !is(value, Table) && !is(value, View)) {
     return new Param(value, column);
@@ -3021,7 +3936,7 @@ function asc(column) {
 function desc(column) {
   return sql`${column} desc`;
 }
-_I = entityKind;
+_cb = entityKind;
 class Relation {
   constructor(sourceTable, referencedTable, relationName) {
     __publicField(this, "referencedTableName");
@@ -3032,16 +3947,16 @@ class Relation {
     this.referencedTableName = referencedTable[Table.Symbol.Name];
   }
 }
-__publicField(Relation, _I, "Relation");
-_J = entityKind;
+__publicField(Relation, _cb, "Relation");
+_db = entityKind;
 class Relations {
   constructor(table, config) {
     this.table = table;
     this.config = config;
   }
 }
-__publicField(Relations, _J, "Relations");
-const _One = class _One extends (_L = Relation, _K = entityKind, _L) {
+__publicField(Relations, _db, "Relations");
+const _One = class _One extends (_fb = Relation, _eb = entityKind, _fb) {
   constructor(sourceTable, referencedTable, config, isNullable) {
     super(sourceTable, referencedTable, config == null ? void 0 : config.relationName);
     this.config = config;
@@ -3058,9 +3973,9 @@ const _One = class _One extends (_L = Relation, _K = entityKind, _L) {
     return relation;
   }
 };
-__publicField(_One, _K, "One");
+__publicField(_One, _eb, "One");
 let One = _One;
-const _Many = class _Many extends (_N = Relation, _M = entityKind, _N) {
+const _Many = class _Many extends (_hb = Relation, _gb = entityKind, _hb) {
   constructor(sourceTable, referencedTable, config) {
     super(sourceTable, referencedTable, config == null ? void 0 : config.relationName);
     this.config = config;
@@ -3075,7 +3990,7 @@ const _Many = class _Many extends (_N = Relation, _M = entityKind, _N) {
     return relation;
   }
 };
-__publicField(_Many, _M, "Many");
+__publicField(_Many, _gb, "Many");
 let Many = _Many;
 function getOperators() {
   return {
@@ -3282,957 +4197,10 @@ function mapRelationalRow(tablesConfig, tableConfig, row, buildQueryResultSelect
   }
   return result;
 }
-_O = entityKind;
-class ColumnAliasProxyHandler {
-  constructor(table) {
-    this.table = table;
-  }
-  get(columnObj, prop) {
-    if (prop === "table") {
-      return this.table;
-    }
-    return columnObj[prop];
-  }
+class SQLiteViewBase extends (_jb = View, _ib = entityKind, _jb) {
 }
-__publicField(ColumnAliasProxyHandler, _O, "ColumnAliasProxyHandler");
-_P = entityKind;
-class TableAliasProxyHandler {
-  constructor(alias, replaceOriginalName) {
-    this.alias = alias;
-    this.replaceOriginalName = replaceOriginalName;
-  }
-  get(target, prop) {
-    if (prop === Table.Symbol.IsAlias) {
-      return true;
-    }
-    if (prop === Table.Symbol.Name) {
-      return this.alias;
-    }
-    if (this.replaceOriginalName && prop === Table.Symbol.OriginalName) {
-      return this.alias;
-    }
-    if (prop === ViewBaseConfig) {
-      return {
-        ...target[ViewBaseConfig],
-        name: this.alias,
-        isAlias: true
-      };
-    }
-    if (prop === Table.Symbol.Columns) {
-      const columns = target[Table.Symbol.Columns];
-      if (!columns) {
-        return columns;
-      }
-      const proxiedColumns = {};
-      Object.keys(columns).map((key) => {
-        proxiedColumns[key] = new Proxy(
-          columns[key],
-          new ColumnAliasProxyHandler(new Proxy(target, this))
-        );
-      });
-      return proxiedColumns;
-    }
-    const value = target[prop];
-    if (is(value, Column)) {
-      return new Proxy(value, new ColumnAliasProxyHandler(new Proxy(target, this)));
-    }
-    return value;
-  }
-}
-__publicField(TableAliasProxyHandler, _P, "TableAliasProxyHandler");
-function aliasedTable(table, tableAlias) {
-  return new Proxy(table, new TableAliasProxyHandler(tableAlias, false));
-}
-function aliasedTableColumn(column, tableAlias) {
-  return new Proxy(
-    column,
-    new ColumnAliasProxyHandler(new Proxy(column.table, new TableAliasProxyHandler(tableAlias, false)))
-  );
-}
-function mapColumnsInAliasedSQLToAlias(query, alias) {
-  return new SQL.Aliased(mapColumnsInSQLToAlias(query.sql, alias), query.fieldAlias);
-}
-function mapColumnsInSQLToAlias(query, alias) {
-  return sql.join(query.queryChunks.map((c) => {
-    if (is(c, Column)) {
-      return aliasedTableColumn(c, alias);
-    }
-    if (is(c, SQL)) {
-      return mapColumnsInSQLToAlias(c, alias);
-    }
-    if (is(c, SQL.Aliased)) {
-      return mapColumnsInAliasedSQLToAlias(c, alias);
-    }
-    return c;
-  }));
-}
-_Q = entityKind;
-const _SelectionProxyHandler = class _SelectionProxyHandler {
-  constructor(config) {
-    __publicField(this, "config");
-    this.config = { ...config };
-  }
-  get(subquery, prop) {
-    if (prop === "_") {
-      return {
-        ...subquery["_"],
-        selectedFields: new Proxy(
-          subquery._.selectedFields,
-          this
-        )
-      };
-    }
-    if (prop === ViewBaseConfig) {
-      return {
-        ...subquery[ViewBaseConfig],
-        selectedFields: new Proxy(
-          subquery[ViewBaseConfig].selectedFields,
-          this
-        )
-      };
-    }
-    if (typeof prop === "symbol") {
-      return subquery[prop];
-    }
-    const columns = is(subquery, Subquery) ? subquery._.selectedFields : is(subquery, View) ? subquery[ViewBaseConfig].selectedFields : subquery;
-    const value = columns[prop];
-    if (is(value, SQL.Aliased)) {
-      if (this.config.sqlAliasedBehavior === "sql" && !value.isSelectionField) {
-        return value.sql;
-      }
-      const newValue = value.clone();
-      newValue.isSelectionField = true;
-      return newValue;
-    }
-    if (is(value, SQL)) {
-      if (this.config.sqlBehavior === "sql") {
-        return value;
-      }
-      throw new Error(
-        `You tried to reference "${prop}" field from a subquery, which is a raw SQL field, but it doesn't have an alias declared. Please add an alias to the field using ".as('alias')" method.`
-      );
-    }
-    if (is(value, Column)) {
-      if (this.config.alias) {
-        return new Proxy(
-          value,
-          new ColumnAliasProxyHandler(
-            new Proxy(
-              value.table,
-              new TableAliasProxyHandler(this.config.alias, this.config.replaceOriginalName ?? false)
-            )
-          )
-        );
-      }
-      return value;
-    }
-    if (typeof value !== "object" || value === null) {
-      return value;
-    }
-    return new Proxy(value, new _SelectionProxyHandler(this.config));
-  }
-};
-__publicField(_SelectionProxyHandler, _Q, "SelectionProxyHandler");
-let SelectionProxyHandler = _SelectionProxyHandler;
-_S = entityKind, _R = Symbol.toStringTag;
-class QueryPromise {
-  constructor() {
-    __publicField(this, _R, "QueryPromise");
-  }
-  catch(onRejected) {
-    return this.then(void 0, onRejected);
-  }
-  finally(onFinally) {
-    return this.then(
-      (value) => {
-        onFinally == null ? void 0 : onFinally();
-        return value;
-      },
-      (reason) => {
-        onFinally == null ? void 0 : onFinally();
-        throw reason;
-      }
-    );
-  }
-  then(onFulfilled, onRejected) {
-    return this.execute().then(onFulfilled, onRejected);
-  }
-}
-__publicField(QueryPromise, _S, "QueryPromise");
-_T = entityKind;
-class ForeignKeyBuilder {
-  constructor(config, actions) {
-    /** @internal */
-    __publicField(this, "reference");
-    /** @internal */
-    __publicField(this, "_onUpdate");
-    /** @internal */
-    __publicField(this, "_onDelete");
-    this.reference = () => {
-      const { name, columns, foreignColumns } = config();
-      return { name, columns, foreignTable: foreignColumns[0].table, foreignColumns };
-    };
-    if (actions) {
-      this._onUpdate = actions.onUpdate;
-      this._onDelete = actions.onDelete;
-    }
-  }
-  onUpdate(action) {
-    this._onUpdate = action;
-    return this;
-  }
-  onDelete(action) {
-    this._onDelete = action;
-    return this;
-  }
-  /** @internal */
-  build(table) {
-    return new ForeignKey(table, this);
-  }
-}
-__publicField(ForeignKeyBuilder, _T, "SQLiteForeignKeyBuilder");
-_U = entityKind;
-class ForeignKey {
-  constructor(table, builder) {
-    __publicField(this, "reference");
-    __publicField(this, "onUpdate");
-    __publicField(this, "onDelete");
-    this.table = table;
-    this.reference = builder.reference;
-    this.onUpdate = builder._onUpdate;
-    this.onDelete = builder._onDelete;
-  }
-  getName() {
-    const { name, columns, foreignColumns } = this.reference();
-    const columnNames = columns.map((column) => column.name);
-    const foreignColumnNames = foreignColumns.map((column) => column.name);
-    const chunks = [
-      this.table[TableName],
-      ...columnNames,
-      foreignColumns[0].table[TableName],
-      ...foreignColumnNames
-    ];
-    return name ?? `${chunks.join("_")}_fk`;
-  }
-}
-__publicField(ForeignKey, _U, "SQLiteForeignKey");
-function uniqueKeyName(table, columns) {
-  return `${table[TableName]}_${columns.join("_")}_unique`;
-}
-class SQLiteColumnBuilder extends (_W = ColumnBuilder, _V = entityKind, _W) {
-  constructor() {
-    super(...arguments);
-    __publicField(this, "foreignKeyConfigs", []);
-  }
-  references(ref, actions = {}) {
-    this.foreignKeyConfigs.push({ ref, actions });
-    return this;
-  }
-  unique(name) {
-    this.config.isUnique = true;
-    this.config.uniqueName = name;
-    return this;
-  }
-  generatedAlwaysAs(as, config) {
-    this.config.generated = {
-      as,
-      type: "always",
-      mode: (config == null ? void 0 : config.mode) ?? "virtual"
-    };
-    return this;
-  }
-  /** @internal */
-  buildForeignKeys(column, table) {
-    return this.foreignKeyConfigs.map(({ ref, actions }) => {
-      return ((ref2, actions2) => {
-        const builder = new ForeignKeyBuilder(() => {
-          const foreignColumn = ref2();
-          return { columns: [column], foreignColumns: [foreignColumn] };
-        });
-        if (actions2.onUpdate) {
-          builder.onUpdate(actions2.onUpdate);
-        }
-        if (actions2.onDelete) {
-          builder.onDelete(actions2.onDelete);
-        }
-        return builder.build(table);
-      })(ref, actions);
-    });
-  }
-}
-__publicField(SQLiteColumnBuilder, _V, "SQLiteColumnBuilder");
-class SQLiteColumn extends (_Y = Column, _X = entityKind, _Y) {
-  constructor(table, config) {
-    if (!config.uniqueName) {
-      config.uniqueName = uniqueKeyName(table, [config.name]);
-    }
-    super(table, config);
-    this.table = table;
-  }
-}
-__publicField(SQLiteColumn, _X, "SQLiteColumn");
-class SQLiteBigIntBuilder extends (__ = SQLiteColumnBuilder, _Z = entityKind, __) {
-  constructor(name) {
-    super(name, "bigint", "SQLiteBigInt");
-  }
-  /** @internal */
-  build(table) {
-    return new SQLiteBigInt(table, this.config);
-  }
-}
-__publicField(SQLiteBigIntBuilder, _Z, "SQLiteBigIntBuilder");
-class SQLiteBigInt extends (_aa = SQLiteColumn, _$ = entityKind, _aa) {
-  getSQLType() {
-    return "blob";
-  }
-  mapFromDriverValue(value) {
-    if (Buffer.isBuffer(value)) {
-      return BigInt(value.toString());
-    }
-    if (value instanceof ArrayBuffer) {
-      const decoder = new TextDecoder();
-      return BigInt(decoder.decode(value));
-    }
-    return BigInt(String.fromCodePoint(...value));
-  }
-  mapToDriverValue(value) {
-    return Buffer.from(value.toString());
-  }
-}
-__publicField(SQLiteBigInt, _$, "SQLiteBigInt");
-class SQLiteBlobJsonBuilder extends (_ca = SQLiteColumnBuilder, _ba = entityKind, _ca) {
-  constructor(name) {
-    super(name, "json", "SQLiteBlobJson");
-  }
-  /** @internal */
-  build(table) {
-    return new SQLiteBlobJson(
-      table,
-      this.config
-    );
-  }
-}
-__publicField(SQLiteBlobJsonBuilder, _ba, "SQLiteBlobJsonBuilder");
-class SQLiteBlobJson extends (_ea = SQLiteColumn, _da = entityKind, _ea) {
-  getSQLType() {
-    return "blob";
-  }
-  mapFromDriverValue(value) {
-    if (Buffer.isBuffer(value)) {
-      return JSON.parse(value.toString());
-    }
-    if (value instanceof ArrayBuffer) {
-      const decoder = new TextDecoder();
-      return JSON.parse(decoder.decode(value));
-    }
-    return JSON.parse(String.fromCodePoint(...value));
-  }
-  mapToDriverValue(value) {
-    return Buffer.from(JSON.stringify(value));
-  }
-}
-__publicField(SQLiteBlobJson, _da, "SQLiteBlobJson");
-class SQLiteBlobBufferBuilder extends (_ga = SQLiteColumnBuilder, _fa = entityKind, _ga) {
-  constructor(name) {
-    super(name, "buffer", "SQLiteBlobBuffer");
-  }
-  /** @internal */
-  build(table) {
-    return new SQLiteBlobBuffer(table, this.config);
-  }
-}
-__publicField(SQLiteBlobBufferBuilder, _fa, "SQLiteBlobBufferBuilder");
-class SQLiteBlobBuffer extends (_ia = SQLiteColumn, _ha = entityKind, _ia) {
-  mapFromDriverValue(value) {
-    if (Buffer.isBuffer(value)) {
-      return value;
-    }
-    return Buffer.from(value);
-  }
-  getSQLType() {
-    return "blob";
-  }
-}
-__publicField(SQLiteBlobBuffer, _ha, "SQLiteBlobBuffer");
-function blob(a, b) {
-  const { name, config } = getColumnNameAndConfig(a, b);
-  if ((config == null ? void 0 : config.mode) === "json") {
-    return new SQLiteBlobJsonBuilder(name);
-  }
-  if ((config == null ? void 0 : config.mode) === "bigint") {
-    return new SQLiteBigIntBuilder(name);
-  }
-  return new SQLiteBlobBufferBuilder(name);
-}
-class SQLiteCustomColumnBuilder extends (_ka = SQLiteColumnBuilder, _ja = entityKind, _ka) {
-  constructor(name, fieldConfig, customTypeParams) {
-    super(name, "custom", "SQLiteCustomColumn");
-    this.config.fieldConfig = fieldConfig;
-    this.config.customTypeParams = customTypeParams;
-  }
-  /** @internal */
-  build(table) {
-    return new SQLiteCustomColumn(
-      table,
-      this.config
-    );
-  }
-}
-__publicField(SQLiteCustomColumnBuilder, _ja, "SQLiteCustomColumnBuilder");
-class SQLiteCustomColumn extends (_ma = SQLiteColumn, _la = entityKind, _ma) {
-  constructor(table, config) {
-    super(table, config);
-    __publicField(this, "sqlName");
-    __publicField(this, "mapTo");
-    __publicField(this, "mapFrom");
-    this.sqlName = config.customTypeParams.dataType(config.fieldConfig);
-    this.mapTo = config.customTypeParams.toDriver;
-    this.mapFrom = config.customTypeParams.fromDriver;
-  }
-  getSQLType() {
-    return this.sqlName;
-  }
-  mapFromDriverValue(value) {
-    return typeof this.mapFrom === "function" ? this.mapFrom(value) : value;
-  }
-  mapToDriverValue(value) {
-    return typeof this.mapTo === "function" ? this.mapTo(value) : value;
-  }
-}
-__publicField(SQLiteCustomColumn, _la, "SQLiteCustomColumn");
-function customType(customTypeParams) {
-  return (a, b) => {
-    const { name, config } = getColumnNameAndConfig(a, b);
-    return new SQLiteCustomColumnBuilder(
-      name,
-      config,
-      customTypeParams
-    );
-  };
-}
-class SQLiteBaseIntegerBuilder extends (_oa = SQLiteColumnBuilder, _na = entityKind, _oa) {
-  constructor(name, dataType, columnType) {
-    super(name, dataType, columnType);
-    this.config.autoIncrement = false;
-  }
-  primaryKey(config) {
-    if (config == null ? void 0 : config.autoIncrement) {
-      this.config.autoIncrement = true;
-    }
-    this.config.hasDefault = true;
-    return super.primaryKey();
-  }
-}
-__publicField(SQLiteBaseIntegerBuilder, _na, "SQLiteBaseIntegerBuilder");
-class SQLiteBaseInteger extends (_qa = SQLiteColumn, _pa = entityKind, _qa) {
-  constructor() {
-    super(...arguments);
-    __publicField(this, "autoIncrement", this.config.autoIncrement);
-  }
-  getSQLType() {
-    return "integer";
-  }
-}
-__publicField(SQLiteBaseInteger, _pa, "SQLiteBaseInteger");
-class SQLiteIntegerBuilder extends (_sa = SQLiteBaseIntegerBuilder, _ra = entityKind, _sa) {
-  constructor(name) {
-    super(name, "number", "SQLiteInteger");
-  }
-  build(table) {
-    return new SQLiteInteger(
-      table,
-      this.config
-    );
-  }
-}
-__publicField(SQLiteIntegerBuilder, _ra, "SQLiteIntegerBuilder");
-class SQLiteInteger extends (_ua = SQLiteBaseInteger, _ta = entityKind, _ua) {
-}
-__publicField(SQLiteInteger, _ta, "SQLiteInteger");
-class SQLiteTimestampBuilder extends (_wa = SQLiteBaseIntegerBuilder, _va = entityKind, _wa) {
-  constructor(name, mode) {
-    super(name, "date", "SQLiteTimestamp");
-    this.config.mode = mode;
-  }
-  /**
-   * @deprecated Use `default()` with your own expression instead.
-   *
-   * Adds `DEFAULT (cast((julianday('now') - 2440587.5)*86400000 as integer))` to the column, which is the current epoch timestamp in milliseconds.
-   */
-  defaultNow() {
-    return this.default(sql`(cast((julianday('now') - 2440587.5)*86400000 as integer))`);
-  }
-  build(table) {
-    return new SQLiteTimestamp(
-      table,
-      this.config
-    );
-  }
-}
-__publicField(SQLiteTimestampBuilder, _va, "SQLiteTimestampBuilder");
-class SQLiteTimestamp extends (_ya = SQLiteBaseInteger, _xa = entityKind, _ya) {
-  constructor() {
-    super(...arguments);
-    __publicField(this, "mode", this.config.mode);
-  }
-  mapFromDriverValue(value) {
-    if (this.config.mode === "timestamp") {
-      return new Date(value * 1e3);
-    }
-    return new Date(value);
-  }
-  mapToDriverValue(value) {
-    const unix = value.getTime();
-    if (this.config.mode === "timestamp") {
-      return Math.floor(unix / 1e3);
-    }
-    return unix;
-  }
-}
-__publicField(SQLiteTimestamp, _xa, "SQLiteTimestamp");
-class SQLiteBooleanBuilder extends (_Aa = SQLiteBaseIntegerBuilder, _za = entityKind, _Aa) {
-  constructor(name, mode) {
-    super(name, "boolean", "SQLiteBoolean");
-    this.config.mode = mode;
-  }
-  build(table) {
-    return new SQLiteBoolean(
-      table,
-      this.config
-    );
-  }
-}
-__publicField(SQLiteBooleanBuilder, _za, "SQLiteBooleanBuilder");
-class SQLiteBoolean extends (_Ca = SQLiteBaseInteger, _Ba = entityKind, _Ca) {
-  constructor() {
-    super(...arguments);
-    __publicField(this, "mode", this.config.mode);
-  }
-  mapFromDriverValue(value) {
-    return Number(value) === 1;
-  }
-  mapToDriverValue(value) {
-    return value ? 1 : 0;
-  }
-}
-__publicField(SQLiteBoolean, _Ba, "SQLiteBoolean");
-function integer(a, b) {
-  const { name, config } = getColumnNameAndConfig(a, b);
-  if ((config == null ? void 0 : config.mode) === "timestamp" || (config == null ? void 0 : config.mode) === "timestamp_ms") {
-    return new SQLiteTimestampBuilder(name, config.mode);
-  }
-  if ((config == null ? void 0 : config.mode) === "boolean") {
-    return new SQLiteBooleanBuilder(name, config.mode);
-  }
-  return new SQLiteIntegerBuilder(name);
-}
-class SQLiteNumericBuilder extends (_Ea = SQLiteColumnBuilder, _Da = entityKind, _Ea) {
-  constructor(name) {
-    super(name, "string", "SQLiteNumeric");
-  }
-  /** @internal */
-  build(table) {
-    return new SQLiteNumeric(
-      table,
-      this.config
-    );
-  }
-}
-__publicField(SQLiteNumericBuilder, _Da, "SQLiteNumericBuilder");
-class SQLiteNumeric extends (_Ga = SQLiteColumn, _Fa = entityKind, _Ga) {
-  mapFromDriverValue(value) {
-    if (typeof value === "string") return value;
-    return String(value);
-  }
-  getSQLType() {
-    return "numeric";
-  }
-}
-__publicField(SQLiteNumeric, _Fa, "SQLiteNumeric");
-class SQLiteNumericNumberBuilder extends (_Ia = SQLiteColumnBuilder, _Ha = entityKind, _Ia) {
-  constructor(name) {
-    super(name, "number", "SQLiteNumericNumber");
-  }
-  /** @internal */
-  build(table) {
-    return new SQLiteNumericNumber(
-      table,
-      this.config
-    );
-  }
-}
-__publicField(SQLiteNumericNumberBuilder, _Ha, "SQLiteNumericNumberBuilder");
-class SQLiteNumericNumber extends (_Ka = SQLiteColumn, _Ja = entityKind, _Ka) {
-  constructor() {
-    super(...arguments);
-    __publicField(this, "mapToDriverValue", String);
-  }
-  mapFromDriverValue(value) {
-    if (typeof value === "number") return value;
-    return Number(value);
-  }
-  getSQLType() {
-    return "numeric";
-  }
-}
-__publicField(SQLiteNumericNumber, _Ja, "SQLiteNumericNumber");
-class SQLiteNumericBigIntBuilder extends (_Ma = SQLiteColumnBuilder, _La = entityKind, _Ma) {
-  constructor(name) {
-    super(name, "bigint", "SQLiteNumericBigInt");
-  }
-  /** @internal */
-  build(table) {
-    return new SQLiteNumericBigInt(
-      table,
-      this.config
-    );
-  }
-}
-__publicField(SQLiteNumericBigIntBuilder, _La, "SQLiteNumericBigIntBuilder");
-class SQLiteNumericBigInt extends (_Oa = SQLiteColumn, _Na = entityKind, _Oa) {
-  constructor() {
-    super(...arguments);
-    __publicField(this, "mapFromDriverValue", BigInt);
-    __publicField(this, "mapToDriverValue", String);
-  }
-  getSQLType() {
-    return "numeric";
-  }
-}
-__publicField(SQLiteNumericBigInt, _Na, "SQLiteNumericBigInt");
-function numeric(a, b) {
-  const { name, config } = getColumnNameAndConfig(a, b);
-  const mode = config == null ? void 0 : config.mode;
-  return mode === "number" ? new SQLiteNumericNumberBuilder(name) : mode === "bigint" ? new SQLiteNumericBigIntBuilder(name) : new SQLiteNumericBuilder(name);
-}
-class SQLiteRealBuilder extends (_Qa = SQLiteColumnBuilder, _Pa = entityKind, _Qa) {
-  constructor(name) {
-    super(name, "number", "SQLiteReal");
-  }
-  /** @internal */
-  build(table) {
-    return new SQLiteReal(table, this.config);
-  }
-}
-__publicField(SQLiteRealBuilder, _Pa, "SQLiteRealBuilder");
-class SQLiteReal extends (_Sa = SQLiteColumn, _Ra = entityKind, _Sa) {
-  getSQLType() {
-    return "real";
-  }
-}
-__publicField(SQLiteReal, _Ra, "SQLiteReal");
-function real(name) {
-  return new SQLiteRealBuilder(name ?? "");
-}
-class SQLiteTextBuilder extends (_Ua = SQLiteColumnBuilder, _Ta = entityKind, _Ua) {
-  constructor(name, config) {
-    super(name, "string", "SQLiteText");
-    this.config.enumValues = config.enum;
-    this.config.length = config.length;
-  }
-  /** @internal */
-  build(table) {
-    return new SQLiteText(
-      table,
-      this.config
-    );
-  }
-}
-__publicField(SQLiteTextBuilder, _Ta, "SQLiteTextBuilder");
-class SQLiteText extends (_Wa = SQLiteColumn, _Va = entityKind, _Wa) {
-  constructor(table, config) {
-    super(table, config);
-    __publicField(this, "enumValues", this.config.enumValues);
-    __publicField(this, "length", this.config.length);
-  }
-  getSQLType() {
-    return `text${this.config.length ? `(${this.config.length})` : ""}`;
-  }
-}
-__publicField(SQLiteText, _Va, "SQLiteText");
-class SQLiteTextJsonBuilder extends (_Ya = SQLiteColumnBuilder, _Xa = entityKind, _Ya) {
-  constructor(name) {
-    super(name, "json", "SQLiteTextJson");
-  }
-  /** @internal */
-  build(table) {
-    return new SQLiteTextJson(
-      table,
-      this.config
-    );
-  }
-}
-__publicField(SQLiteTextJsonBuilder, _Xa, "SQLiteTextJsonBuilder");
-class SQLiteTextJson extends (__a = SQLiteColumn, _Za = entityKind, __a) {
-  getSQLType() {
-    return "text";
-  }
-  mapFromDriverValue(value) {
-    return JSON.parse(value);
-  }
-  mapToDriverValue(value) {
-    return JSON.stringify(value);
-  }
-}
-__publicField(SQLiteTextJson, _Za, "SQLiteTextJson");
-function text(a, b = {}) {
-  const { name, config } = getColumnNameAndConfig(a, b);
-  if (config.mode === "json") {
-    return new SQLiteTextJsonBuilder(name);
-  }
-  return new SQLiteTextBuilder(name, config);
-}
-function getSQLiteColumnBuilders() {
-  return {
-    blob,
-    customType,
-    integer,
-    numeric,
-    real,
-    text
-  };
-}
-const InlineForeignKeys = Symbol.for("drizzle:SQLiteInlineForeignKeys");
-class SQLiteTable extends (_db = Table, _cb = entityKind, _bb = Table.Symbol.Columns, _ab = InlineForeignKeys, _$a = Table.Symbol.ExtraConfigBuilder, _db) {
-  constructor() {
-    super(...arguments);
-    /** @internal */
-    __publicField(this, _bb);
-    /** @internal */
-    __publicField(this, _ab, []);
-    /** @internal */
-    __publicField(this, _$a);
-  }
-}
-__publicField(SQLiteTable, _cb, "SQLiteTable");
-/** @internal */
-__publicField(SQLiteTable, "Symbol", Object.assign({}, Table.Symbol, {
-  InlineForeignKeys
-}));
-function sqliteTableBase(name, columns, extraConfig, schema2, baseName = name) {
-  const rawTable = new SQLiteTable(name, schema2, baseName);
-  const parsedColumns = typeof columns === "function" ? columns(getSQLiteColumnBuilders()) : columns;
-  const builtColumns = Object.fromEntries(
-    Object.entries(parsedColumns).map(([name2, colBuilderBase]) => {
-      const colBuilder = colBuilderBase;
-      colBuilder.setName(name2);
-      const column = colBuilder.build(rawTable);
-      rawTable[InlineForeignKeys].push(...colBuilder.buildForeignKeys(column, rawTable));
-      return [name2, column];
-    })
-  );
-  const table = Object.assign(rawTable, builtColumns);
-  table[Table.Symbol.Columns] = builtColumns;
-  table[Table.Symbol.ExtraConfigColumns] = builtColumns;
-  return table;
-}
-const sqliteTable = (name, columns, extraConfig) => {
-  return sqliteTableBase(name, columns);
-};
-function extractUsedTable(table) {
-  if (is(table, SQLiteTable)) {
-    return [`${table[Table.Symbol.BaseName]}`];
-  }
-  if (is(table, Subquery)) {
-    return table._.usedTables ?? [];
-  }
-  if (is(table, SQL)) {
-    return table.usedTables ?? [];
-  }
-  return [];
-}
-class SQLiteDeleteBase extends (_fb = QueryPromise, _eb = entityKind, _fb) {
-  constructor(table, session, dialect, withList) {
-    super();
-    /** @internal */
-    __publicField(this, "config");
-    __publicField(this, "run", (placeholderValues) => {
-      return this._prepare().run(placeholderValues);
-    });
-    __publicField(this, "all", (placeholderValues) => {
-      return this._prepare().all(placeholderValues);
-    });
-    __publicField(this, "get", (placeholderValues) => {
-      return this._prepare().get(placeholderValues);
-    });
-    __publicField(this, "values", (placeholderValues) => {
-      return this._prepare().values(placeholderValues);
-    });
-    this.table = table;
-    this.session = session;
-    this.dialect = dialect;
-    this.config = { table, withList };
-  }
-  /**
-   * Adds a `where` clause to the query.
-   *
-   * Calling this method will delete only those rows that fulfill a specified condition.
-   *
-   * See docs: {@link https://orm.drizzle.team/docs/delete}
-   *
-   * @param where the `where` clause.
-   *
-   * @example
-   * You can use conditional operators and `sql function` to filter the rows to be deleted.
-   *
-   * ```ts
-   * // Delete all cars with green color
-   * db.delete(cars).where(eq(cars.color, 'green'));
-   * // or
-   * db.delete(cars).where(sql`${cars.color} = 'green'`)
-   * ```
-   *
-   * You can logically combine conditional operators with `and()` and `or()` operators:
-   *
-   * ```ts
-   * // Delete all BMW cars with a green color
-   * db.delete(cars).where(and(eq(cars.color, 'green'), eq(cars.brand, 'BMW')));
-   *
-   * // Delete all cars with the green or blue color
-   * db.delete(cars).where(or(eq(cars.color, 'green'), eq(cars.color, 'blue')));
-   * ```
-   */
-  where(where) {
-    this.config.where = where;
-    return this;
-  }
-  orderBy(...columns) {
-    if (typeof columns[0] === "function") {
-      const orderBy = columns[0](
-        new Proxy(
-          this.config.table[Table.Symbol.Columns],
-          new SelectionProxyHandler({ sqlAliasedBehavior: "alias", sqlBehavior: "sql" })
-        )
-      );
-      const orderByArray = Array.isArray(orderBy) ? orderBy : [orderBy];
-      this.config.orderBy = orderByArray;
-    } else {
-      const orderByArray = columns;
-      this.config.orderBy = orderByArray;
-    }
-    return this;
-  }
-  limit(limit) {
-    this.config.limit = limit;
-    return this;
-  }
-  returning(fields = this.table[SQLiteTable.Symbol.Columns]) {
-    this.config.returning = orderSelectedFields(fields);
-    return this;
-  }
-  /** @internal */
-  getSQL() {
-    return this.dialect.buildDeleteQuery(this.config);
-  }
-  toSQL() {
-    const { typings: _typings, ...rest } = this.dialect.sqlToQuery(this.getSQL());
-    return rest;
-  }
-  /** @internal */
-  _prepare(isOneTimeQuery = true) {
-    return this.session[isOneTimeQuery ? "prepareOneTimeQuery" : "prepareQuery"](
-      this.dialect.sqlToQuery(this.getSQL()),
-      this.config.returning,
-      this.config.returning ? "all" : "run",
-      true,
-      void 0,
-      {
-        type: "delete",
-        tables: extractUsedTable(this.config.table)
-      }
-    );
-  }
-  prepare() {
-    return this._prepare(false);
-  }
-  async execute(placeholderValues) {
-    return this._prepare().execute(placeholderValues);
-  }
-  $dynamic() {
-    return this;
-  }
-}
-__publicField(SQLiteDeleteBase, _eb, "SQLiteDelete");
-function toSnakeCase(input) {
-  const words = input.replace(/['\u2019]/g, "").match(/[\da-z]+|[A-Z]+(?![a-z])|[A-Z][\da-z]+/g) ?? [];
-  return words.map((word) => word.toLowerCase()).join("_");
-}
-function toCamelCase(input) {
-  const words = input.replace(/['\u2019]/g, "").match(/[\da-z]+|[A-Z]+(?![a-z])|[A-Z][\da-z]+/g) ?? [];
-  return words.reduce((acc, word, i) => {
-    const formattedWord = i === 0 ? word.toLowerCase() : `${word[0].toUpperCase()}${word.slice(1)}`;
-    return acc + formattedWord;
-  }, "");
-}
-function noopCase(input) {
-  return input;
-}
-_gb = entityKind;
-class CasingCache {
-  constructor(casing) {
-    /** @internal */
-    __publicField(this, "cache", {});
-    __publicField(this, "cachedTables", {});
-    __publicField(this, "convert");
-    this.convert = casing === "snake_case" ? toSnakeCase : casing === "camelCase" ? toCamelCase : noopCase;
-  }
-  getColumnCasing(column) {
-    if (!column.keyAsName) return column.name;
-    const schema2 = column.table[Table.Symbol.Schema] ?? "public";
-    const tableName = column.table[Table.Symbol.OriginalName];
-    const key = `${schema2}.${tableName}.${column.name}`;
-    if (!this.cache[key]) {
-      this.cacheTable(column.table);
-    }
-    return this.cache[key];
-  }
-  cacheTable(table) {
-    const schema2 = table[Table.Symbol.Schema] ?? "public";
-    const tableName = table[Table.Symbol.OriginalName];
-    const tableKey = `${schema2}.${tableName}`;
-    if (!this.cachedTables[tableKey]) {
-      for (const column of Object.values(table[Table.Symbol.Columns])) {
-        const columnKey = `${tableKey}.${column.name}`;
-        this.cache[columnKey] = this.convert(column.name);
-      }
-      this.cachedTables[tableKey] = true;
-    }
-  }
-  clearCache() {
-    this.cache = {};
-    this.cachedTables = {};
-  }
-}
-__publicField(CasingCache, _gb, "CasingCache");
-class DrizzleError extends (_ib = Error, _hb = entityKind, _ib) {
-  constructor({ message, cause }) {
-    super(message);
-    this.name = "DrizzleError";
-    this.cause = cause;
-  }
-}
-__publicField(DrizzleError, _hb, "DrizzleError");
-class DrizzleQueryError extends Error {
-  constructor(query, params, cause) {
-    super(`Failed query: ${query}
-params: ${params}`);
-    this.query = query;
-    this.params = params;
-    this.cause = cause;
-    Error.captureStackTrace(this, DrizzleQueryError);
-    if (cause) this.cause = cause;
-  }
-}
-class TransactionRollbackError extends (_kb = DrizzleError, _jb = entityKind, _kb) {
-  constructor() {
-    super({ message: "Rollback" });
-  }
-}
-__publicField(TransactionRollbackError, _jb, "TransactionRollbackError");
-class SQLiteViewBase extends (_mb = View, _lb = entityKind, _mb) {
-}
-__publicField(SQLiteViewBase, _lb, "SQLiteViewBase");
-_nb = entityKind;
+__publicField(SQLiteViewBase, _ib, "SQLiteViewBase");
+_kb = entityKind;
 class SQLiteDialect {
   constructor(config) {
     /** @internal */
@@ -4790,8 +4758,8 @@ class SQLiteDialect {
     };
   }
 }
-__publicField(SQLiteDialect, _nb, "SQLiteDialect");
-class SQLiteSyncDialect extends (_pb = SQLiteDialect, _ob = entityKind, _pb) {
+__publicField(SQLiteDialect, _kb, "SQLiteDialect");
+class SQLiteSyncDialect extends (_mb = SQLiteDialect, _lb = entityKind, _mb) {
   migrate(migrations, session, config) {
     const migrationsTable = config === void 0 ? "__drizzle_migrations" : typeof config === "string" ? "__drizzle_migrations" : config.migrationsTable ?? "__drizzle_migrations";
     const migrationTableCreate = sql`
@@ -4825,16 +4793,16 @@ class SQLiteSyncDialect extends (_pb = SQLiteDialect, _ob = entityKind, _pb) {
     }
   }
 }
-__publicField(SQLiteSyncDialect, _ob, "SQLiteSyncDialect");
-_qb = entityKind;
+__publicField(SQLiteSyncDialect, _lb, "SQLiteSyncDialect");
+_nb = entityKind;
 class TypedQueryBuilder {
   /** @internal */
   getSelectedFields() {
     return this._.selectedFields;
   }
 }
-__publicField(TypedQueryBuilder, _qb, "TypedQueryBuilder");
-_rb = entityKind;
+__publicField(TypedQueryBuilder, _nb, "TypedQueryBuilder");
+_ob = entityKind;
 class SQLiteSelectBuilder {
   constructor(config) {
     __publicField(this, "fields");
@@ -4875,8 +4843,8 @@ class SQLiteSelectBuilder {
     });
   }
 }
-__publicField(SQLiteSelectBuilder, _rb, "SQLiteSelectBuilder");
-class SQLiteSelectQueryBuilderBase extends (_tb = TypedQueryBuilder, _sb = entityKind, _tb) {
+__publicField(SQLiteSelectBuilder, _ob, "SQLiteSelectBuilder");
+class SQLiteSelectQueryBuilderBase extends (_qb = TypedQueryBuilder, _pb = entityKind, _qb) {
   constructor({ table, fields, isPartialSelect, session, dialect, withList, distinct }) {
     super();
     __publicField(this, "_");
@@ -5424,8 +5392,8 @@ class SQLiteSelectQueryBuilderBase extends (_tb = TypedQueryBuilder, _sb = entit
     return this;
   }
 }
-__publicField(SQLiteSelectQueryBuilderBase, _sb, "SQLiteSelectQueryBuilder");
-class SQLiteSelectBase extends (_vb = SQLiteSelectQueryBuilderBase, _ub = entityKind, _vb) {
+__publicField(SQLiteSelectQueryBuilderBase, _pb, "SQLiteSelectQueryBuilder");
+class SQLiteSelectBase extends (_sb = SQLiteSelectQueryBuilderBase, _rb = entityKind, _sb) {
   constructor() {
     super(...arguments);
     __publicField(this, "run", (placeholderValues) => {
@@ -5473,7 +5441,7 @@ class SQLiteSelectBase extends (_vb = SQLiteSelectQueryBuilderBase, _ub = entity
     return this.all();
   }
 }
-__publicField(SQLiteSelectBase, _ub, "SQLiteSelect");
+__publicField(SQLiteSelectBase, _rb, "SQLiteSelect");
 applyMixins(SQLiteSelectBase, [QueryPromise]);
 function createSetOperator(type, isAll) {
   return (leftSelect, rightSelect, ...restSelects) => {
@@ -5502,7 +5470,7 @@ const union = createSetOperator("union", false);
 const unionAll = createSetOperator("union", true);
 const intersect = createSetOperator("intersect", false);
 const except = createSetOperator("except", false);
-_wb = entityKind;
+_tb = entityKind;
 class QueryBuilder {
   constructor(dialect) {
     __publicField(this, "dialect");
@@ -5568,8 +5536,8 @@ class QueryBuilder {
     return this.dialect;
   }
 }
-__publicField(QueryBuilder, _wb, "SQLiteQueryBuilder");
-_xb = entityKind;
+__publicField(QueryBuilder, _tb, "SQLiteQueryBuilder");
+_ub = entityKind;
 class SQLiteInsertBuilder {
   constructor(table, session, dialect, withList) {
     this.table = table;
@@ -5603,8 +5571,8 @@ class SQLiteInsertBuilder {
     return new SQLiteInsertBase(this.table, select, this.session, this.dialect, this.withList, true);
   }
 }
-__publicField(SQLiteInsertBuilder, _xb, "SQLiteInsertBuilder");
-class SQLiteInsertBase extends (_zb = QueryPromise, _yb = entityKind, _zb) {
+__publicField(SQLiteInsertBuilder, _ub, "SQLiteInsertBuilder");
+class SQLiteInsertBase extends (_wb = QueryPromise, _vb = entityKind, _wb) {
   constructor(table, values, session, dialect, withList, select) {
     super();
     /** @internal */
@@ -5740,8 +5708,8 @@ class SQLiteInsertBase extends (_zb = QueryPromise, _yb = entityKind, _zb) {
     return this;
   }
 }
-__publicField(SQLiteInsertBase, _yb, "SQLiteInsert");
-_Ab = entityKind;
+__publicField(SQLiteInsertBase, _vb, "SQLiteInsert");
+_xb = entityKind;
 class SQLiteUpdateBuilder {
   constructor(table, session, dialect, withList) {
     this.table = table;
@@ -5759,8 +5727,8 @@ class SQLiteUpdateBuilder {
     );
   }
 }
-__publicField(SQLiteUpdateBuilder, _Ab, "SQLiteUpdateBuilder");
-class SQLiteUpdateBase extends (_Cb = QueryPromise, _Bb = entityKind, _Cb) {
+__publicField(SQLiteUpdateBuilder, _xb, "SQLiteUpdateBuilder");
+class SQLiteUpdateBase extends (_zb = QueryPromise, _yb = entityKind, _zb) {
   constructor(table, set, session, dialect, withList) {
     super();
     /** @internal */
@@ -5905,12 +5873,12 @@ class SQLiteUpdateBase extends (_Cb = QueryPromise, _Bb = entityKind, _Cb) {
     return this;
   }
 }
-__publicField(SQLiteUpdateBase, _Bb, "SQLiteUpdate");
-const _SQLiteCountBuilder = class _SQLiteCountBuilder extends (_Fb = SQL, _Eb = entityKind, _Db = Symbol.toStringTag, _Fb) {
+__publicField(SQLiteUpdateBase, _yb, "SQLiteUpdate");
+const _SQLiteCountBuilder = class _SQLiteCountBuilder extends (_Cb = SQL, _Bb = entityKind, _Ab = Symbol.toStringTag, _Cb) {
   constructor(params) {
     super(_SQLiteCountBuilder.buildEmbeddedCount(params.source, params.filters).queryChunks);
     __publicField(this, "sql");
-    __publicField(this, _Db, "SQLiteCountBuilderAsync");
+    __publicField(this, _Ab, "SQLiteCountBuilderAsync");
     __publicField(this, "session");
     this.params = params;
     this.session = params.session;
@@ -5947,9 +5915,9 @@ const _SQLiteCountBuilder = class _SQLiteCountBuilder extends (_Fb = SQL, _Eb = 
     );
   }
 };
-__publicField(_SQLiteCountBuilder, _Eb, "SQLiteCountBuilderAsync");
+__publicField(_SQLiteCountBuilder, _Bb, "SQLiteCountBuilderAsync");
 let SQLiteCountBuilder = _SQLiteCountBuilder;
-_Gb = entityKind;
+_Db = entityKind;
 class RelationalQueryBuilder {
   constructor(mode, fullSchema, schema2, tableNamesMap, table, tableConfig, dialect, session) {
     this.mode = mode;
@@ -6008,8 +5976,8 @@ class RelationalQueryBuilder {
     );
   }
 }
-__publicField(RelationalQueryBuilder, _Gb, "SQLiteAsyncRelationalQueryBuilder");
-class SQLiteRelationalQuery extends (_Ib = QueryPromise, _Hb = entityKind, _Ib) {
+__publicField(RelationalQueryBuilder, _Db, "SQLiteAsyncRelationalQueryBuilder");
+class SQLiteRelationalQuery extends (_Fb = QueryPromise, _Eb = entityKind, _Fb) {
   constructor(fullSchema, schema2, tableNamesMap, table, tableConfig, dialect, session, config, mode) {
     super();
     /** @internal */
@@ -6085,14 +6053,14 @@ class SQLiteRelationalQuery extends (_Ib = QueryPromise, _Hb = entityKind, _Ib) 
     return this.executeRaw();
   }
 }
-__publicField(SQLiteRelationalQuery, _Hb, "SQLiteAsyncRelationalQuery");
-class SQLiteSyncRelationalQuery extends (_Kb = SQLiteRelationalQuery, _Jb = entityKind, _Kb) {
+__publicField(SQLiteRelationalQuery, _Eb, "SQLiteAsyncRelationalQuery");
+class SQLiteSyncRelationalQuery extends (_Hb = SQLiteRelationalQuery, _Gb = entityKind, _Hb) {
   sync() {
     return this.executeRaw();
   }
 }
-__publicField(SQLiteSyncRelationalQuery, _Jb, "SQLiteSyncRelationalQuery");
-class SQLiteRaw extends (_Mb = QueryPromise, _Lb = entityKind, _Mb) {
+__publicField(SQLiteSyncRelationalQuery, _Gb, "SQLiteSyncRelationalQuery");
+class SQLiteRaw extends (_Jb = QueryPromise, _Ib = entityKind, _Jb) {
   constructor(execute, getSQL, action, dialect, mapBatchResult) {
     super();
     /** @internal */
@@ -6117,8 +6085,8 @@ class SQLiteRaw extends (_Mb = QueryPromise, _Lb = entityKind, _Mb) {
     return false;
   }
 }
-__publicField(SQLiteRaw, _Lb, "SQLiteRaw");
-_Nb = entityKind;
+__publicField(SQLiteRaw, _Ib, "SQLiteRaw");
+_Kb = entityKind;
 class BaseSQLiteDatabase {
   constructor(resultKind, dialect, session, schema2) {
     __publicField(this, "query");
@@ -6407,12 +6375,12 @@ class BaseSQLiteDatabase {
     return this.session.transaction(transaction, config);
   }
 }
-__publicField(BaseSQLiteDatabase, _Nb, "BaseSQLiteDatabase");
-_Ob = entityKind;
+__publicField(BaseSQLiteDatabase, _Kb, "BaseSQLiteDatabase");
+_Lb = entityKind;
 class Cache {
 }
-__publicField(Cache, _Ob, "Cache");
-class NoopCache extends (_Qb = Cache, _Pb = entityKind, _Qb) {
+__publicField(Cache, _Lb, "Cache");
+class NoopCache extends (_Nb = Cache, _Mb = entityKind, _Nb) {
   strategy() {
     return "all";
   }
@@ -6424,7 +6392,7 @@ class NoopCache extends (_Qb = Cache, _Pb = entityKind, _Qb) {
   async onMutate(_params) {
   }
 }
-__publicField(NoopCache, _Pb, "NoopCache");
+__publicField(NoopCache, _Mb, "NoopCache");
 async function hashQuery(sql2, params) {
   const dataToHash = `${sql2}-${JSON.stringify(params)}`;
   const encoder = new TextEncoder();
@@ -6434,7 +6402,7 @@ async function hashQuery(sql2, params) {
   const hashHex = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
   return hashHex;
 }
-class ExecuteResultSync extends (_Sb = QueryPromise, _Rb = entityKind, _Sb) {
+class ExecuteResultSync extends (_Pb = QueryPromise, _Ob = entityKind, _Pb) {
   constructor(resultCb) {
     super();
     this.resultCb = resultCb;
@@ -6446,8 +6414,8 @@ class ExecuteResultSync extends (_Sb = QueryPromise, _Rb = entityKind, _Sb) {
     return this.resultCb();
   }
 }
-__publicField(ExecuteResultSync, _Rb, "ExecuteResultSync");
-_Tb = entityKind;
+__publicField(ExecuteResultSync, _Ob, "ExecuteResultSync");
+_Qb = entityKind;
 class SQLitePreparedQuery {
   constructor(mode, executeMethod, query, cache, queryMetadata, cacheConfig) {
     /** @internal */
@@ -6564,8 +6532,8 @@ class SQLitePreparedQuery {
     }
   }
 }
-__publicField(SQLitePreparedQuery, _Tb, "PreparedQuery");
-_Ub = entityKind;
+__publicField(SQLitePreparedQuery, _Qb, "PreparedQuery");
+_Rb = entityKind;
 class SQLiteSession {
   constructor(dialect) {
     this.dialect = dialect;
@@ -6619,8 +6587,8 @@ class SQLiteSession {
     throw new Error("Not implemented");
   }
 }
-__publicField(SQLiteSession, _Ub, "SQLiteSession");
-class SQLiteTransaction extends (_Wb = BaseSQLiteDatabase, _Vb = entityKind, _Wb) {
+__publicField(SQLiteSession, _Rb, "SQLiteSession");
+class SQLiteTransaction extends (_Tb = BaseSQLiteDatabase, _Sb = entityKind, _Tb) {
   constructor(resultType, dialect, session, schema2, nestedIndex = 0) {
     super(resultType, dialect, session, schema2);
     this.schema = schema2;
@@ -6630,7 +6598,91 @@ class SQLiteTransaction extends (_Wb = BaseSQLiteDatabase, _Vb = entityKind, _Wb
     throw new TransactionRollbackError();
   }
 }
-__publicField(SQLiteTransaction, _Vb, "SQLiteTransaction");
+__publicField(SQLiteTransaction, _Sb, "SQLiteTransaction");
+_Ub = entityKind;
+class ConsoleLogWriter {
+  write(message) {
+    console.log(message);
+  }
+}
+__publicField(ConsoleLogWriter, _Ub, "ConsoleLogWriter");
+_Vb = entityKind;
+class DefaultLogger {
+  constructor(config) {
+    __publicField(this, "writer");
+    this.writer = (config == null ? void 0 : config.writer) ?? new ConsoleLogWriter();
+  }
+  logQuery(query, params) {
+    const stringifiedParams = params.map((p) => {
+      try {
+        return JSON.stringify(p);
+      } catch {
+        return String(p);
+      }
+    });
+    const paramsStr = stringifiedParams.length ? ` -- params: [${stringifiedParams.join(", ")}]` : "";
+    this.writer.write(`Query: ${query}${paramsStr}`);
+  }
+}
+__publicField(DefaultLogger, _Vb, "DefaultLogger");
+_Wb = entityKind;
+class NoopLogger {
+  logQuery() {
+  }
+}
+__publicField(NoopLogger, _Wb, "NoopLogger");
+const project = sqliteTable("project", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  createdTime: text("createdTime").default(sql`datetime('now')`),
+  name: text("name").notNull(),
+  localPath: text("localPath").notNull(),
+  description: text("description"),
+  tag: text("tag"),
+  buildCmd: text("buildCmd"),
+  outputDir: text("outputDir"),
+  deployMethod: text("deployMethod"),
+  // 'none'|'local'|'docker'|'remote'
+  localCommand: text("localCommand"),
+  dockerfilePath: text("dockerfilePath"),
+  imageName: text("imageName"),
+  registry: text("registry"),
+  dockerDeployType: text("dockerDeployType"),
+  // 'local'|'push'
+  dockerRunCommand: text("dockerRunCommand"),
+  serverAddress: text("serverAddress"),
+  serverPort: integer("serverPort"),
+  serverUsername: text("serverUsername"),
+  authType: text("authType"),
+  // 'password'|'privateKey'
+  serverPassword: text("serverPassword"),
+  privateKeyPath: text("privateKeyPath"),
+  targetPath: text("targetPath"),
+  remoteCommand: text("remoteCommand"),
+  keepArtifacts: integer("keepArtifacts"),
+  // 0 or 1
+  keepPath: text("keepPath"),
+  keepCount: integer("keepCount"),
+  lastBuildTime: text("lastBuildTime"),
+  status: text("status")
+});
+const projectBuild = sqliteTable("project_build", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  projectId: text("projectId").notNull(),
+  projectName: text("projectName").notNull(),
+  command: text("command").notNull(),
+  localPath: text("localPath"),
+  status: text("status").notNull(),
+  artifactPath: text("artifactPath"),
+  artifactSize: integer("artifactSize"),
+  logs: text("logs"),
+  startTime: text("startTime").default(sql`datetime('now')`),
+  endTime: text("endTime")
+});
+const schema = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+  __proto__: null,
+  project,
+  projectBuild
+}, Symbol.toStringTag, { value: "Module" }));
 class BetterSQLiteSession extends (_Yb = SQLiteSession, _Xb = entityKind, _Yb) {
   constructor(client, dialect, schema2, options = {}) {
     super(dialect);
@@ -6786,44 +6838,6 @@ function drizzle(...params) {
   }
   drizzle2.mock = mock;
 })(drizzle || (drizzle = {}));
-const projects = sqliteTable("projects", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  createdTime: text("createdTime").default(sql`datetime('now')`),
-  name: text("name").notNull(),
-  localPath: text("localPath").notNull(),
-  description: text("description"),
-  tag: text("tag"),
-  buildCmd: text("buildCmd"),
-  outputDir: text("outputDir"),
-  deployMethod: text("deployMethod"),
-  // 'none'|'local'|'docker'|'remote'
-  localCommand: text("localCommand"),
-  dockerfilePath: text("dockerfilePath"),
-  imageName: text("imageName"),
-  registry: text("registry"),
-  dockerDeployType: text("dockerDeployType"),
-  // 'local'|'push'
-  dockerRunCommand: text("dockerRunCommand"),
-  serverAddress: text("serverAddress"),
-  serverPort: integer("serverPort"),
-  serverUsername: text("serverUsername"),
-  authType: text("authType"),
-  // 'password'|'privateKey'
-  serverPassword: text("serverPassword"),
-  privateKeyPath: text("privateKeyPath"),
-  targetPath: text("targetPath"),
-  remoteCommand: text("remoteCommand"),
-  keepArtifacts: integer("keepArtifacts"),
-  // 0 or 1
-  keepPath: text("keepPath"),
-  keepCount: integer("keepCount"),
-  lastBuildTime: text("lastBuildTime"),
-  status: text("status")
-});
-const schema = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
-  __proto__: null,
-  projects
-}, Symbol.toStringTag, { value: "Module" }));
 const require2 = createRequire(import.meta.url);
 const Database = require2("better-sqlite3");
 function getDb() {
@@ -6849,7 +6863,7 @@ function getDb() {
   const sqlite = new Database(dbPath);
   sqlite.pragma("journal_mode = WAL");
   sqlite.exec(`
-        CREATE TABLE IF NOT EXISTS projects (
+        CREATE TABLE IF NOT EXISTS project (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             createdTime TEXT,
             name TEXT NOT NULL,
@@ -6880,29 +6894,44 @@ function getDb() {
             status TEXT
             );
     `);
+  sqlite.exec(`
+        CREATE TABLE IF NOT EXISTS project_build (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            projectId TEXT NOT NULL,
+            projectName TEXT NOT NULL,
+            command TEXT NOT NULL,
+            localPath TEXT,
+            status TEXT NOT NULL,
+            artifactPath TEXT,
+            artifactSize INTEGER,
+            logs TEXT,
+            startTime TEXT,
+            endTime TEXT
+        );
+    `);
   const db = drizzle(sqlite, { schema });
   return db;
 }
 function createProject(data) {
   console.log("createProject", data);
   const db = getDb();
-  return db.insert(projects).values(data).returning();
+  return db.insert(project).values(data).returning();
 }
-function getProjects() {
+function getProject() {
   const db = getDb();
-  return db.select().from(projects).all();
+  return db.select().from(project).all();
 }
 function getProjectById(id) {
   const db = getDb();
-  return db.select().from(projects).where(eq(projects.id, id)).get();
+  return db.select().from(project).where(eq(project.id, id)).get();
 }
 function updateProject(id, data) {
   const db = getDb();
-  return db.update(projects).set(data).where(eq(projects.id, id)).returning();
+  return db.update(project).set(data).where(eq(project.id, id)).returning();
 }
 function deleteProject(id) {
   const db = getDb();
-  return db.delete(projects).where(eq(projects.id, id)).returning();
+  return db.delete(project).where(eq(project.id, id)).returning();
 }
 function registerProjectHandlers() {
   ipcMain.handle("project:create", async (_, projectData) => {
@@ -6915,7 +6944,7 @@ function registerProjectHandlers() {
   });
   ipcMain.handle("project:getAll", async () => {
     try {
-      return await getProjects();
+      return await getProject();
     } catch (error) {
       console.error("获取项目列表失败:", error);
       throw error;
@@ -6976,11 +7005,74 @@ function registerCommandHandlers() {
     return false;
   });
 }
+function createProjectBuild(data) {
+  const db = getDb();
+  return db.insert(projectBuild).values(data).returning();
+}
+function getProjectBuild() {
+  const db = getDb();
+  return db.select().from(projectBuild).all();
+}
+function getProjectBuildById(id) {
+  const db = getDb();
+  return db.select().from(projectBuild).where(eq(projectBuild.id, id)).get();
+}
+function updateProjectBuild(id, data) {
+  const db = getDb();
+  return db.update(projectBuild).set(data).where(eq(projectBuild.id, id)).returning();
+}
+function deleteProjectBuild(id) {
+  const db = getDb();
+  return db.delete(projectBuild).where(eq(projectBuild.id, id)).returning();
+}
+function registerProjectBuildHandlers() {
+  ipcMain.handle("build:create", async (_, projectBuildData) => {
+    try {
+      return await createProjectBuild(projectBuildData);
+    } catch (error) {
+      console.error("创建项目日志失败:", error);
+      throw error;
+    }
+  });
+  ipcMain.handle("build:getAll", async () => {
+    try {
+      return await getProjectBuild();
+    } catch (error) {
+      console.error("获取项目日志列表失败:", error);
+      throw error;
+    }
+  });
+  ipcMain.handle("build:getById", async (_, id) => {
+    try {
+      return await getProjectBuildById(id);
+    } catch (error) {
+      console.error("获取项目日志失败:", error);
+      throw error;
+    }
+  });
+  ipcMain.handle("build:update", async (_, id, projectBuildData) => {
+    try {
+      return await updateProjectBuild(id, projectBuildData);
+    } catch (error) {
+      console.error("更新项目日志失败:", error);
+      throw error;
+    }
+  });
+  ipcMain.handle("build:delete", async (_, id) => {
+    try {
+      return await deleteProjectBuild(id);
+    } catch (error) {
+      console.error("删除项目日志失败:", error);
+      throw error;
+    }
+  });
+}
 function registerAllIpcHandlers() {
   registerFileDialogHandler();
   registerSettingHandler();
   registerProjectHandlers();
   registerCommandHandlers();
+  registerProjectBuildHandlers();
 }
 const __dirname = path$c.dirname(fileURLToPath(import.meta.url));
 process.env.APP_ROOT = path$c.join(__dirname, "..");

@@ -12,7 +12,9 @@
             </template>
           </n-button>
           <div class="header-info">
-            <h1 class="project-title">{{ projectName }} 构建日志</h1>
+            <h1 class="project-title">
+              {{ action === 'view' ? '查看构建日志' : projectName + ' 构建日志' }}
+            </h1>
             <p class="build-status" :class="buildStatusClass">
               <n-icon size="16" class="status-icon">
                 <CheckmarkCircleOutline v-if="buildStatus === 'success'"/>
@@ -24,7 +26,7 @@
           </div>
         </div>
         <div class="header-actions">
-          <n-button quaternary size="small" @click="clearLogs" :disabled="!logs.length">
+          <n-button quaternary size="small" @click="clearLogs" :disabled="!logs.length || action === 'view'">
             <template #icon>
               <n-icon>
                 <TrashOutline/>
@@ -40,7 +42,8 @@
             </template>
             导出日志
           </n-button>
-          <n-button type="error" size="small" @click="stopBuild" :disabled="buildStatus !== 'building'">
+          <n-button type="error" size="small" @click="stopBuild"
+                    :disabled="buildStatus !== 'building' || action === 'view'">
             <template #icon>
               <n-icon>
                 <StopOutline/>
@@ -73,7 +76,7 @@
 </template>
 
 <script setup lang="ts">
-import {ref, computed, onMounted, nextTick} from 'vue'
+import {ref, computed, onMounted, nextTick, toRaw} from 'vue'
 import {useRoute, useRouter} from 'vue-router'
 import {NButton, NIcon} from 'naive-ui'
 import {
@@ -82,7 +85,15 @@ import {
   DocumentTextOutline
 } from '@vicons/ionicons5'
 import dataStore from '@/utils/dataStore'
-import {defaultProjectData} from "../../../electron/db/types/project.ts";
+import {defaultProjectData} from "@/types/project.ts";
+import {BuildLog} from "@/types/buildLog.ts";
+
+const buildLog = ref<BuildLog>({
+  projectId: '',
+  projectName: '',
+  status: 'building',
+  logs: ''
+})
 
 const router = useRouter()
 const route = useRoute()
@@ -90,6 +101,8 @@ const logContent = ref<HTMLElement>()
 
 const projectId = computed(() => route.query.id as string)
 const projectName = ref(route.query.name as string || 'MyApp')
+const logId = computed(() => route.query.logId as string)
+const action = computed(() => route.query.action as string)
 const buildStatus = ref<'building' | 'success' | 'failed'>('building')
 const logs = ref<string[]>([])
 const project = ref({...defaultProjectData});
@@ -193,31 +206,24 @@ function scrollToBottom() {
 }
 
 async function saveBuildLog() {
-  // if (!projectId.value) return
-  //
-  // try {
-  //   const buildLogs = dataStore.getBuildLogs(projectId.value)
-  //   const existingLog = buildLogs.find(log => log.status === 'building')
-  //
-  //   if (existingLog) {
-  //     await dataStore.updateBuildLog(existingLog.id, {
-  //       logs: logs.value,
-  //       status: buildStatus.value,
-  //       endTime: buildStatus.value !== 'building' ? Date.now() : undefined
-  //     })
-  //   } else {
-  //     await dataStore.addBuildLog({
-  //       projectId: projectId.value,
-  //       projectName: projectName.value,
-  //       status: buildStatus.value,
-  //       logs: logs.value,
-  //       startTime: Date.now(),
-  //       endTime: buildStatus.value !== 'building' ? Date.now() : undefined
-  //     })
-  //   }
-  // } catch (error) {
-  //   console.error('保存构建日志失败:', error)
-  // }
+  if (!buildLog.value.id) {
+    buildLog.value.projectId = projectId.value
+    buildLog.value.projectName = projectName.value
+    buildLog.value.command = project.value.buildCmd
+    buildLog.value.localPath = project.value.localPath
+    buildLog.value.status = buildStatus.value
+    let newBuildLog = await window.electronAPI.createBuildLog(toRaw(buildLog.value))
+    buildLog.value = newBuildLog[0]
+    console.log("newBuildLog", newBuildLog)
+    console.log("buildLog.value", buildLog.value)
+    return
+  } else {
+    buildLog.value.status = buildStatus.value
+    buildLog.value.endTime = buildStatus.value !== 'building' ? Date.now().toString() : undefined
+    buildLog.value.logs = JSON.stringify(logs.value)
+    console.log("upbuildLog", buildLog.value)
+    await window.electronAPI.updateBuildLog(buildLog.value.id, toRaw(buildLog.value))
+  }
 }
 
 onMounted(async () => {
@@ -225,16 +231,22 @@ onMounted(async () => {
     // 加载项目信息
     await getProjectInfo()
 
-    // 加载最新的构建日志
-    const buildLogs = dataStore.getBuildLogs(projectId.value)
-    if (buildLogs.length > 0) {
-      const latestLog = buildLogs[buildLogs.length - 1]
-      logs.value = [...latestLog.logs]
-      buildStatus.value = latestLog.status
+    // 根据action决定加载什么内容
+    if (action.value === 'view' && logId.value) {
+      // 查看历史构建日志
+      await loadHistoryLog()
+    } else {
+      // 加载最新的构建日志
+      const buildLogs = dataStore.getBuildLogs(projectId.value)
+      if (buildLogs.length > 0) {
+        const latestLog = buildLogs[buildLogs.length - 1]
+        logs.value = [...latestLog.logs]
+        buildStatus.value = latestLog.status
+      }
     }
   }
 
-  if (route.query.action === 'build') {
+  if (action.value === 'build') {
     buildStatus.value = 'building'
     await runBuild()
   }
@@ -254,6 +266,7 @@ const buildSteps = [
 async function runBuild() {
   if (!projectId.value) return
   buildStatus.value = 'building'
+  await saveBuildLog()
   // 一个工具函数，用于延时
   const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
   logs.value.push(buildSteps[0])
@@ -261,7 +274,7 @@ async function runBuild() {
   const localPath = project.value.localPath
   logs.value.push(buildSteps[1])
   await delay(500)
-  logs.value.push("[INFO] " +localPath)
+  logs.value.push("[INFO] " + localPath)
   await delay(500)
   logs.value.push(buildSteps[2])
   await delay(500)
@@ -276,7 +289,7 @@ async function runBuild() {
   for (const cmd of commands) {
     logs.value.push(`[INFO] 执行命令: ${cmd}`)
     await delay(300)
-    const code = await window.electronAPI.runCommand(cmd, { cwd: localPath })
+    const code = await window.electronAPI.runCommand(cmd, {cwd: localPath})
     if (code !== 0) {
       buildStatus.value = 'failed'
       logs.value.push(`[ERROR] 命令失败: ${cmd}`)
@@ -285,12 +298,37 @@ async function runBuild() {
   }
   logs.value.push('[INFO] 所有命令执行完成')
   buildStatus.value = 'success'
+  await saveBuildLog()
 }
+
 window.electronAPI.onCommandOutput((line: string) => {
   console.log('命令输出:', line)
   logs.value.push(line)
   scrollToBottom()
 })
+
+// 加载历史构建日志
+async function loadHistoryLog() {
+  if (!logId.value) return
+
+  try {
+    const buildLogs = dataStore.getBuildLogs(projectId.value)
+    const targetLog = buildLogs.find(log => log.id.toString() === logId.value)
+
+    if (targetLog) {
+      logs.value = [...targetLog.logs]
+      buildStatus.value = targetLog.status
+      // 如果是历史日志，禁用构建相关操作
+      buildStatus.value = targetLog.status
+    } else {
+      logs.value.push('[WARN] 未找到指定的构建日志')
+    }
+  } catch (error) {
+    console.error('加载历史构建日志失败:', error)
+    logs.value.push('[ERROR] 加载历史构建日志失败')
+  }
+}
+
 // 获取项目信息
 async function getProjectInfo() {
   const projectInfo = await window.electronAPI.getProjectById(projectId.value)
@@ -420,8 +458,8 @@ async function getProjectInfo() {
 .log-lines {
   display: flex;
   flex-direction: column;
-  overflow-x: auto;       /* 横向滚动 */
-  white-space: nowrap;    /* 不换行，超出时出现横向滚动条 */
+  overflow-x: auto; /* 横向滚动 */
+  white-space: nowrap; /* 不换行，超出时出现横向滚动条 */
 }
 
 .log-line {
@@ -445,9 +483,9 @@ async function getProjectInfo() {
 }
 
 .line-content {
-  flex: 0 0 auto;         /* 不压缩内容 */
-  word-break: keep-all;   /* 保留单词，避免自动断行 */
-  white-space: pre;       /* 保留空格和换行格式 */
+  flex: 0 0 auto; /* 不压缩内容 */
+  word-break: keep-all; /* 保留单词，避免自动断行 */
+  white-space: pre; /* 保留空格和换行格式 */
   font-family: monospace; /* 等宽字体，日志更好看 */
 }
 

@@ -76,7 +76,7 @@
 
 <script setup lang="ts">
 import {onMounted, ref, toRaw} from 'vue'
-import {defaultConfig, type AppConfig} from '../../../shared/default-config'
+import {defaultConfig, type AppConfig} from '../../types/defaultConfig.ts'
 import FilePicker from "@/components/FilePicker.vue";
 import {useMessage, useDialog} from 'naive-ui'
 import {useThemeStore} from '@/stores/theme'

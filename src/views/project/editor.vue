@@ -305,7 +305,7 @@ import {
 import {Edit24Regular} from '@vicons/fluent'
 
 import FilePicker from "@/components/FilePicker.vue";
-import {defaultProjectData} from "../../../electron/db/types/project.ts";
+import {defaultProjectData} from "../../types/project.ts";
 
 const message = useMessage()
 const router = useRouter()

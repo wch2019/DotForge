@@ -1,7 +1,7 @@
 import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core'
 import {sql} from "drizzle-orm";
 
-export const projects = sqliteTable('projects', {
+export const project = sqliteTable('project', {
     id: integer('id').primaryKey({ autoIncrement: true }),
     createdTime: text('createdTime').default(sql`datetime('now')`),
     name: text('name').notNull(),
@@ -31,3 +31,17 @@ export const projects = sqliteTable('projects', {
     lastBuildTime: text('lastBuildTime'),
     status: text('status')
 })
+
+export const projectBuild = sqliteTable("project_build", {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    projectId: text("projectId").notNull(),
+    projectName: text("projectName").notNull(),
+    command: text("command").notNull(),
+    localPath: text("localPath"),
+    status: text("status").notNull(),
+    artifactPath: text("artifactPath"),
+    artifactSize: integer("artifactSize"),
+    logs: text("logs"),
+    startTime: text("startTime").default(sql`datetime('now')`),
+    endTime: text("endTime"),
+});

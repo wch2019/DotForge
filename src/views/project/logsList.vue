@@ -346,9 +346,15 @@ function formatDuration(duration: number) {
 
 // 查看日志详情
 function viewLogDetail(log: any) {
-  selectedLog.value = log
-  nextTick(() => {
-    scrollToBottom()
+  // 跳转到BuildLog页面
+  router.push({
+    name: 'ProjectLog', 
+    query: { 
+      id: projectId.value, 
+      name: projectName.value,
+      logId: log.id,
+      action: 'view'
+    }
   })
 }
 

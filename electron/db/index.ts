@@ -37,7 +37,7 @@ export function getDb() {
 
     // 这里直接创建表（如果不存在）
     sqlite.exec(`
-        CREATE TABLE IF NOT EXISTS projects (
+        CREATE TABLE IF NOT EXISTS project (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             createdTime TEXT,
             name TEXT NOT NULL,
@@ -67,6 +67,21 @@ export function getDb() {
             lastBuildTime TEXT,
             status TEXT
             );
+    `);
+    sqlite.exec(`
+        CREATE TABLE IF NOT EXISTS project_build (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            projectId TEXT NOT NULL,
+            projectName TEXT NOT NULL,
+            command TEXT NOT NULL,
+            localPath TEXT,
+            status TEXT NOT NULL,
+            artifactPath TEXT,
+            artifactSize INTEGER,
+            logs TEXT,
+            startTime TEXT,
+            endTime TEXT
+        );
     `);
 
     const db = drizzle(sqlite, {schema});

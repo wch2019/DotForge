@@ -40,5 +40,11 @@ electron.contextBridge.exposeInMainWorld("electronAPI", {
   runCommand: (cmd, options) => electron.ipcRenderer.invoke("run-command", cmd, options),
   stopCommand: () => electron.ipcRenderer.invoke("stop-command"),
   onCommandOutput: (callback) => electron.ipcRenderer.on("command-output", (_, data) => callback(data)),
-  onCommandFinished: (callback) => electron.ipcRenderer.on("command-finished", (_, code) => callback(code))
+  onCommandFinished: (callback) => electron.ipcRenderer.on("command-finished", (_, code) => callback(code)),
+  // 构建日志相关
+  getBuildLogs: () => electron.ipcRenderer.invoke("build:getAll"),
+  getBuildLogById: (id) => electron.ipcRenderer.invoke("build:getById", id),
+  createBuildLog: (logData) => electron.ipcRenderer.invoke("build:create", logData),
+  updateBuildLog: (id, logData) => electron.ipcRenderer.invoke("build:update", id, logData),
+  deleteBuildLog: (id) => electron.ipcRenderer.invoke("build:delete", id)
 });

@@ -1,6 +1,35 @@
 import {ipcMain} from 'electron';
-import {createProject, updateProject, getProjects, getProjectById, deleteProject} from '../db/crud.ts';
+import {project} from "../db/schema.ts";
+import {getDb} from "../db";
+import {eq} from "drizzle-orm";
 
+export function createProject(data: Omit<typeof project.$inferInsert, 'id'>) {
+    console.log('createProject', data);
+    const db = getDb();
+    return db.insert(project).values(data).returning();
+}
+
+export function getProject() {
+    const db = getDb();
+    return db.select().from(project).all();
+}
+
+export function getProjectById(id: number) {
+    const db = getDb();
+    return db.select().from(project).where(eq(project.id, id)).get();
+}
+
+export function updateProject(id: number, data: Partial<typeof project.$inferUpdate>) {
+    const db = getDb();
+    return db.update(project).set(data).where(eq(project.id, id)).returning();
+}
+
+export function deleteProject(id: number) {
+    const db = getDb();
+    return db.delete(project).where(eq(project.id, id)).returning();
+}
+
+// 注册所有 project 相关 IPC
 export function registerProjectHandlers() {
     // 创建项目
     ipcMain.handle('project:create', async (_, projectData) => {
@@ -15,7 +44,7 @@ export function registerProjectHandlers() {
     // 获取项目列表
     ipcMain.handle('project:getAll', async () => {
         try {
-            return await getProjects();
+            return await getProject();
         } catch (error) {
             console.error('获取项目列表失败:', error);
             throw error;
