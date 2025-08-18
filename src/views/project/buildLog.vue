@@ -133,49 +133,13 @@ const buildStatusClass = computed(() => {
   }
 })
 
-function goBack() {
-  router.back()
-}
-
-async function clearLogs() {
-  logs.value = []
-  // 保存到数据存储
-  if (projectId.value) {
-    const buildLogs = dataStore.getBuildLogs(projectId.value)
-    if (buildLogs.length > 0) {
-      const latestLog = buildLogs[buildLogs.length - 1]
-      await dataStore.updateBuildLog(latestLog.id, {logs: []})
-    }
-  }
-}
-
-function exportLogs() {
-  if (logs.value.length === 0) return
-
-  const logText = logs.value.join('\n')
-  const blob = new Blob([logText], {type: 'text/plain'})
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `${projectName.value}-build-log-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.txt`
-  document.body.appendChild(a)
-  a.click()
-  document.body.removeChild(a)
-  URL.revokeObjectURL(url)
-}
-
-function stopBuild() {
-  window.electronAPI.stopCommand().then((stopped: any) => {
-    if (stopped) {
-      logs.value.push('[INFO] 构建已停止')
-      buildStatus.value = 'failed'
-    } else {
-      logs.value.push('[WARN] 没有正在运行的构建任务')
-    }
-  })
-  // 保存构建日志
-  saveBuildLog()
-}
+const buildSteps = [
+  '[INFO] 开始构建项目...',
+  '[INFO] 获取项目路径...',
+  '[INFO] 执行构建命令...',
+  '[INFO] 生成构建产物...',
+  '[INFO] 构建成功完成'
+]
 
 // 片段颜色
 function formatLogLine(line: string) {
@@ -189,6 +153,7 @@ function formatLogLine(line: string) {
       .replace(/\x1b\[0m/g, '</span>')
 }
 
+// 获取日志行样式
 function getLogLineClass(line: string) {
   if (line.includes('ERROR') || line.includes('FAILED')) return 'log-line-error'
   if (line.includes('WARNING')) return 'log-line-warning'
@@ -196,34 +161,9 @@ function getLogLineClass(line: string) {
   return ''
 }
 
-// 滚动到底部
-function scrollToBottom() {
-  nextTick(() => {
-    if (logContent.value) {
-      logContent.value.scrollTop = logContent.value.scrollHeight
-    }
-  })
-}
-
-async function saveBuildLog() {
-  if (!buildLog.value.id) {
-    buildLog.value.projectId = projectId.value
-    buildLog.value.projectName = projectName.value
-    buildLog.value.command = project.value.buildCmd
-    buildLog.value.localPath = project.value.localPath
-    buildLog.value.status = buildStatus.value
-    let newBuildLog = await window.electronAPI.createBuildLog(toRaw(buildLog.value))
-    buildLog.value = newBuildLog[0]
-    console.log("newBuildLog", newBuildLog)
-    console.log("buildLog.value", buildLog.value)
-    return
-  } else {
-    buildLog.value.status = buildStatus.value
-    buildLog.value.endTime = buildStatus.value !== 'building' ? Date.now().toString() : undefined
-    buildLog.value.logs = JSON.stringify(logs.value)
-    console.log("upbuildLog", buildLog.value)
-    await window.electronAPI.updateBuildLog(buildLog.value.id, toRaw(buildLog.value))
-  }
+// 返回
+function goBack() {
+  router.back()
 }
 
 onMounted(async () => {
@@ -254,15 +194,52 @@ onMounted(async () => {
   scrollToBottom()
 })
 
-const buildSteps = [
-  '[INFO] 开始构建项目...',
-  '[INFO] 获取项目路径...',
-  '[INFO] 执行构建命令...',
-  '[INFO] 生成构建产物...',
-  '[INFO] 构建成功完成'
-]
+// 停止构建
+function stopBuild() {
+  window.electronAPI.stopCommand().then((stopped: any) => {
+    if (stopped) {
+      logs.value.push('[INFO] 构建已停止')
+      buildStatus.value = 'failed'
+    } else {
+      logs.value.push('[WARN] 没有正在运行的构建任务')
+    }
+  })
+  // 保存构建日志
+  saveBuildLog()
+}
 
+// 滚动到底部
+function scrollToBottom() {
+  nextTick(() => {
+    if (logContent.value) {
+      logContent.value.scrollTop = logContent.value.scrollHeight
+    }
+  })
+}
 
+// 保存构建日志
+async function saveBuildLog() {
+  if (!buildLog.value.id) {
+    buildLog.value.projectId = projectId.value
+    buildLog.value.projectName = projectName.value
+    buildLog.value.command = project.value.buildCmd
+    buildLog.value.localPath = project.value.localPath
+    buildLog.value.status = buildStatus.value
+    let newBuildLog = await window.electronAPI.createBuildLog(toRaw(buildLog.value))
+    buildLog.value = newBuildLog[0]
+    console.log("newBuildLog", newBuildLog)
+    console.log("buildLog.value", buildLog.value)
+    return
+  } else {
+    buildLog.value.status = buildStatus.value
+    buildLog.value.endTime = buildStatus.value !== 'building' ? Date.now().toString() : undefined
+    buildLog.value.logs = JSON.stringify(logs.value)
+    console.log("upbuildLog", buildLog.value)
+    await window.electronAPI.updateBuildLog(buildLog.value.id, toRaw(buildLog.value))
+  }
+}
+
+// 开始构建
 async function runBuild() {
   if (!projectId.value) return
   buildStatus.value = 'building'
@@ -270,13 +247,17 @@ async function runBuild() {
   // 一个工具函数，用于延时
   const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
   logs.value.push(buildSteps[0])
+  await saveBuildLog()
   await delay(500)
   const localPath = project.value.localPath
   logs.value.push(buildSteps[1])
+  await saveBuildLog()
   await delay(500)
   logs.value.push("[INFO] " + localPath)
+  await saveBuildLog()
   await delay(500)
   logs.value.push(buildSteps[2])
+  await saveBuildLog()
   await delay(500)
   let buildCmd = project.value.buildCmd
   // 按换行分割命令
@@ -293,6 +274,7 @@ async function runBuild() {
     if (code !== 0) {
       buildStatus.value = 'failed'
       logs.value.push(`[ERROR] 命令失败: ${cmd}`)
+      await saveBuildLog()
       return
     }
   }
@@ -335,6 +317,36 @@ async function getProjectInfo() {
   if (projectInfo) {
     Object.assign(project.value, projectInfo)
   }
+}
+
+
+// 清空日志
+async function clearLogs() {
+  logs.value = []
+  // 保存到数据存储
+  if (projectId.value) {
+    const buildLogs = dataStore.getBuildLogs(projectId.value)
+    if (buildLogs.length > 0) {
+      const latestLog = buildLogs[buildLogs.length - 1]
+      await dataStore.updateBuildLog(latestLog.id, {logs: []})
+    }
+  }
+}
+
+// 导出日志
+function exportLogs() {
+  if (logs.value.length === 0) return
+
+  const logText = logs.value.join('\n')
+  const blob = new Blob([logText], {type: 'text/plain'})
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `${projectName.value}-build-log-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.txt`
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
 }
 
 </script>

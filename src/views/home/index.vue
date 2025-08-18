@@ -4,7 +4,7 @@
     <div class="welcome-section">
       <div class="welcome-content">
         <div class="welcome-header">
-            <img src="/dot-forge.png" alt="App Icon" class="w-25 h-25"/>
+          <img src="/dot-forge.png" alt="App Icon" class="w-25 h-25"/>
           <div class="welcome-text">
             <h1 class="welcome-title">欢迎使用 DotForge</h1>
             <p class="welcome-subtitle">强大的CI/CD项目管理平台，让构建更简单</p>
@@ -38,7 +38,7 @@
         <div class="section-header">
           <h2 class="section-title">
             <n-icon size="24" class="title-icon">
-              <FlashOutline />
+              <FlashOutline/>
             </n-icon>
             快速操作
           </h2>
@@ -48,7 +48,7 @@
           <div class="action-card" @click="goToProjects">
             <div class="action-icon">
               <n-icon size="32" color="#3b82f6">
-                <FolderOutline />
+                <FolderOutline/>
               </n-icon>
             </div>
             <div class="action-content">
@@ -57,15 +57,15 @@
             </div>
             <div class="action-arrow">
               <n-icon size="20" color="#9ca3af">
-                <ChevronForwardOutline />
+                <ChevronForwardOutline/>
               </n-icon>
             </div>
           </div>
-          
+
           <div class="action-card" @click="addNewProject">
             <div class="action-icon">
               <n-icon size="32" color="#10b981">
-                <AddOutline />
+                <AddOutline/>
               </n-icon>
             </div>
             <div class="action-content">
@@ -74,15 +74,15 @@
             </div>
             <div class="action-arrow">
               <n-icon size="20" color="#9ca3af">
-                <ChevronForwardOutline />
+                <ChevronForwardOutline/>
               </n-icon>
             </div>
           </div>
-          
+
           <div class="action-card" @click="goToSettings">
             <div class="action-icon">
               <n-icon size="32" color="#8b5cf6">
-                <SettingsOutline />
+                <SettingsOutline/>
               </n-icon>
             </div>
             <div class="action-content">
@@ -91,7 +91,7 @@
             </div>
             <div class="action-arrow">
               <n-icon size="20" color="#9ca3af">
-                <ChevronForwardOutline />
+                <ChevronForwardOutline/>
               </n-icon>
             </div>
           </div>
@@ -103,27 +103,27 @@
         <div class="section-header">
           <h2 class="section-title">
             <n-icon size="24" class="title-icon">
-              <TimeOutline />
+              <TimeOutline/>
             </n-icon>
             最近构建
           </h2>
           <p class="section-description">查看最近的构建记录</p>
         </div>
         <div class="recent-builds">
-          <div 
-            v-for="build in recentBuilds" 
-            :key="build.id" 
-            class="build-item"
-            :class="{ 'build-success': build.status === 'success', 'build-failed': build.status === 'failed' }"
+          <div
+              v-for="build in recentBuilds"
+              :key="build.id"
+              class="build-item"
+              :class="{ 'build-success': build.status === 'success', 'build-failed': build.status === 'failed' }"
           >
             <div class="build-status">
-              <n-icon 
-                size="20" 
-                :color="build.status === 'success' ? '#10b981' : '#ef4444'"
-                class="status-icon"
+              <n-icon
+                  size="20"
+                  :color="build.status === 'success' ? '#10b981' : '#ef4444'"
+                  class="status-icon"
               >
-                <CheckmarkCircleOutline v-if="build.status === 'success'" />
-                <CloseCircleOutline v-else />
+                <CheckmarkCircleOutline v-if="build.status === 'success'"/>
+                <CloseCircleOutline v-else/>
               </n-icon>
             </div>
             <div class="build-info">
@@ -134,7 +134,7 @@
               <n-button quaternary size="small" circle>
                 <template #icon>
                   <n-icon size="16">
-                    <EyeOutline />
+                    <EyeOutline/>
                   </n-icon>
                 </template>
               </n-button>
@@ -147,26 +147,37 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { 
-  NButton, NIcon 
+import {ref, computed} from 'vue'
+import {useRouter} from 'vue-router'
+import {
+  NButton, NIcon
 } from 'naive-ui'
-import { 
-  FolderOutline, AddOutline, SettingsOutline, 
+import {
+  FolderOutline, AddOutline, SettingsOutline,
   CheckmarkCircleOutline, CloseCircleOutline,
   RocketOutline, FlashOutline, TimeOutline,
   ChevronForwardOutline, EyeOutline
 } from '@vicons/ionicons5'
+import {ProjectData} from "@/types/project.ts";
 
 const router = useRouter()
 
+// 项目数据示例
+const projects = ref<ProjectData[]>([])
+
 // 统计数据
-const stats = ref({
-  totalProjects: 12,
-  successBuilds: 156,
-  failedBuilds: 8,
-  buildingNow: 2
+const stats = computed(() => {
+  const successBuilds = projects.value.filter(p => p.status === 'success').length
+  const buildingNow = projects.value.filter(p => p.status === 'building').length
+  const failedBuilds = projects.value.filter(p => p.status === 'failed').length
+  const totalProjects = projects.value.length
+
+  return {
+    successBuilds,
+    buildingNow,
+    failedBuilds,
+    totalProjects
+  }
 })
 
 // 最近构建记录
@@ -198,16 +209,26 @@ const recentBuilds = ref([
 ])
 
 function goToProjects() {
-  router.push({ name: 'Project' })
+  router.push({name: 'Project'})
 }
 
 function addNewProject() {
-  router.push({ name: 'Project' })
+  router.push({name: 'Project'})
 }
 
 function goToSettings() {
-  router.push({ name: 'Settings' })
+  router.push({name: 'Settings'})
 }
+
+// 获取项目
+async function getProjects() {
+  const project = await window.electronAPI.getProjects()
+  if (project) {
+    Object.assign(projects.value, project)
+  }
+}
+
+getProjects()
 </script>
 
 <style scoped>
@@ -504,36 +525,36 @@ function goToSettings() {
   .home-page {
     padding: 16px;
   }
-  
+
   .welcome-section {
     padding: 24px;
   }
-  
+
   .welcome-title {
     font-size: 28px;
   }
-  
+
   .welcome-subtitle {
     font-size: 16px;
   }
-  
+
   .welcome-stats {
     grid-template-columns: repeat(2, 1fr);
     gap: 16px;
   }
-  
+
   .stat-item {
     padding: 16px;
   }
-  
+
   .stat-number {
     font-size: 24px;
   }
-  
+
   .section-card {
     padding: 24px;
   }
-  
+
   .main-content {
     grid-template-columns: 1fr;
   }
