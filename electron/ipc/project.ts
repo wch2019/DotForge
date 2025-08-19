@@ -1,7 +1,7 @@
 import {ipcMain} from 'electron';
 import {project} from "../db/schema.ts";
 import {getDb} from "../db";
-import {eq} from "drizzle-orm";
+import {desc, eq} from "drizzle-orm";
 
 export function createProject(data: Omit<typeof project.$inferInsert, 'id'>) {
     console.log('createProject', data);
@@ -11,7 +11,7 @@ export function createProject(data: Omit<typeof project.$inferInsert, 'id'>) {
 
 export function getProject() {
     const db = getDb();
-    return db.select().from(project).all();
+    return db.select().from(project).orderBy(desc(project.createdTime)).all();
 }
 
 export function getProjectById(id: number) {

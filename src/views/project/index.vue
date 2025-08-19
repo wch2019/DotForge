@@ -166,7 +166,7 @@
           </div>
 
           <div class="project-actions">
-            <n-button size="small" type="primary" @click="build(project)" class="action-btn" >
+            <n-button size="small" type="primary" @click="build(project)" class="action-btn" :disabled="project.status == 'building'">
               <template #icon>
                 <n-icon>
                   <PlayOutline/>

@@ -14,7 +14,7 @@ import require$$5 from "assert";
 import require$$1 from "path";
 import { createRequire } from "module";
 import Client from "better-sqlite3";
-import { spawn } from "child_process";
+import { spawn, exec } from "child_process";
 function registerFileDialogHandler() {
   ipcMain.handle("dialog:selectPath", async (_event, options) => {
     const properties = options.type === "directory" ? ["openDirectory"] : ["openFile"];
@@ -6633,7 +6633,7 @@ class NoopLogger {
 __publicField(NoopLogger, _Wb, "NoopLogger");
 const project = sqliteTable("project", {
   id: integer("id").primaryKey({ autoIncrement: true }),
-  createdTime: text("createdTime").default(sql`datetime('now')`),
+  createdTime: text("createdTime").default(sql`strftime('%Y-%m-%d %H:%M:%S', 'now', 'localtime')`),
   name: text("name").notNull(),
   localPath: text("localPath").notNull(),
   description: text("description"),
@@ -6675,7 +6675,7 @@ const projectBuild = sqliteTable("project_build", {
   artifactPath: text("artifactPath"),
   artifactSize: integer("artifactSize"),
   logs: text("logs"),
-  startTime: text("startTime").default(sql`datetime('now')`),
+  startTime: text("startTime").default(sql`strftime('%Y-%m-%d %H:%M:%S', 'now', 'localtime')`),
   endTime: text("endTime")
 });
 const schema = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
@@ -6855,10 +6855,10 @@ function getDb() {
   }
   const isNew = !fs.existsSync(dbPath);
   if (isNew) {
-    console.log("📦 创建新的 SQLite 数据库:", dbPath);
+    console.log("📦 Create a new SQLite database:", dbPath);
     fs.writeFileSync(dbPath, "");
   } else {
-    console.log(`连接数据库: ${dbPath}`);
+    console.log(`Connect to the database: ${dbPath}`);
   }
   const sqlite = new Database(dbPath);
   sqlite.pragma("journal_mode = WAL");
@@ -6919,7 +6919,7 @@ function createProject(data) {
 }
 function getProject() {
   const db = getDb();
-  return db.select().from(project).all();
+  return db.select().from(project).orderBy(desc(project.createdTime)).all();
 }
 function getProjectById(id) {
   const db = getDb();
@@ -6997,9 +6997,18 @@ function registerCommandHandlers() {
     });
   });
   ipcMain.handle("stop-command", () => {
-    if (currentProcess) {
-      currentProcess.kill("SIGTERM");
-      currentProcess = null;
+    if (currentProcess && currentProcess.pid) {
+      try {
+        if (process.platform === "win32") {
+          exec(`taskkill /pid ${currentProcess.pid} /T /F`);
+        } else {
+          process.kill(-currentProcess.pid, "SIGTERM");
+        }
+      } catch (err) {
+        console.error("❌ Kill process failed", err);
+      } finally {
+        currentProcess = null;
+      }
       return true;
     }
     return false;
@@ -7009,9 +7018,18 @@ function createProjectBuild(data) {
   const db = getDb();
   return db.insert(projectBuild).values(data).returning();
 }
-function getProjectBuild() {
+function getProjectBuild(projectId) {
   const db = getDb();
-  return db.select().from(projectBuild).all();
+  const query = db.select({
+    id: projectBuild.id,
+    status: projectBuild.status,
+    startTime: projectBuild.startTime,
+    endTime: projectBuild.endTime
+  }).from(projectBuild);
+  if (projectId) {
+    return query.where(eq(projectBuild.projectId, projectId)).all();
+  }
+  return query.orderBy(desc(projectBuild.startTime)).all();
 }
 function getProjectBuildById(id) {
   const db = getDb();
@@ -7034,9 +7052,9 @@ function registerProjectBuildHandlers() {
       throw error;
     }
   });
-  ipcMain.handle("build:getAll", async () => {
+  ipcMain.handle("build:getAll", async (_, projectId) => {
     try {
-      return await getProjectBuild();
+      return await getProjectBuild(projectId);
     } catch (error) {
       console.error("获取项目日志列表失败:", error);
       throw error;

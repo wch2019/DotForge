@@ -1,16 +1,29 @@
 import {ipcMain} from 'electron';
 import {projectBuild} from "../db/schema.ts";
 import {getDb} from "../db";
-import {eq} from "drizzle-orm";
+import {desc, eq} from "drizzle-orm";
 
 export function createProjectBuild(data: Omit<typeof projectBuild.$inferInsert, 'id'>) {
     const db = getDb();
     return db.insert(projectBuild).values(data).returning();
 }
 
-export function getProjectBuild() {
+export function getProjectBuild(projectId?: string) {
     const db = getDb();
-    return db.select().from(projectBuild).all();
+    const query = db
+        .select({
+            id: projectBuild.id,
+            status: projectBuild.status,
+            startTime: projectBuild.startTime,
+            endTime: projectBuild.endTime
+        })
+        .from(projectBuild);
+
+    if (projectId) {
+        return query.where(eq(projectBuild.projectId, projectId)).all();
+    }
+
+    return query.orderBy(desc(projectBuild.startTime)).all();
 }
 
 export function getProjectBuildById(id: number) {
@@ -41,9 +54,9 @@ export function registerProjectBuildHandlers() {
     });
 
     // 获取项目日志列表
-    ipcMain.handle('build:getAll', async () => {
+    ipcMain.handle('build:getAll', async (_,projectId) => {
         try {
-            return await getProjectBuild();
+            return await getProjectBuild(projectId);
         } catch (error) {
             console.error('获取项目日志列表失败:', error);
             throw error;

@@ -1,7 +1,7 @@
 import {registerFileDialogHandler} from './fileDialog'
 import {registerSettingHandler} from './setting'
 import {registerProjectHandlers} from "./project.ts";
-import {registerCommandHandlers} from "./command.ts";
+import { registerCommandHandlers } from "./command.ts";
 import {registerProjectBuildHandlers} from "./projectBuild.ts";
 
 export function registerAllIpcHandlers() {

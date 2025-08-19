@@ -77,110 +77,24 @@
               size="medium"
           />
         </div>
-
-        <!-- 空状态 -->
-        <div v-if="filteredLogs.length === 0" class="empty-state">
-          <n-icon size="64" class="empty-icon">
-            <DocumentTextOutline/>
-          </n-icon>
-          <h3 class="empty-title">暂无构建日志</h3>
-          <p class="empty-description">该项目还没有构建记录，开始构建项目后这里会显示相关日志</p>
-        </div>
-      </div>
-
-      <!-- 日志详情视图 -->
-      <div v-else class="log-detail-view">
-        <div class="detail-header">
-          <div class="detail-info">
-            <n-button quaternary circle size="medium" @click="backToList" class="back-list-btn">
-              <template #icon>
-                <n-icon>
-                  <ArrowBackOutline/>
-                </n-icon>
-              </template>
-            </n-button>
-            <div class="detail-meta">
-              <h2 class="detail-title">构建日志详情</h2>
-              <div class="detail-status">
-                <n-tag
-                    :type="getStatusType(selectedLog.status)"
-                    size="medium"
-                    round
-                    :bordered="false"
-                >
-                  <template #icon>
-                    <n-icon v-if="selectedLog.status === 'building'">
-                      <SyncOutline class="spinning"/>
-                    </n-icon>
-                    <n-icon v-else-if="selectedLog.status === 'success'">
-                      <CheckmarkCircleOutline/>
-                    </n-icon>
-                    <n-icon v-else-if="selectedLog.status === 'failed'">
-                      <CloseCircleOutline/>
-                    </n-icon>
-                  </template>
-                  {{ getStatusText(selectedLog.status) }}
-                </n-tag>
-                <span class="build-time">{{ formatBuildTime(selectedLog.startTime) }}</span>
-              </div>
-            </div>
-          </div>
-          <div class="detail-actions">
-            <n-button quaternary size="small" @click="exportLog" :disabled="!selectedLog.logs?.length">
-              <template #icon>
-                <n-icon>
-                  <DownloadOutline/>
-                </n-icon>
-              </template>
-              导出日志
-            </n-button>
-            <n-button quaternary size="small" @click="copyLog" :disabled="!selectedLog.logs?.length">
-              <template #icon>
-                <n-icon>
-                  <CopyOutline/>
-                </n-icon>
-              </template>
-              复制日志
-            </n-button>
-          </div>
-        </div>
-
-        <div class="log-content-container">
-          <div class="log-content" ref="logContent">
-            <div v-if="!selectedLog.logs?.length" class="empty-logs">
-              <n-icon size="48" class="empty-icon">
-                <DocumentTextOutline/>
-              </n-icon>
-              <p class="empty-text">暂无日志内容</p>
-            </div>
-            <div v-else class="log-lines">
-              <div v-for="(line, index) in selectedLog.logs" :key="index" class="log-line"
-                   :class="getLogLineClass(line)">
-                <span class="line-number">{{ index + 1 }}</span>
-                <span class="line-content" v-html="formatLogLine(line)"></span>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import {ref, computed, onMounted, nextTick, h} from 'vue'
+import {ref, computed, onMounted, h} from 'vue'
 import {useRoute, useRouter} from 'vue-router'
 import {NButton, NIcon, NTag, NSelect, NDatePicker, NDataTable, NConfigProvider, zhCN, useMessage} from 'naive-ui'
 import {
-  ArrowBackOutline, DocumentTextOutline, RefreshOutline, SyncOutline,
-  CheckmarkCircleOutline, CloseCircleOutline, DownloadOutline, CopyOutline
+  ArrowBackOutline, DocumentTextOutline, RefreshOutline, SyncOutline
 } from '@vicons/ionicons5'
 import type {BuildLog} from '@/types/buildLog'
+import {formatDuration} from '@/utils/date'
 
 const router = useRouter()
 const route = useRoute()
 const message = useMessage()
-const logContent = ref<HTMLElement>()
 
 // 项目信息
 const projectId = computed(() => route.query.id as string)
@@ -221,7 +135,7 @@ const columns = [
     key: 'startTime',
     align: 'center',
     width: 180,
-    render: (row: any) => formatBuildTime(row.startTime)
+    render: (row: any) => row.startTime
   },
   {
     title: '构建状态',
@@ -250,8 +164,7 @@ const columns = [
     render: (row: any) => {
       if (row.status === 'building') return '进行中...'
       if (row.startTime && row.endTime) {
-        const duration = row.endTime - row.startTime
-        return formatDuration(duration)
+        return formatDuration(row.startTime, row.endTime)
       }
       return '-'
     }
@@ -287,7 +200,8 @@ const filteredLogs = computed(() => {
   if (dateRange.value && dateRange.value.length === 2) {
     const [start, end] = dateRange.value
     logs = logs.filter(log => {
-      const logTime = new Date(log.startTime).getTime()
+      if (!log.startTime) return false;
+      const logTime = Date.parse(log.startTime.replace(' ', 'T'));
       return logTime >= start && logTime <= end
     })
   }
@@ -323,44 +237,18 @@ function getStatusText(status: string) {
   }
 }
 
-// 格式化构建时间
-function formatBuildTime(timestamp: number) {
-  if (!timestamp) return '-'
-  return new Date(timestamp).toLocaleString('zh-CN')
-}
-
-// 格式化构建时长
-function formatDuration(duration: number) {
-  const seconds = Math.floor(duration / 1000)
-  const minutes = Math.floor(seconds / 60)
-  const hours = Math.floor(minutes / 60)
-
-  if (hours > 0) {
-    return `${hours}小时${minutes % 60}分钟`
-  } else if (minutes > 0) {
-    return `${minutes}分钟${seconds % 60}秒`
-  } else {
-    return `${seconds}秒`
-  }
-}
-
 // 查看日志详情
 function viewLogDetail(log: any) {
   // 跳转到BuildLog页面
   router.push({
-    name: 'ProjectLog', 
-    query: { 
-      id: projectId.value, 
+    name: 'ProjectLog',
+    query: {
+      id: projectId.value,
       name: projectName.value,
       logId: log.id,
       action: 'view'
     }
   })
-}
-
-// 返回列表
-function backToList() {
-  selectedLog.value = null
 }
 
 // 返回项目页面
@@ -374,158 +262,13 @@ function refreshLogs() {
   message.success('日志已刷新')
 }
 
-// 导出日志
-function exportLog() {
-  if (!selectedLog.value?.logs?.length) return
-
-  const logText = selectedLog.value.logs.join('\n')
-  const blob = new Blob([logText], {type: 'text/plain'})
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `${projectName.value}-build-log-${formatBuildTime(selectedLog.value.startTime)}.txt`
-  document.body.appendChild(a)
-  a.click()
-  document.body.removeChild(a)
-  URL.revokeObjectURL(url)
-
-  message.success('日志导出成功')
-}
-
-// 复制日志
-async function copyLog() {
-  if (!selectedLog.value?.logs?.length) return
-
-  try {
-    const logText = selectedLog.value.logs.join('\n')
-    await navigator.clipboard.writeText(logText)
-    message.success('日志已复制到剪贴板')
-  } catch (error) {
-    message.error('复制失败，请手动选择复制')
-  }
-}
-
-// 格式化日志行
-function formatLogLine(line: string) {
-  return line
-      .replace(/\[INFO\]/g, '<span style="color: #22c55e">[INFO]</span>')
-      .replace(/\[ERROR\]/g, '<span style="color: #ef4444">[ERROR]</span>')
-      .replace(/\[WARNING\]/g, '<span style="color: #f59e0b">[WARNING]</span>')
-      .replace(/\[SUCCESS\]/g, '<span style="color: #22c55e">[SUCCESS]</span>')
-}
-
-// 获取日志行样式类
-function getLogLineClass(line: string) {
-  if (line.includes('ERROR') || line.includes('FAILED')) return 'log-line-error'
-  if (line.includes('WARNING')) return 'log-line-warning'
-  if (line.includes('SUCCESS') || line.includes('SUCCEEDED')) return 'log-line-success'
-  return ''
-}
-
-// 滚动到底部
-function scrollToBottom() {
-  nextTick(() => {
-    if (logContent.value) {
-      logContent.value.scrollTop = logContent.value.scrollHeight
-    }
-  })
-}
-
 // 加载构建日志
-function loadBuildLogs() {
-  // 模拟数据，实际项目中这里会调用API获取数据
-  buildLogs.value = [
-    {
-      id: 1,
-      projectId: projectId.value,
-      projectName: projectName.value,
-      status: 'success',
-      startTime: Date.now() - 3600000, // 1小时前
-      endTime: Date.now() - 3500000,   // 50分钟前
-      logs: [
-        '[INFO] 开始构建项目...',
-        '[INFO] 获取项目路径...',
-        '[INFO] 执行构建命令...',
-        '[INFO] 生成构建产物...',
-        '[SUCCESS] 构建成功完成'
-      ]
-    },
-    {
-      id: 2,
-      projectId: projectId.value,
-      projectName: projectName.value,
-      status: 'failed',
-      startTime: Date.now() - 7200000, // 2小时前
-      endTime: Date.now() - 7100000,   // 1小时58分钟前
-      logs: [
-        '[INFO] 开始构建项目...',
-        '[INFO] 获取项目路径...',
-        '[ERROR] 构建命令执行失败',
-        '[ERROR] 构建失败'
-      ]
-    },
-    {
-      id: 3,
-      projectId: projectId.value,
-      projectName: projectName.value,
-      status: 'building',
-      startTime: Date.now() - 300000,  // 5分钟前
-      endTime: undefined,
-      logs: [
-        '[INFO] 开始构建项目...',
-        '[INFO] 获取项目路径...',
-        '[INFO] 执行构建命令...'
-      ]
-    }, {
-      id: 3,
-      projectId: projectId.value,
-      projectName: projectName.value,
-      status: 'building',
-      startTime: Date.now() - 300000,  // 5分钟前
-      endTime: undefined,
-      logs: [
-        '[INFO] 开始构建项目...',
-        '[INFO] 获取项目路径...',
-        '[INFO] 执行构建命令...'
-      ]
-    }, {
-      id: 3,
-      projectId: projectId.value,
-      projectName: projectName.value,
-      status: 'building',
-      startTime: Date.now() - 300000,  // 5分钟前
-      endTime: undefined,
-      logs: [
-        '[INFO] 开始构建项目...',
-        '[INFO] 获取项目路径...',
-        '[INFO] 执行构建命令...'
-      ]
-    }, {
-      id: 3,
-      projectId: projectId.value,
-      projectName: projectName.value,
-      status: 'building',
-      startTime: Date.now() - 300000,  // 5分钟前
-      endTime: undefined,
-      logs: [
-        '[INFO] 开始构建项目...',
-        '[INFO] 获取项目路径...',
-        '[INFO] 执行构建命令...'
-      ]
-    }, {
-      id: 3,
-      projectId: projectId.value,
-      projectName: projectName.value,
-      status: 'building',
-      startTime: Date.now() - 300000,  // 5分钟前
-      endTime: undefined,
-      logs: [
-        '[INFO] 开始构建项目...',
-        '[INFO] 获取项目路径...',
-        '[INFO] 执行构建命令...'
-      ]
-    }
-  ]
+async function loadBuildLogs() {
+  const logs = await window.electronAPI.getBuildLogs(projectId.value)
+  if (logs) {
+    Object.assign(buildLogs.value, logs)
+  }
+  console.log('logs', buildLogs.value)
 }
 
 onMounted(() => {

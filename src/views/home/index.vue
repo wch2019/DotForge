@@ -217,7 +217,7 @@ function addNewProject() {
 }
 
 function goToSettings() {
-  router.push({name: 'Settings'})
+  router.push({name: 'Setting'})
 }
 
 // 获取项目

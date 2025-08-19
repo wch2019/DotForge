@@ -48,7 +48,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     onCommandOutput: (callback: any) => ipcRenderer.on('command-output', (_, data) => callback(data)),
     onCommandFinished: (callback: any) => ipcRenderer.on('command-finished', (_, code) => callback(code)),
     // 构建日志相关
-    getBuildLogs: () => ipcRenderer.invoke('build:getAll'),
+    getBuildLogs: (projectId?: string) => ipcRenderer.invoke('build:getAll',projectId),
     getBuildLogById: (id: number) => ipcRenderer.invoke('build:getById', id),
     createBuildLog: (logData: any) => ipcRenderer.invoke('build:create', logData),
     updateBuildLog: (id: number, logData: any) => ipcRenderer.invoke('build:update', id, logData),

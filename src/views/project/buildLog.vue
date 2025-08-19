@@ -78,15 +78,15 @@
 <script setup lang="ts">
 import {ref, computed, onMounted, nextTick, toRaw} from 'vue'
 import {useRoute, useRouter} from 'vue-router'
-import {NButton, NIcon} from 'naive-ui'
+import {NButton, NIcon, useMessage} from 'naive-ui'
 import {
   ArrowBackOutline, CheckmarkCircleOutline, CloseCircleOutline,
   SyncOutline, TrashOutline, DownloadOutline, StopOutline,
   DocumentTextOutline
 } from '@vicons/ionicons5'
-import dataStore from '@/utils/dataStore'
 import {defaultProjectData} from "@/types/project.ts";
 import {BuildLog} from "@/types/buildLog.ts";
+import {formatDateTime} from "@/utils/date.ts";
 
 const buildLog = ref<BuildLog>({
   projectId: '',
@@ -97,6 +97,7 @@ const buildLog = ref<BuildLog>({
 
 const router = useRouter()
 const route = useRoute()
+const message = useMessage()
 const logContent = ref<HTMLElement>()
 
 const projectId = computed(() => route.query.id as string)
@@ -171,27 +172,20 @@ onMounted(async () => {
     // 加载项目信息
     await getProjectInfo()
 
-    // 根据action决定加载什么内容
+    // 加载最新的构建日志
     if (action.value === 'view' && logId.value) {
       // 查看历史构建日志
       await loadHistoryLog()
-    } else {
-      // 加载最新的构建日志
-      const buildLogs = dataStore.getBuildLogs(projectId.value)
-      if (buildLogs.length > 0) {
-        const latestLog = buildLogs[buildLogs.length - 1]
-        logs.value = [...latestLog.logs]
-        buildStatus.value = latestLog.status
-      }
     }
+    // 运行构建
+    if (action.value === 'build') {
+      buildStatus.value = 'building'
+      await runBuild()
+    }
+
+    scrollToBottom()
   }
 
-  if (action.value === 'build') {
-    buildStatus.value = 'building'
-    await runBuild()
-  }
-
-  scrollToBottom()
 })
 
 // 停止构建
@@ -227,15 +221,15 @@ async function saveBuildLog() {
     buildLog.value.status = buildStatus.value
     let newBuildLog = await window.electronAPI.createBuildLog(toRaw(buildLog.value))
     buildLog.value = newBuildLog[0]
-    console.log("newBuildLog", newBuildLog)
-    console.log("buildLog.value", buildLog.value)
     return
   } else {
     buildLog.value.status = buildStatus.value
-    buildLog.value.endTime = buildStatus.value !== 'building' ? Date.now().toString() : undefined
+    buildLog.value.endTime = buildStatus.value !== 'building' ? formatDateTime(Date.now()) : undefined
     buildLog.value.logs = JSON.stringify(logs.value)
-    console.log("upbuildLog", buildLog.value)
     await window.electronAPI.updateBuildLog(buildLog.value.id, toRaw(buildLog.value))
+  }
+  if(buildStatus.value !== 'building'){
+    await window.electronAPI.updateProject(parseInt(projectId.value), {lastBuildTime: buildLog.value.startTime, status: buildLog.value.status});
   }
 }
 
@@ -294,14 +288,10 @@ async function loadHistoryLog() {
   if (!logId.value) return
 
   try {
-    const buildLogs = dataStore.getBuildLogs(projectId.value)
-    const targetLog = buildLogs.find(log => log.id.toString() === logId.value)
-
-    if (targetLog) {
-      logs.value = [...targetLog.logs]
-      buildStatus.value = targetLog.status
-      // 如果是历史日志，禁用构建相关操作
-      buildStatus.value = targetLog.status
+    const buildLogs = await window.electronAPI.getBuildLogById(logId.value)
+    if (buildLogs) {
+      logs.value = JSON.parse(buildLogs.logs)
+      buildStatus.value = buildLogs.status
     } else {
       logs.value.push('[WARN] 未找到指定的构建日志')
     }
@@ -322,15 +312,8 @@ async function getProjectInfo() {
 
 // 清空日志
 async function clearLogs() {
+  await saveBuildLog()
   logs.value = []
-  // 保存到数据存储
-  if (projectId.value) {
-    const buildLogs = dataStore.getBuildLogs(projectId.value)
-    if (buildLogs.length > 0) {
-      const latestLog = buildLogs[buildLogs.length - 1]
-      await dataStore.updateBuildLog(latestLog.id, {logs: []})
-    }
-  }
 }
 
 // 导出日志
@@ -347,6 +330,7 @@ function exportLogs() {
   a.click()
   document.body.removeChild(a)
   URL.revokeObjectURL(url)
+  message.success('日志导出成功')
 }
 
 </script>
