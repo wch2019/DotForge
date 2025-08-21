@@ -166,7 +166,7 @@
           </div>
 
           <div class="project-actions">
-            <n-button size="small" type="primary" @click="build(project)" class="action-btn" :disabled="project.status == 'building'">
+            <n-button size="small" type="primary" @click="build(project)" class="action-btn">
               <template #icon>
                 <n-icon>
                   <PlayOutline/>
@@ -313,7 +313,7 @@ function build(project: any) {
       } catch (error) {
         console.error('保存项目失败:', error)
       }
-      router.push({name: 'ProjectLog', query: { id: project.id ,name: project.name,action:'build'}})
+      router.push({name: 'BuildLog', query: { id: project.id ,name: project.name,action:'build'}})
     },
     onNegativeClick: () => {}
   })
@@ -321,7 +321,7 @@ function build(project: any) {
 }
 
 function viewLogs(project: any) {
-  router.push({name: 'ProjectLogsList', query: { id: project.id, name: project.name }})
+  router.push({name: 'BuildLogsList', query: { id: project.id, name: project.name }})
 }
 
 function edit(project: any) {
@@ -332,7 +332,7 @@ function remove(project: any) {
   console.log(`删除项目：${project.name}`)
   dialog.warning({
     title: '删除',
-    content: '确定要删除项目吗？',
+    content: '删除项目会删除所有关联数据，确定要删除项目吗？',
     positiveText: '确定',
     negativeText: '取消',
     draggable: true,

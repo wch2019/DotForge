@@ -20,7 +20,7 @@ export function getProjectBuild(projectId?: string) {
         .from(projectBuild);
 
     if (projectId) {
-        return query.where(eq(projectBuild.projectId, projectId)).all();
+        return query.where(eq(projectBuild.projectId, projectId)).orderBy(desc(projectBuild.startTime)).all();
     }
 
     return query.orderBy(desc(projectBuild.startTime)).all();

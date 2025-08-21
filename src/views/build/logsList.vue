@@ -89,8 +89,8 @@ import {NButton, NIcon, NTag, NSelect, NDatePicker, NDataTable, NConfigProvider,
 import {
   ArrowBackOutline, DocumentTextOutline, RefreshOutline, SyncOutline
 } from '@vicons/ionicons5'
-import type {BuildLog} from '@/types/buildLog'
-import {formatDuration} from '@/utils/date'
+import type {BuildLog} from '@/types/buildLog.ts'
+import {formatDuration} from '@/utils/date.ts'
 
 const router = useRouter()
 const route = useRoute()
@@ -241,7 +241,7 @@ function getStatusText(status: string) {
 function viewLogDetail(log: any) {
   // 跳转到BuildLog页面
   router.push({
-    name: 'ProjectLog',
+    name: 'BuildLog',
     query: {
       id: projectId.value,
       name: projectName.value,

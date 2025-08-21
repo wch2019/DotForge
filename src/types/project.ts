@@ -87,3 +87,18 @@ export const defaultProjectData: ProjectData = {
     status: '',
     lastBuildTime: ''
 }
+
+// 发布方式选项
+export const deployMethods = [
+    {label: '不发布', value: 'none'},
+    {label: '本地命令', value: 'local'},
+    {label: 'Docker镜像', value: 'docker'},
+    {label: '远程服务器', value: 'remote'},
+]
+
+export const tags = [
+    {label: 'Java', value: 'java'},
+    {label: 'Node', value: 'node'},
+    {label: 'Python', value: 'python'},
+    {label: 'Go', value: 'go'},
+]

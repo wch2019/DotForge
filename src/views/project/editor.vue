@@ -227,9 +227,9 @@
             </div>
 
             <div v-if="form.keepArtifacts" class="form-row">
-              <n-form-item label="保留路径" path="keepPath">
-                <n-input v-model:value="form.keepPath" placeholder="产物保留路径，留空使用默认路径"/>
-              </n-form-item>
+<!--              <n-form-item label="保留路径" path="keepPath">-->
+<!--                <n-input v-model:value="form.keepPath" placeholder="产物保留路径，留空使用默认路径"/>-->
+<!--              </n-form-item>-->
               <n-form-item label="保留个数" path="keepCount">
                 <n-input-number v-model:value="form.keepCount" :min="1" :max="100"/>
                 <span class="unit-text">个</span>
@@ -305,7 +305,7 @@ import {
 import {Edit24Regular} from '@vicons/fluent'
 
 import FilePicker from "@/components/FilePicker.vue";
-import {defaultProjectData} from "../../types/project.ts";
+import {defaultProjectData, deployMethods, tags} from "@/types/project.ts";
 
 const message = useMessage()
 const router = useRouter()
@@ -323,21 +323,6 @@ const steps = [
   {title: '构建流程', description: '配置构建流程'},
   {title: '发布操作', description: '配置发布方式'},
   {title: '其他配置', description: '其他设置'}
-]
-
-// 发布方式选项
-const deployMethods = [
-  {label: '不发布', value: 'none'},
-  {label: '本地命令', value: 'local'},
-  {label: 'Docker镜像', value: 'docker'},
-  {label: '远程服务器', value: 'remote'},
-]
-
-const tags = [
-  {label: 'Java', value: 'java'},
-  {label: 'Node', value: 'node'},
-  {label: 'Python', value: 'python'},
-  {label: 'Go', value: 'go'},
 ]
 
 // 表单数据

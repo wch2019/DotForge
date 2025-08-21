@@ -40,18 +40,18 @@ export const routes: RouteRecordRaw[] = [
         },
     },
     {
-        path: '/project/log',
-        name: 'ProjectLog',
-        component: () => import('@/views/project/buildLog.vue'),
+        path: '/build/log',
+        name: 'BuildLog',
+        component: () => import('@/views/build/buildLog.vue'),
         meta: {
             title: '构建日志',
             showInMenu: false,
         },
     },
     {
-        path: '/project/logs',
-        name: 'ProjectLogsList',
-        component: () => import('@/views/project/logsList.vue'),
+        path: '/build/logs',
+        name: 'BuildLogsList',
+        component: () => import('@/views/build/logsList.vue'),
         meta: {
             title: '构建日志列表',
             showInMenu: false,

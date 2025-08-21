@@ -136,9 +136,10 @@ const buildStatusClass = computed(() => {
 
 const buildSteps = [
   '[INFO] 开始构建项目...',
-  '[INFO] 获取项目路径...',
-  '[INFO] 执行构建命令...',
-  '[INFO] 生成构建产物...',
+  '[INFO] 获取基础信息...',
+  '[INFO] 执行构建流程...',
+  '[INFO] 执行发布操作...',
+  '[INFO] 执行其他配置...',
   '[INFO] 构建成功完成'
 ]
 
@@ -228,8 +229,11 @@ async function saveBuildLog() {
     buildLog.value.logs = JSON.stringify(logs.value)
     await window.electronAPI.updateBuildLog(buildLog.value.id, toRaw(buildLog.value))
   }
-  if(buildStatus.value !== 'building'){
-    await window.electronAPI.updateProject(parseInt(projectId.value), {lastBuildTime: buildLog.value.startTime, status: buildLog.value.status});
+  if (buildStatus.value !== 'building') {
+    await window.electronAPI.updateProject(parseInt(projectId.value), {
+      lastBuildTime: buildLog.value.startTime,
+      status: buildLog.value.status
+    });
   }
 }
 
@@ -238,22 +242,26 @@ async function runBuild() {
   if (!projectId.value) return
   buildStatus.value = 'building'
   await saveBuildLog()
-  // 一个工具函数，用于延时
-  const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
-  logs.value.push(buildSteps[0])
-  await saveBuildLog()
-  await delay(500)
+  await stepLog(buildSteps[0])
+  await stepLog(buildSteps[1])
   const localPath = project.value.localPath
-  logs.value.push(buildSteps[1])
+  await stepLog("[INFO] " + localPath)
+  await stepLog(buildSteps[2])
+  // 构建流程
+  // await buildMethod( project.value.buildCmd, localPath)
+  // 产物路径
+  const outputPath = joinPaths(localPath, project.value.outputDir);
+  // 发布操作
+  await deployMethod(project)
+  // 其他操作
+  await otherConfig(project)
+  buildStatus.value = 'success'
+  logs.value.push(buildSteps[5])
   await saveBuildLog()
-  await delay(500)
-  logs.value.push("[INFO] " + localPath)
-  await saveBuildLog()
-  await delay(500)
-  logs.value.push(buildSteps[2])
-  await saveBuildLog()
-  await delay(500)
-  let buildCmd = project.value.buildCmd
+}
+
+// 构建流程
+async function buildMethod( buildCmd: string, localPath: string) {
   // 按换行分割命令
   const commands = buildCmd
       .split(/\r?\n/) // 按换行符切割
@@ -263,7 +271,6 @@ async function runBuild() {
   // 逐行执行命令
   for (const cmd of commands) {
     logs.value.push(`[INFO] 执行命令: ${cmd}`)
-    await delay(300)
     const code = await window.electronAPI.runCommand(cmd, {cwd: localPath})
     if (code !== 0) {
       buildStatus.value = 'failed'
@@ -272,10 +279,41 @@ async function runBuild() {
       return
     }
   }
-  logs.value.push('[INFO] 所有命令执行完成')
-  buildStatus.value = 'success'
-  await saveBuildLog()
 }
+
+// 发布操作
+async function deployMethod(project: any) {
+  logs.value.push(buildSteps[3])
+  //
+  if (project.value.deployMethod == 'none') {
+    logs.value.push("不发布")
+  }
+  if (project.value.deployMethod == 'local') {
+    logs.value.push("本地部署")
+    await buildMethod(project.value.localCommand, project.value.localPath)
+  }
+}
+
+// 其他配置
+async function otherConfig(project: any) {
+  logs.value.push(buildSteps[4])
+}
+
+function joinPaths(...paths: string[]) {
+  return paths
+      .map(path => String(path).replace(/[\\/]+$/, ''))
+      .filter(Boolean)
+      .join('/')
+      .replace(/\/\//g, '/');
+}
+
+// 步骤日志
+async function stepLog(message: string, delayMs = 500) {
+  logs.value.push(message)
+  await saveBuildLog()
+  await new Promise(resolve => setTimeout(resolve, delayMs))
+}
+
 
 window.electronAPI.onCommandOutput((line: string) => {
   console.log('命令输出:', line)

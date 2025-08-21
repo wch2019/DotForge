@@ -7027,7 +7027,7 @@ function getProjectBuild(projectId) {
     endTime: projectBuild.endTime
   }).from(projectBuild);
   if (projectId) {
-    return query.where(eq(projectBuild.projectId, projectId)).all();
+    return query.where(eq(projectBuild.projectId, projectId)).orderBy(desc(projectBuild.startTime)).all();
   }
   return query.orderBy(desc(projectBuild.startTime)).all();
 }
