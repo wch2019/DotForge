@@ -53,4 +53,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
     createBuildLog: (logData: any) => ipcRenderer.invoke('build:create', logData),
     updateBuildLog: (id: number, logData: any) => ipcRenderer.invoke('build:update', id, logData),
     deleteBuildLog: (id: number) => ipcRenderer.invoke('build:delete', id),
+    // 服务器管理相关
+    getServers: () => ipcRenderer.invoke('server:getAll'),
+    getServerById: (id: number) => ipcRenderer.invoke('server:getById', id),
+    createServer: (data: any) => ipcRenderer.invoke('server:create', data),
+    updateServer: (id: number, data: any) => ipcRenderer.invoke('server:update', id, data),
+    deleteServer: (id: number) => ipcRenderer.invoke('server:delete', id),
+    testServerConnection: (data: any) => ipcRenderer.invoke('server:test', data),
 })

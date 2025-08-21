@@ -6678,10 +6678,25 @@ const projectBuild = sqliteTable("project_build", {
   startTime: text("startTime").default(sql`strftime('%Y-%m-%d %H:%M:%S', 'now', 'localtime')`),
   endTime: text("endTime")
 });
+const server = sqliteTable("server", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  createdTime: text("createdTime").default(sql`strftime('%Y-%m-%d %H:%M:%S', 'now', 'localtime')`),
+  name: text("name").notNull(),
+  tag: text("tag"),
+  host: text("host").notNull(),
+  port: integer("port").default(22),
+  username: text("username").notNull(),
+  authType: text("authType"),
+  // 'password' | 'privateKey'
+  password: text("password"),
+  privateKeyPath: text("privateKeyPath"),
+  description: text("description")
+});
 const schema = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   project,
-  projectBuild
+  projectBuild,
+  server
 }, Symbol.toStringTag, { value: "Module" }));
 class BetterSQLiteSession extends (_Yb = SQLiteSession, _Xb = entityKind, _Yb) {
   constructor(client, dialect, schema2, options = {}) {
@@ -6909,6 +6924,21 @@ function getDb() {
             endTime TEXT
         );
     `);
+  sqlite.exec(`
+        CREATE TABLE IF NOT EXISTS server (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            createdTime TEXT,
+            name TEXT NOT NULL,
+            tag TEXT,
+            host TEXT NOT NULL,
+            port INTEGER DEFAULT 22,
+            username TEXT NOT NULL,
+            authType TEXT,
+            password TEXT,
+            privateKeyPath TEXT,
+            description TEXT
+        );
+    `);
   const db = drizzle(sqlite, { schema });
   return db;
 }
@@ -7085,12 +7115,86 @@ function registerProjectBuildHandlers() {
     }
   });
 }
+function createServer(data) {
+  const db = getDb();
+  return db.insert(server).values(data).returning();
+}
+function getServers() {
+  const db = getDb();
+  return db.select().from(server).orderBy(desc(server.createdTime)).all();
+}
+function getServerById(id) {
+  const db = getDb();
+  return db.select().from(server).where(eq(server.id, id)).get();
+}
+function updateServer(id, data) {
+  const db = getDb();
+  return db.update(server).set(data).where(eq(server.id, id)).returning();
+}
+function deleteServer(id) {
+  const db = getDb();
+  return db.delete(server).where(eq(server.id, id)).returning();
+}
+async function testServerConnection(_) {
+  return true;
+}
+function registerServerHandlers() {
+  ipcMain.handle("server:create", async (_, data) => {
+    try {
+      return await createServer(data);
+    } catch (e) {
+      console.error("创建服务器失败:", e);
+      throw e;
+    }
+  });
+  ipcMain.handle("server:getAll", async () => {
+    try {
+      return await getServers();
+    } catch (e) {
+      console.error("获取服务器列表失败:", e);
+      throw e;
+    }
+  });
+  ipcMain.handle("server:getById", async (_, id) => {
+    try {
+      return await getServerById(id);
+    } catch (e) {
+      console.error("获取服务器失败:", e);
+      throw e;
+    }
+  });
+  ipcMain.handle("server:update", async (_, id, data) => {
+    try {
+      return await updateServer(id, data);
+    } catch (e) {
+      console.error("更新服务器失败:", e);
+      throw e;
+    }
+  });
+  ipcMain.handle("server:delete", async (_, id) => {
+    try {
+      return await deleteServer(id);
+    } catch (e) {
+      console.error("删除服务器失败:", e);
+      throw e;
+    }
+  });
+  ipcMain.handle("server:test", async (_, data) => {
+    try {
+      return await testServerConnection(data);
+    } catch (e) {
+      console.error("测试服务器连接失败:", e);
+      return false;
+    }
+  });
+}
 function registerAllIpcHandlers() {
   registerFileDialogHandler();
   registerSettingHandler();
   registerProjectHandlers();
   registerCommandHandlers();
   registerProjectBuildHandlers();
+  registerServerHandlers();
 }
 const __dirname = path$c.dirname(fileURLToPath(import.meta.url));
 process.env.APP_ROOT = path$c.join(__dirname, "..");

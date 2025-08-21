@@ -84,6 +84,22 @@ export function getDb() {
         );
     `);
 
+    sqlite.exec(`
+        CREATE TABLE IF NOT EXISTS server (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            createdTime TEXT,
+            name TEXT NOT NULL,
+            tag TEXT,
+            host TEXT NOT NULL,
+            port INTEGER DEFAULT 22,
+            username TEXT NOT NULL,
+            authType TEXT,
+            password TEXT,
+            privateKeyPath TEXT,
+            description TEXT
+        );
+    `);
+
     const db = drizzle(sqlite, {schema});
 
     return db;

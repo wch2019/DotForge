@@ -67,6 +67,25 @@ export const routes: RouteRecordRaw[] = [
             showInMenu: false,
         },
      },
+     {
+        path: '/server',
+        name: 'Server',
+        component: () => import('@/views/server/index.vue'),
+        meta: {
+            title: '服务器管理',
+            icon: 'ServerOutline',
+            showInMenu: true,
+        },
+    },
+    {
+        path: '/server/edit',
+        name: 'ServerEdit',
+        component: () => import('@/views/server/editor.vue'),
+        meta: {
+            title: '服务器维护',
+            showInMenu: false,
+        },
+    },
 ]
 
 const router = createRouter({

@@ -4,14 +4,16 @@ import {h} from "vue"
 import {
   HomeOutline,
   FolderOutline,
-  SettingsOutline
+  SettingsOutline,
+  ServerOutline
 } from '@vicons/ionicons5'
 
 // 图标映射
 const iconMap: Record<string, any> = {
   HomeOutline,
   FolderOutline,
-  SettingsOutline
+  SettingsOutline,
+  ServerOutline
 }
 
 export function routesToMenuOptions(routes: RouteRecordRaw[]): MenuOption[] {

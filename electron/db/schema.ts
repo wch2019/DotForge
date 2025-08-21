@@ -45,3 +45,17 @@ export const projectBuild = sqliteTable("project_build", {
     startTime: text("startTime").default(sql`strftime('%Y-%m-%d %H:%M:%S', 'now', 'localtime')`),
     endTime: text("endTime"),
 });
+
+export const server = sqliteTable('server', {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    createdTime: text('createdTime').default(sql`strftime('%Y-%m-%d %H:%M:%S', 'now', 'localtime')`),
+    name: text('name').notNull(),
+    tag: text('tag'),
+    host: text('host').notNull(),
+    port: integer('port').default(22),
+    username: text('username').notNull(),
+    authType: text('authType'), // 'password' | 'privateKey'
+    password: text('password'),
+    privateKeyPath: text('privateKeyPath'),
+    description: text('description'),
+});

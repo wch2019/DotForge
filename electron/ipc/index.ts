@@ -3,6 +3,7 @@ import {registerSettingHandler} from './setting'
 import {registerProjectHandlers} from "./project.ts";
 import { registerCommandHandlers } from "./command.ts";
 import {registerProjectBuildHandlers} from "./projectBuild.ts";
+import {registerServerHandlers} from "./server.ts";
 
 export function registerAllIpcHandlers() {
     // 注册文件选择相关 IPC
@@ -15,4 +16,6 @@ export function registerAllIpcHandlers() {
     registerCommandHandlers()
     // 注册项目构建相关 IPC
     registerProjectBuildHandlers()
+    // 注册服务器相关 IPC
+    registerServerHandlers()
 }
