@@ -352,6 +352,8 @@ initProjects()
   padding: 24px;
   background: var(--content-bg);
   min-height: var(--content-height);
+  display: flex;
+  flex-direction: column;
 }
 
 /* 页面头部 */
@@ -361,6 +363,7 @@ initProjects()
   padding: 32px;
   margin-bottom: 24px;
   color: white;
+  flex-shrink: 0;
 }
 
 .header-content {
@@ -480,6 +483,10 @@ initProjects()
   border-radius: 12px;
   padding: 24px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .section-header {
@@ -487,6 +494,7 @@ initProjects()
   justify-content: space-between;
   align-items: center;
   margin-bottom: 24px;
+  flex-shrink: 0;
 }
 
 .section-title {
@@ -503,12 +511,16 @@ initProjects()
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
   gap: 20px;
+  flex: 1;
+  align-content: start;
+  min-height: 0;
 }
 
 .project-card {
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
+  height: fit-content;
 }
 
 .project-card:hover {
@@ -580,6 +592,11 @@ initProjects()
   text-align: center;
   padding: 60px 20px;
   color: #6b7280;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
 .empty-icon {
@@ -616,6 +633,7 @@ initProjects()
 @media (max-width: 768px) {
   .project-page {
     padding: 16px;
+    min-height: 100vh;
   }
 
   .header-content {
@@ -634,6 +652,7 @@ initProjects()
 
   .projects-grid {
     grid-template-columns: 1fr;
+    gap: 16px;
   }
 
   .section-header {

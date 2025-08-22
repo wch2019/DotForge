@@ -68,7 +68,7 @@
                   item.tag || '默认'
                 }}</n-tag></span>
             </div>
-            <div class="detail-item" v-if="item.description">
+            <div class="detail-item">
               <n-icon size="16" class="detail-icon">
                 <DocumentTextOutline/>
               </n-icon>
@@ -193,6 +193,8 @@ initServers()
   padding: 24px;
   background: var(--content-bg);
   min-height: var(--content-height);
+  display: flex;
+  flex-direction: column;
 }
 
 .page-header {
@@ -201,6 +203,7 @@ initServers()
   padding: 32px;
   margin-bottom: 24px;
   color: white;
+  flex-shrink: 0;
 }
 
 .header-content {
@@ -243,6 +246,10 @@ initServers()
   border-radius: 12px;
   padding: 24px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .section-header {
@@ -250,6 +257,7 @@ initServers()
   justify-content: space-between;
   align-items: center;
   margin-bottom: 24px;
+  flex-shrink: 0;
 }
 
 .section-title {
@@ -266,12 +274,16 @@ initServers()
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
   gap: 20px;
+  flex: 1;
+  align-content: start;
+  min-height: 0;
 }
 
 .server-card {
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   transition: all .3s ease;
+  height: fit-content;
 }
 
 .server-card:hover {
@@ -342,6 +354,11 @@ initServers()
   text-align: center;
   padding: 60px 20px;
   color: #6b7280;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
 .empty-icon {
@@ -363,6 +380,7 @@ initServers()
 @media (max-width: 768px) {
   .server-page {
     padding: 16px;
+    min-height: 100vh;
   }
 
   .header-content {
@@ -377,6 +395,7 @@ initServers()
 
   .servers-grid {
     grid-template-columns: 1fr;
+    gap: 16px;
   }
 
   .section-header {
@@ -387,6 +406,14 @@ initServers()
 
   .search-input {
     width: 100%;
+  }
+
+  .servers-section {
+    padding: 16px;
+  }
+
+  .page-header {
+    padding: 24px;
   }
 }
 </style>
