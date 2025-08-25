@@ -50,7 +50,7 @@
         </div>
       </div>
 
-      <div class="servers-grid">
+      <div v-if="filteredServers.length !== 0" class="servers-grid">
         <n-card v-for="item in filteredServers" :key="item.id" class="server-card">
           <div class="server-header">
             <div class="server-info">
@@ -77,6 +77,14 @@
           </div>
 
           <div class="server-actions">
+            <n-button size="small" @click="connectSSH(item)" class="action-btn">
+              <template #icon>
+                <n-icon>
+                  <TerminalOutline/>
+                </n-icon>
+              </template>
+              SSH
+            </n-button>
             <n-button size="small" @click="edit(item)" class="action-btn">
               <template #icon>
                 <n-icon>
@@ -126,7 +134,7 @@ import {
 import {
   ServerOutline, AddOutline, AppsOutline, CheckmarkCircleOutline,
   CloseCircleOutline, SearchOutline, FilterOutline, DocumentTextOutline,
-  CreateOutline, TrashOutline, PricetagsOutline
+  CreateOutline, TrashOutline, PricetagsOutline, TerminalOutline
 } from '@vicons/ionicons5'
 
 const router = useRouter()
@@ -183,6 +191,10 @@ function edit(item: ServerItem) {
 async function remove(item: ServerItem) {
   await window.electronAPI.deleteServer?.(item.id)
   servers.value = servers.value.filter(s => s.id !== item.id)
+}
+
+function connectSSH(item: ServerItem) {
+  router.push({ name: 'ServerSSH', query: { serverId: item.id } })
 }
 
 initServers()

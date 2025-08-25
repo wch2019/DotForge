@@ -3,6 +3,7 @@ import {fileURLToPath} from 'node:url'
 import path from 'node:path'
 import {registerAllIpcHandlers} from './ipc'
 import {getDb} from "./db";
+import  './log/console-gbk.ts';
 // 当前文件所在目录
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -92,8 +93,6 @@ app.on('activate', () => {
 // 设置应用名称与 ID（Windows 任务栏识别用）
 app.setName('DotForge')
 app.setAppUserModelId('DotForge')
-
-
 // 应用启动完成时初始化窗口和监听
 app.whenReady().then(() => {
     // 初始化数据库（会自动建表）

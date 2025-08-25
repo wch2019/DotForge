@@ -60,4 +60,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
     updateServer: (id: number, data: any) => ipcRenderer.invoke('server:update', id, data),
     deleteServer: (id: number) => ipcRenderer.invoke('server:delete', id),
     testServerConnection: (data: any) => ipcRenderer.invoke('server:test', data),
+    // SSH相关
+    connectSSH: (config: any) => ipcRenderer.invoke('ssh:connect', config),
+    executeSSHCommand: (connectionId: string, command: string) => ipcRenderer.invoke('ssh:execute', connectionId, command),
+    getSSHSystemInfo: (connectionId: string) => ipcRenderer.invoke('ssh:getSystemInfo', connectionId),
+    createSSHShell: (connectionId: string) => ipcRenderer.invoke('ssh:createShell', connectionId),
+    disconnectSSH: (connectionId: string) => ipcRenderer.invoke('ssh:disconnect', connectionId),
+    isSSHConnected: (connectionId: string) => ipcRenderer.invoke('ssh:isConnected', connectionId),
+    getSSHConnectionCount: () => ipcRenderer.invoke('ssh:getConnectionCount'),
 })

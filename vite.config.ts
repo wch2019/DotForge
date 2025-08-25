@@ -24,7 +24,16 @@ export default defineConfig({
                             // 这里非常重要！
                             // 把 better-sqlite3 从打包中排除，保留为原生 CJS 模块
                             // 这样不会丢失 __filename/__dirname，也避免 ESM 引入出错
-                            external: ['better-sqlite3']
+                            external: [
+                                'better-sqlite3',
+                                'ssh2',
+                                'fs',
+                                'path',
+                                'crypto',
+                                'net',
+                                'tls',
+                                'events'
+                            ]
                         }
                     }
                 }

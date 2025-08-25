@@ -53,5 +53,13 @@ electron.contextBridge.exposeInMainWorld("electronAPI", {
   createServer: (data) => electron.ipcRenderer.invoke("server:create", data),
   updateServer: (id, data) => electron.ipcRenderer.invoke("server:update", id, data),
   deleteServer: (id) => electron.ipcRenderer.invoke("server:delete", id),
-  testServerConnection: (data) => electron.ipcRenderer.invoke("server:test", data)
+  testServerConnection: (data) => electron.ipcRenderer.invoke("server:test", data),
+  // SSH相关
+  connectSSH: (config) => electron.ipcRenderer.invoke("ssh:connect", config),
+  executeSSHCommand: (connectionId, command) => electron.ipcRenderer.invoke("ssh:execute", connectionId, command),
+  getSSHSystemInfo: (connectionId) => electron.ipcRenderer.invoke("ssh:getSystemInfo", connectionId),
+  createSSHShell: (connectionId) => electron.ipcRenderer.invoke("ssh:createShell", connectionId),
+  disconnectSSH: (connectionId) => electron.ipcRenderer.invoke("ssh:disconnect", connectionId),
+  isSSHConnected: (connectionId) => electron.ipcRenderer.invoke("ssh:isConnected", connectionId),
+  getSSHConnectionCount: () => electron.ipcRenderer.invoke("ssh:getConnectionCount")
 });

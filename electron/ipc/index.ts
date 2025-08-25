@@ -4,6 +4,7 @@ import {registerProjectHandlers} from "./project.ts";
 import { registerCommandHandlers } from "./command.ts";
 import {registerProjectBuildHandlers} from "./projectBuild.ts";
 import {registerServerHandlers} from "./server.ts";
+import {registerSSHHandlers} from "./ssh.ts";
 
 export function registerAllIpcHandlers() {
     // 注册文件选择相关 IPC
@@ -18,4 +19,6 @@ export function registerAllIpcHandlers() {
     registerProjectBuildHandlers()
     // 注册服务器相关 IPC
     registerServerHandlers()
+    // 注册SSH相关 IPC
+    registerSSHHandlers()
 }

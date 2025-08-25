@@ -86,6 +86,15 @@ export const routes: RouteRecordRaw[] = [
             showInMenu: false,
         },
     },
+    {
+        path: '/server/ssh',
+        name: 'ServerSSH',
+        component: () => import('@/views/server/ssh.vue'),
+        meta: {
+            title: 'SSH 终端',
+            showInMenu: false,
+        },
+    },
 ]
 
 const router = createRouter({

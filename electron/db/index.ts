@@ -26,10 +26,10 @@ export function getDb() {
 
     const isNew = !fs.existsSync(dbPath);
     if (isNew) {
-        console.log("📦 Create a new SQLite database:", dbPath);
+        console.log("📦 创建新的 SQLite 数据库:", dbPath);
         fs.writeFileSync(dbPath, "");
     } else {
-        console.log(`Connect to the database: ${dbPath}`)
+        console.log(`连接到数据库: ${dbPath}`)
     }
 
     const sqlite = new Database(dbPath);
