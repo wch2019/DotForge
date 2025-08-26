@@ -20,6 +20,13 @@ export interface SystemInfo {
         total: number
         used: number
         free: number
+        available: number
+        usage: number
+    }
+    swap: {
+        total: number
+        used: number
+        free: number
         usage: number
     }
     disk: {
@@ -37,8 +44,10 @@ export interface SystemInfo {
 }
 
 class SSHManager {
+    /** SSH连接管理 */
     private connections: Map<string, Client> = new Map()
 
+    /** 连接到远程服务器 */
     async connect(config: SSHConnectionConfig): Promise<string> {
         return new Promise((resolve, reject) => {
             const client = new Client()
@@ -79,6 +88,7 @@ class SSHManager {
         })
     }
 
+    /** 执行命令 */
     async executeCommand(connectionId: string, command: string): Promise<string> {
         const client = this.connections.get(connectionId)
         if (!client) {
@@ -95,12 +105,10 @@ class SSHManager {
                 let output = ''
                 stream.on('data', (data: Buffer) => {
                     output += data.toString()
-                    console.log(output)
                 })
 
                 stream.on('end', () => {
                     resolve(output)
-                    console.log(output)
                 })
 
                 stream.on('error', (err: Error) => {
@@ -123,9 +131,8 @@ class SSHManager {
             const cpuCores = await this.executeCommand(connectionId, 'nproc')
 
             // 获取内存信息
-            const memInfo = await this.executeCommand(connectionId, 'free -m')
-            const memLines = memInfo.trim().split('\n')
-            const memData = memLines[1].split(/\s+/)
+            const memInfoRaw = await this.executeCommand(connectionId, 'free -m')
+            const memInfo = this.parseMemoryInfo(memInfoRaw);
 
             // 获取磁盘信息
             const diskInfo = await this.executeCommand(connectionId, 'df -h / | tail -1')
@@ -142,12 +149,7 @@ class SSHManager {
             const loadAvg = await this.executeCommand(connectionId, 'cat /proc/loadavg | cut -d" " -f1,2,3')
             const loadValues = loadAvg.trim().split(/\s+/).map(Number)
 
-            // 获取CPU使用率（需要两次采样）
-            const cpuUsage1 = await this.executeCommand(connectionId, 'cat /proc/stat | grep "cpu " | cut -d" " -f2,3,4,5,6,7,8,9')
-            await new Promise(resolve => setTimeout(resolve, 1000))
-            const cpuUsage2 = await this.executeCommand(connectionId, 'cat /proc/stat | grep "cpu " | cut -d" " -f2,3,4,5,6,7,8,9')
-
-            const cpuUsage = this.calculateCPUUsage(cpuUsage1, cpuUsage2)
+            const cpuUsage = await sshManager.getCPUUsage(connectionId);
 
             return {
                 cpu: {
@@ -155,12 +157,8 @@ class SSHManager {
                     cores: parseInt(cpuCores.trim()),
                     model: cpuInfo.trim()
                 },
-                memory: {
-                    total: parseInt(memData[1]),
-                    used: parseInt(memData[2]),
-                    free: parseInt(memData[3]),
-                    usage: Math.round((parseInt(memData[2]) / parseInt(memData[1])) * 100)
-                },
+                memory: memInfo.memory,
+                swap: memInfo.swap,
                 disk: {
                     total: this.parseDiskSize(diskData[1]),
                     used: this.parseDiskSize(diskData[2]),
@@ -179,29 +177,76 @@ class SSHManager {
         }
     }
 
-    /** 计算CPU使用率 */
-    private calculateCPUUsage(usage1: string, usage2: string): number {
-        try {
-            const values1 = usage1.trim().split(/\s+/).map(Number)
-            const values2 = usage2.trim().split(/\s+/).map(Number)
+    /**
+     * 解析 `free -m` 输出，提取内存和 Swap 信息
+     * @param output free -m 命令的输出
+     */
+    private parseMemoryInfo(output: string) {
+        const lines = output.trim().split('\n')
 
-            if (values1.length !== 8 || values2.length !== 8) return 0
+        // 找到 "Mem:" 和 "Swap:" 两行
+        const memLine = lines.find(line => line.startsWith('Mem:'))
+        const swapLine = lines.find(line => line.startsWith('Swap:'))
 
-            const total1 = values1.reduce((a, b) => a + b, 0)
-            const total2 = values2.reduce((a, b) => a + b, 0)
-            const idle1 = values1[3]
-            const idle2 = values2[3]
+        if (!memLine || !swapLine) {
+            throw new Error('无法解析 free -m 输出')
+        }
 
-            const totalDiff = total2 - total1
-            const idleDiff = idle2 - idle1
+        // 按空格分割并过滤掉多余空字符串
+        const memParts = memLine.split(/\s+/)
+        const swapParts = swapLine.split(/\s+/)
 
-            if (totalDiff === 0) return 0
-
-            return Math.round(((totalDiff - idleDiff) / totalDiff) * 100)
-        } catch {
-            return 0
+        return {
+            memory: {
+                total: Number(memParts[1]),
+                used: Number(memParts[2]),
+                free: Number(memParts[3]),
+                available: Number(memParts[6]),
+                usage: Math.round((parseInt(memParts[2]) / parseInt(memParts[1])) * 100)
+            },
+            swap: {
+                total: Number(swapParts[1]),
+                used: Number(swapParts[2]),
+                free: Number(swapParts[3]),
+                usage: Math.round((parseInt(swapParts[2]) / parseInt(swapParts[1])) * 100)
+            }
         }
     }
+
+    /**
+     * 获取远程主机 CPU 使用率（百分比）
+     * 原理：读取 /proc/stat 两次采样，计算差值
+     */
+    async getCPUUsage(connectionId: string, interval = 1000): Promise<number> {
+        try {
+            // 读取第一次 CPU 信息
+            const cpuStat1 = await this.executeCommand(connectionId, 'cat /proc/stat | grep "^cpu "');
+            const values1 = cpuStat1.trim().split(/\s+/).slice(1).map(Number);
+            const idle1 = values1[3];
+            const total1 = values1.reduce((a, b) => a + b, 0);
+
+            // 等待 interval 毫秒
+            await new Promise(resolve => setTimeout(resolve, interval));
+
+            // 读取第二次 CPU 信息
+            const cpuStat2 = await this.executeCommand(connectionId, 'cat /proc/stat | grep "^cpu "');
+            const values2 = cpuStat2.trim().split(/\s+/).slice(1).map(Number);
+            const idle2 = values2[3];
+            const total2 = values2.reduce((a, b) => a + b, 0);
+
+            const idleDiff = idle2 - idle1;
+            const totalDiff = total2 - total1;
+
+            if (totalDiff === 0) return 0;
+
+            const usage = (1 - idleDiff / totalDiff) * 100;
+            return Number(usage.toFixed(2));
+        } catch (error) {
+            console.error('获取 CPU 使用率失败:', error);
+            return 0;
+        }
+    }
+
 
     /** 解析磁盘大小 */
     private parseDiskSize(sizeStr: string): number {
@@ -216,6 +261,7 @@ class SSHManager {
         return parseFloat(size)
     }
 
+    /** 创建shell */
     async createShell(connectionId: string): Promise<{ stream: ClientChannel; cols: number; rows: number }> {
         const client = this.connections.get(connectionId)
         if (!client) {
@@ -283,9 +329,35 @@ export function registerSSHHandlers() {
         }
     })
 
-    ipcMain.handle('ssh:createShell', async (_, connectionId: string) => {
+    ipcMain.handle('ssh:createShell', async (event, connectionId: string) => {
         try {
-            return await sshManager.createShell(connectionId)
+            const {stream, cols, rows} = await sshManager.createShell(connectionId)
+
+            // 监听远程输出 -> 发给前端
+            stream.on('data', (data: Buffer) => {
+                event.sender.send(`ssh:data:${connectionId}`, data.toString())
+            })
+
+            stream.stderr.on('data', (data: Buffer) => {
+                event.sender.send(`ssh:data:${connectionId}`, data.toString())
+            })
+
+            // 通道定义
+            const inputChannel = `ssh:input:${connectionId}`
+
+            // 输入事件
+            const inputHandler = (_: any, input: string) => {
+                stream.write(input)
+            }
+            ipcMain.on(inputChannel, inputHandler)
+
+            // 关闭时清理
+            stream.on('close', () => {
+                ipcMain.removeListener(inputChannel, inputHandler)
+                event.sender.send(`ssh:close:${connectionId}`)
+            })
+
+            return {cols, rows} // 返回终端大小，前端好初始化 xterm.js
         } catch (error) {
             console.error('创建shell失败:', error)
             throw error

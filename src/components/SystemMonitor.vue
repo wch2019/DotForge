@@ -29,9 +29,9 @@
           <span class="card-value">{{ systemInfo.cpu.usage }}%</span>
         </div>
         <div class="progress-container">
-          <n-progress 
-            type="line" 
-            :percentage="systemInfo.cpu.usage" 
+          <n-progress
+            type="line"
+            :percentage="systemInfo.cpu.usage"
             :color="getProgressColor(systemInfo.cpu.usage)"
             :show-indicator="false"
             :height="8"
@@ -50,18 +50,40 @@
           <span class="card-value">{{ systemInfo.memory.usage }}%</span>
         </div>
         <div class="progress-container">
-          <n-progress 
-            type="line" 
-            :percentage="systemInfo.memory.usage" 
-            :color="getProgressColor(systemInfo.memory.usage)"
-            :show-indicator="false"
-            :height="8"
+          <n-progress
+              type="line"
+              :percentage="systemInfo.memory.usage"
+              :color="getProgressColor(systemInfo.memory.usage)"
+              :show-indicator="false"
+              :height="8"
           />
         </div>
         <div class="card-details">
           <span>已用: {{ formatBytes(systemInfo.memory.used * 1024 * 1024) }}</span>
           <span>可用: {{ formatBytes(systemInfo.memory.free * 1024 * 1024) }}</span>
           <span>总计: {{ formatBytes(systemInfo.memory.total * 1024 * 1024) }}</span>
+        </div>
+      </div>
+
+      <!-- 交换内存监控 -->
+      <div class="monitor-card wide">
+        <div class="card-header">
+          <h4 class="card-title">交换内存率</h4>
+          <span class="card-value">{{ systemInfo.swap.usage }}%</span>
+        </div>
+        <div class="progress-container">
+          <n-progress
+              type="line"
+              :percentage="systemInfo.swap.usage"
+              :color="getProgressColor(systemInfo.swap.usage)"
+              :show-indicator="false"
+              :height="8"
+          />
+        </div>
+        <div class="card-details">
+          <span>已用: {{ formatBytes(systemInfo.swap.used * 1024 * 1024) }}</span>
+          <span>可用: {{ formatBytes(systemInfo.swap.free * 1024 * 1024) }}</span>
+          <span>总计: {{ formatBytes(systemInfo.swap.total * 1024 * 1024) }}</span>
         </div>
       </div>
 
@@ -72,9 +94,9 @@
           <span class="card-value">{{ systemInfo.disk.usage }}%</span>
         </div>
         <div class="progress-container">
-          <n-progress 
-            type="line" 
-            :percentage="systemInfo.disk.usage" 
+          <n-progress
+            type="line"
+            :percentage="systemInfo.disk.usage"
             :color="getProgressColor(systemInfo.disk.usage)"
             :show-indicator="false"
             :height="8"
@@ -141,6 +163,12 @@ interface SystemInfo {
     free: number
     usage: number
   }
+  swap: {
+    total: number
+    used: number
+    free: number
+    usage: number
+  }
   disk: {
     total: number
     used: number
@@ -166,6 +194,7 @@ const autoRefresh = ref(true)
 const systemInfo = ref<SystemInfo>({
   cpu: { usage: 0, cores: 0, model: 'Unknown' },
   memory: { total: 0, used: 0, free: 0, usage: 0 },
+  swap: { total: 0, used: 0, free: 0, usage: 0 },
   disk: { total: 0, used: 0, free: 0, usage: 0 },
   network: { rx: 0, tx: 0 },
   uptime: 0,
@@ -195,7 +224,7 @@ watch(autoRefresh, (newValue) => {
 
 async function refreshData() {
   if (!props.connectionId) return
-  
+
   loading.value = true
   try {
     // 这里应该调用SSH API获取系统信息
@@ -240,7 +269,7 @@ function formatUptime(seconds: number): string {
   const days = Math.floor(seconds / 86400)
   const hours = Math.floor((seconds % 86400) / 3600)
   const minutes = Math.floor((seconds % 3600) / 60)
-  
+
   if (days > 0) {
     return `${days}天 ${hours}小时 ${minutes}分钟`
   } else if (hours > 0) {
@@ -402,15 +431,15 @@ function formatUptime(seconds: number): string {
   .monitor-content {
     grid-template-columns: 1fr;
   }
-  
+
   .monitor-card.wide {
     grid-column: span 1;
   }
-  
+
   .system-stats {
     grid-template-columns: 1fr;
   }
-  
+
   .monitor-header {
     flex-direction: column;
     gap: 12px;

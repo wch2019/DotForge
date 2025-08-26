@@ -58,8 +58,19 @@ electron.contextBridge.exposeInMainWorld("electronAPI", {
   connectSSH: (config) => electron.ipcRenderer.invoke("ssh:connect", config),
   executeSSHCommand: (connectionId, command) => electron.ipcRenderer.invoke("ssh:execute", connectionId, command),
   getSSHSystemInfo: (connectionId) => electron.ipcRenderer.invoke("ssh:getSystemInfo", connectionId),
-  createSSHShell: (connectionId) => electron.ipcRenderer.invoke("ssh:createShell", connectionId),
   disconnectSSH: (connectionId) => electron.ipcRenderer.invoke("ssh:disconnect", connectionId),
   isSSHConnected: (connectionId) => electron.ipcRenderer.invoke("ssh:isConnected", connectionId),
-  getSSHConnectionCount: () => electron.ipcRenderer.invoke("ssh:getConnectionCount")
+  getSSHConnectionCount: () => electron.ipcRenderer.invoke("ssh:getConnectionCount"),
+  ssh: {
+    // 创建交互式 Shell
+    createShell: (connectionId) => electron.ipcRenderer.invoke("ssh:createShell", connectionId),
+    // 向指定连接写入数据
+    send: (channel, data) => electron.ipcRenderer.send(channel, data),
+    // 监听事件
+    on: (channel, callback) => {
+      const subscription = (_, data) => callback(data);
+      electron.ipcRenderer.on(channel, subscription);
+      return () => electron.ipcRenderer.removeListener(channel, subscription);
+    }
+  }
 });

@@ -8,31 +8,37 @@
         <span class="connection-details">{{ connectionDetails }}</span>
       </div>
       <div class="terminal-actions">
-        <n-button size="small" @click="drawer()"  strong secondary type="info" :disabled="!isConnected">
+        <n-button size="small" @click="drawer()" strong secondary type="info" :disabled="!isConnected">
           <template #icon>
-            <n-icon class="title-icon"><AnalyticsOutline /></n-icon>
+            <n-icon class="title-icon">
+              <AnalyticsOutline/>
+            </n-icon>
           </template>
           监控
         </n-button>
         <n-button size="small" @click="clearTerminal" strong secondary type="primary" :disabled="!isConnected">
           <template #icon>
-            <n-icon><TrashOutline /></n-icon>
+            <n-icon>
+              <TrashOutline/>
+            </n-icon>
           </template>
           清屏
         </n-button>
         <n-button size="small" type="error" @click="disconnect" :disabled="!isConnected">
           <template #icon>
-            <n-icon><CloseOutline /></n-icon>
+            <n-icon>
+              <CloseOutline/>
+            </n-icon>
           </template>
           断开
         </n-button>
       </div>
     </div>
-    
+
     <div class="terminal-container">
-      <div ref="terminalElement" class="terminal"  id="drawer-target"></div>
+      <div ref="terminalElement" class="terminal" id="drawer-target"></div>
     </div>
-    
+
     <div class="terminal-footer">
       <div class="status-bar">
         <span>行: {{ cursorPosition.row }}</span>
@@ -40,9 +46,9 @@
         <span>连接数: {{ connectionCount }}</span>
       </div>
     </div>
-    <n-drawer v-model:show="active" :width="400" placement="right"  to="#drawer-target">
+    <n-drawer v-model:show="active" :width="400" placement="right" to="#drawer-target">
       <n-drawer-content class="drawer-center">
-          <SystemMonitor :connection-id="connectionId"/>
+        <SystemMonitor :connection-id="connectionId"/>
       </n-drawer-content>
     </n-drawer>
   </div>
@@ -50,14 +56,14 @@
 
 <script setup lang="ts">
 // Vue & NaiveUI 基础导入
-import { ref, onMounted, onUnmounted, nextTick, watch, computed } from 'vue'
-import { NButton, NIcon } from 'naive-ui'
-import { TrashOutline, CloseOutline, AnalyticsOutline } from '@vicons/ionicons5'
+import {ref, onMounted, onUnmounted, nextTick, watch, computed} from 'vue'
+import {NButton, NIcon} from 'naive-ui'
+import {TrashOutline, CloseOutline, AnalyticsOutline} from '@vicons/ionicons5'
 
 // xterm 相关
-import { Terminal } from '@xterm/xterm'
-import { FitAddon } from '@xterm/addon-fit'
-import { WebLinksAddon } from '@xterm/addon-web-links'
+import {Terminal} from '@xterm/xterm'
+import {FitAddon} from '@xterm/addon-fit'
+import {WebLinksAddon} from '@xterm/addon-web-links'
 import '@xterm/xterm/css/xterm.css'
 
 // 系统监控组件
@@ -77,7 +83,7 @@ interface Props {
 // 设置默认参数
 const props = withDefaults(defineProps<Props>(), {
   connectionId: '',
-  serverInfo: () => ({ host: '', port: 22, username: '' })
+  serverInfo: () => ({host: '', port: 22, username: ''})
 })
 
 // ------------ emits 定义 ------------
@@ -93,7 +99,7 @@ const terminal = ref<Terminal>()             // xterm 实例
 const fitAddon = ref<FitAddon>()             // 自适应大小插件
 const isConnected = ref(false)               // 是否已连接
 const connectionCount = ref(0)               // 当前 SSH 连接数量
-const cursorPosition = ref({ row: 1, col: 1 }) // 光标位置
+const cursorPosition = ref({row: 1, col: 1}) // 光标位置
 const active = ref(false)                    // 控制抽屉开关
 
 
@@ -116,8 +122,10 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
-  if (terminal) {
-    terminal.value?.dispose()   // 销毁终端实例
+  // 只 dispose 终端实例即可
+  if (terminal.value) {
+    terminal.value.dispose()
+    terminal.value = undefined
   }
   if (resizeObserver) {
     resizeObserver.disconnect() // 取消监听
@@ -163,16 +171,17 @@ function initTerminal() {
   fitAddon.value = new FitAddon()
   terminal.value.loadAddon(fitAddon.value)
   terminal.value.loadAddon(new WebLinksAddon())  // 链接识别插件
-
   // 挂载到页面
   terminal.value.open(terminalElement.value)
   fitAddon.value.fit()
 
+
   // 监听输入，发送到 SSH 连接
   terminal.value.onData((data) => {
-    const info = window.electronAPI.executeSSHCommand(props.connectionId, data)
     console.log('Terminal input:', data)
-    console.log('Terminal sout:', info)
+    if(!isConnected){
+      connect()
+    }
   })
 
   // 监听光标移动，更新光标位置
@@ -183,10 +192,6 @@ function initTerminal() {
       cursorPosition.value.col = (terminal.value?.buffer.active.cursorX || 0) + 1
     }
   })
-
-  // 欢迎信息
-  terminal.value.write('SSH终端已就绪\r\n')
-  terminal.value.write('等待连接...\r\n')
 }
 
 
@@ -210,13 +215,9 @@ async function connect() {
 
   try {
     isConnected.value = true
-    terminal.value.write('\r\n正在连接SSH...\r\n')
-
-    // TODO: 调用 Electron 主进程的 SSH 连接逻辑
-    terminal.value.write('SSH连接成功！\r\n')
-    terminal.value.write('$ ')
-
-   await window.electronAPI.createSSHShell()
+    terminal.value.write('正在连接...\r\n')
+    await sshShell()
+    terminal.value.write('连接成功\r\n')
     // 获取当前连接数
     connectionCount.value = await window.electronAPI.getSSHConnectionCount?.() || 0
 
@@ -225,6 +226,32 @@ async function connect() {
     const message = error instanceof Error ? error.message : '连接失败'
     terminal.value?.write(`\r\n连接失败: ${message}\r\n`)
     emit('error', message) // 通知父组件
+  }
+}
+
+/** 创建 SSH Shell */
+async function sshShell() {
+  if (props.connectionId) {
+    const connectionId = props.connectionId
+
+    window.electronAPI.ssh.createShell(connectionId).then(() => {
+      // 接收远程输出
+      window.electronAPI.ssh.on(`ssh:data:${connectionId}`, (data: string) => {
+        terminal.value?.write(data)
+      })
+
+      window.electronAPI.ssh.on(`ssh:close:${connectionId}`, () => {
+        terminal.value?.write('\r\n*** SSH 已断开 ***\r\n')
+      })
+
+      // 输入 -> 发送到 SSH
+      terminal.value?.onData((input) => {
+        window.electronAPI.ssh.send(`ssh:input:${connectionId}`, input)
+      })
+    }).catch(err => {
+      terminal.value?.write(`\r\nSSH Shell 创建失败: ${err}\r\n`)
+      emit('error', err instanceof Error ? err.message : String(err))
+    })
   }
 }
 
@@ -239,7 +266,6 @@ async function disconnect() {
 
     if (terminal.value) {
       terminal.value.write('\r\n已断开SSH连接\r\n')
-      terminal.value.write('$ ')
     }
 
     emit('disconnect')
@@ -254,7 +280,6 @@ async function disconnect() {
 function clearTerminal() {
   if (terminal.value) {
     terminal.value.clear()
-    terminal.value.write('$ ')
   }
 }
 
@@ -268,7 +293,7 @@ watch(() => props.connectionId, (newId) => {
   if (newId && !isConnected.value) {
     connect()  // 新连接ID时，自动尝试连接
   }
-}, { immediate: true })
+}, {immediate: true})
 
 
 // ------------ 向父组件暴露方法 ------------
@@ -299,9 +324,11 @@ defineExpose({
   background: #2d2d2d;
   border-bottom: 1px solid #404040;
 }
+
 .title-icon {
   color: #1890ff;
 }
+
 .drawer-center {
   display: flex;
 
@@ -339,7 +366,7 @@ defineExpose({
 
 .terminal-container {
   flex: 1;
-  padding: 16px;
+  padding: 0 10px 0 10px;
   min-height: 0;
 }
 

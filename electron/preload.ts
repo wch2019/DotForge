@@ -48,7 +48,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     onCommandOutput: (callback: any) => ipcRenderer.on('command-output', (_, data) => callback(data)),
     onCommandFinished: (callback: any) => ipcRenderer.on('command-finished', (_, code) => callback(code)),
     // 构建日志相关
-    getBuildLogs: (projectId?: string) => ipcRenderer.invoke('build:getAll',projectId),
+    getBuildLogs: (projectId?: string) => ipcRenderer.invoke('build:getAll', projectId),
     getBuildLogById: (id: number) => ipcRenderer.invoke('build:getById', id),
     createBuildLog: (logData: any) => ipcRenderer.invoke('build:create', logData),
     updateBuildLog: (id: number, logData: any) => ipcRenderer.invoke('build:update', id, logData),
@@ -64,8 +64,20 @@ contextBridge.exposeInMainWorld('electronAPI', {
     connectSSH: (config: any) => ipcRenderer.invoke('ssh:connect', config),
     executeSSHCommand: (connectionId: string, command: string) => ipcRenderer.invoke('ssh:execute', connectionId, command),
     getSSHSystemInfo: (connectionId: string) => ipcRenderer.invoke('ssh:getSystemInfo', connectionId),
-    createSSHShell: (connectionId: string) => ipcRenderer.invoke('ssh:createShell', connectionId),
     disconnectSSH: (connectionId: string) => ipcRenderer.invoke('ssh:disconnect', connectionId),
     isSSHConnected: (connectionId: string) => ipcRenderer.invoke('ssh:isConnected', connectionId),
     getSSHConnectionCount: () => ipcRenderer.invoke('ssh:getConnectionCount'),
+    ssh: {
+        // 创建交互式 Shell
+        createShell: (connectionId: string) => ipcRenderer.invoke('ssh:createShell', connectionId),
+        // 向指定连接写入数据
+        send: (channel: string, data: any) => ipcRenderer.send(channel, data),
+        // 监听事件
+        on: (channel: string, callback: (data: any) => void) => {
+            const subscription = (_: any, data: any) => callback(data)
+            ipcRenderer.on(channel, subscription)
+            return () => ipcRenderer.removeListener(channel, subscription) // 提供解绑函数
+        }
+    },
+
 })

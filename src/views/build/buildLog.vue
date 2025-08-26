@@ -87,7 +87,7 @@ import {
 import {defaultProjectData} from "@/types/project.ts";
 import {BuildLog} from "@/types/buildLog.ts";
 import {formatDateTime} from "@/utils/date.ts";
-
+import {AnsiUp} from "ansi_up";
 const buildLog = ref<BuildLog>({
   projectId: '',
   projectName: '',
@@ -142,17 +142,11 @@ const buildSteps = [
   '[INFO] 执行其他配置...',
   '[INFO] 构建成功完成'
 ]
+const ansi_up = new AnsiUp();
 
 // 片段颜色
 function formatLogLine(line: string) {
-  // 简单的ANSI颜色模拟
-  return line
-      .replace(/\[INFO\]/g, '<span style="color: #22c55e">[INFO]</span>')
-      .replace(/\x1b\[32m/g, '<span style="color: #22c55e">')
-      .replace(/\x1b\[31m/g, '<span style="color: #ef4444">')
-      .replace(/\[ERROR\]/g, '<span style="color: #ef4444">[ERROR]</span>')
-      .replace(/\x1b\[33m/g, '<span style="color: #f59e0b">')
-      .replace(/\x1b\[0m/g, '</span>')
+  return ansi_up.ansi_to_html(line);
 }
 
 // 获取日志行样式
@@ -248,7 +242,7 @@ async function runBuild() {
   await stepLog("[INFO] " + localPath)
   await stepLog(buildSteps[2])
   // 构建流程
-  // await buildMethod( project.value.buildCmd, localPath)
+  await buildMethod( project.value.buildCmd, localPath)
   // 产物路径
   const outputPath = joinPaths(localPath, project.value.outputDir);
   // 发布操作
@@ -283,13 +277,14 @@ async function buildMethod( buildCmd: string, localPath: string) {
 
 // 发布操作
 async function deployMethod(project: any) {
-  logs.value.push(buildSteps[3])
+  await stepLog(buildSteps[3])
   //
   if (project.value.deployMethod == 'none') {
     logs.value.push("不发布")
   }
   if (project.value.deployMethod == 'local') {
     logs.value.push("本地部署")
+
     await buildMethod(project.value.localCommand, project.value.localPath)
   }
 }
