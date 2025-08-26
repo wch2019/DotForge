@@ -22,6 +22,23 @@
     </div>
 
     <div class="monitor-content">
+      <!-- 系统信息 -->
+      <div class="monitor-card wide">
+        <div class="card-header">
+          <h4 class="card-title">系统信息</h4>
+        </div>
+        <div class="system-stats">
+          <div class="stat-item">
+            <span class="stat-label">运行时间</span>
+            <span class="stat-value">{{ formatUptime(systemInfo.uptime) }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">负载平均值</span>
+            <span class="stat-value">{{ systemInfo.loadAverage.join(', ') }}</span>
+          </div>
+        </div>
+      </div>
+
       <!-- CPU 监控 -->
       <div class="monitor-card wide">
         <div class="card-header">
@@ -122,23 +139,6 @@
           <div class="network-item">
             <span class="network-label">发送</span>
             <span class="network-value">{{ formatBytes(systemInfo.network.tx) }}</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- 系统信息 -->
-      <div class="monitor-card wide">
-        <div class="card-header">
-          <h4 class="card-title">系统信息</h4>
-        </div>
-        <div class="system-stats">
-          <div class="stat-item">
-            <span class="stat-label">运行时间</span>
-            <span class="stat-value">{{ formatUptime(systemInfo.uptime) }}</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-label">负载平均值</span>
-            <span class="stat-value">{{ systemInfo.loadAverage.join(', ') }}</span>
           </div>
         </div>
       </div>

@@ -42,6 +42,50 @@ export interface SystemInfo {
     uptime: number
     loadAverage: number[]
 }
+/**
+ * 测试 SSH 连接是否可用
+ */
+export async function testServerConnection(config: SSHConnectionConfig): Promise<boolean> {
+    return new Promise((resolve) => {
+        const client = new Client()
+
+        const connectConfig: ConnectConfig = {
+            host: config.host,
+            port: config.port,
+            username: config.username,
+            readyTimeout: 10000,   // 超时时间 10 秒
+        }
+
+        if (config.password) {
+            connectConfig.password = config.password
+        } else if (config.privateKeyPath) {
+            try {
+                connectConfig.privateKey = fs.readFileSync(config.privateKeyPath, 'utf8')
+            } catch (err) {
+                console.error('读取私钥失败:', err)
+                resolve(false)
+                return
+            }
+        } else {
+            console.error('需要密码或私钥')
+            resolve(false)
+            return
+        }
+
+        client.on('ready', () => {
+            console.log('SSH 连接成功')
+            client.end()
+            resolve(true)
+        })
+
+        client.on('error', (err) => {
+            console.error('SSH 连接失败:', err)
+            resolve(false)
+        })
+
+        client.connect(connectConfig)
+    })
+}
 
 class SSHManager {
     /** SSH连接管理 */
@@ -382,4 +426,7 @@ export function registerSSHHandlers() {
         return sshManager.getConnectionCount()
     })
 
+    ipcMain.handle('ssh:test', async (_, data) => {
+        try { return await testServerConnection(data) } catch (e) { console.error('测试服务器连接失败:', e); return false }
+    })
 }

@@ -59,7 +59,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
     createServer: (data: any) => ipcRenderer.invoke('server:create', data),
     updateServer: (id: number, data: any) => ipcRenderer.invoke('server:update', id, data),
     deleteServer: (id: number) => ipcRenderer.invoke('server:delete', id),
-    testServerConnection: (data: any) => ipcRenderer.invoke('server:test', data),
     // SSH相关
     connectSSH: (config: any) => ipcRenderer.invoke('ssh:connect', config),
     executeSSHCommand: (connectionId: string, command: string) => ipcRenderer.invoke('ssh:execute', connectionId, command),
@@ -68,6 +67,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     isSSHConnected: (connectionId: string) => ipcRenderer.invoke('ssh:isConnected', connectionId),
     getSSHConnectionCount: () => ipcRenderer.invoke('ssh:getConnectionCount'),
     ssh: {
+        testSSHConnection: (data: any) => ipcRenderer.invoke('ssh:test', data),
         // 创建交互式 Shell
         createShell: (connectionId: string) => ipcRenderer.invoke('ssh:createShell', connectionId),
         // 向指定连接写入数据

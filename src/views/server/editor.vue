@@ -189,7 +189,7 @@ async function testConnection() {
   testing.value = true
   testResult.value = ''
   try {
-    const ok = await window.electronAPI.testServerConnection?.(JSON.parse(JSON.stringify(form.value)))
+    const ok = await window.electronAPI.ssh.testSSHConnection?.(JSON.parse(JSON.stringify(form.value)))
     testResult.value = ok ? '连接成功' : '连接失败'
   } catch (e) {
     testResult.value = '连接失败'

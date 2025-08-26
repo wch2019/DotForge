@@ -46,7 +46,6 @@ declare global {
             createServer: (data: any) => Promise<any>
             updateServer: (id: number, data: any) => Promise<any>
             deleteServer: (id: number) => Promise<any>
-            testServerConnection: (data: any) => Promise<boolean>
 
             // SSH相关
             connectSSH: (config: any) => Promise<string>
@@ -56,6 +55,12 @@ declare global {
             disconnectSSH: (connectionId: string) => Promise<boolean>
             isSSHConnected: (connectionId: string) => Promise<boolean>
             getSSHConnectionCount: () => Promise<number>
+            ssh: {
+                testSSHConnection : (config: any) => Promise<boolean>
+                createShell: (connectionId: string) => Promise<any>
+                send: (channel: string, data: any) => void
+                on: (channel: string, callback: (data: any) => void) => () => void
+            }
         }
 
         $message: {

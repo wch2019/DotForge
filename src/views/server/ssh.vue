@@ -33,8 +33,9 @@ const terminalRef = ref()
 
 onMounted(async () => {
   const serverId = route.query.serverId as string
-  if (serverId) {
-    const server = await window.electronAPI.getServerById(serverId)
+  const numericId = Number(serverId)
+  if (!Number.isNaN(numericId)) {
+    const server = await window.electronAPI.getServerById(numericId)
     if (server) {
       await connectServer(server)
     }
@@ -85,15 +86,12 @@ function handleDisconnect() {
   currentConnectionId.value = ''
   currentServer.value = null
   isConnected.value = false
+  // 返回上一页，避免停留在失效页面
+  router.back()
 }
 
 function handleError(message: string) {
   window.$message?.error(message)
-}
-
-// 返回
-function goBack() {
-  router.back()
 }
 
 // 暴露方法给父组件

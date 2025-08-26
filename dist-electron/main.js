@@ -5,11 +5,11 @@ var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, 
 import { ipcMain, dialog, app, BrowserWindow } from "electron";
 import { fileURLToPath } from "node:url";
 import path$c from "node:path";
-import fs$j from "node:fs";
-import * as require$$0$1 from "fs";
-import require$$0__default from "fs";
-import require$$0$2 from "constants";
-import require$$0$3 from "stream";
+import fs$k from "node:fs";
+import * as fs$j from "fs";
+import fs__default from "fs";
+import require$$0$1 from "constants";
+import require$$0$2 from "stream";
 import require$$4$1 from "util";
 import require$$5$1 from "assert";
 import require$$1$1 from "path";
@@ -18,7 +18,7 @@ import Client from "better-sqlite3";
 import { spawn, exec } from "child_process";
 import { Client as Client$1 } from "ssh2";
 import { platform as platform$1 } from "process";
-import require$$0$4 from "buffer";
+import require$$0$3 from "buffer";
 import require$$1$2 from "string_decoder";
 function registerFileDialogHandler() {
   ipcMain.handle("dialog:selectPath", async (_event, options) => {
@@ -58,7 +58,7 @@ universalify$1.fromPromise = function(fn) {
     }
   }, "name", { value: fn.name });
 };
-var constants = require$$0$2;
+var constants = require$$0$1;
 var origCwd = process.cwd;
 var cwd = null;
 var platform = process.env.GRACEFUL_FS_PLATFORM || process.platform;
@@ -339,7 +339,7 @@ function patch$1(fs2) {
     return false;
   }
 }
-var Stream = require$$0$3.Stream;
+var Stream = require$$0$2.Stream;
 var legacyStreams = legacy$1;
 function legacy$1(fs2) {
   return {
@@ -445,7 +445,7 @@ function clone$1(obj) {
   });
   return copy2;
 }
-var fs$h = require$$0__default;
+var fs$h = fs__default;
 var polyfills = polyfills$1;
 var legacy = legacyStreams;
 var clone = clone_1;
@@ -1708,7 +1708,7 @@ let _fs;
 try {
   _fs = gracefulFs;
 } catch (_) {
-  _fs = require$$0__default;
+  _fs = fs__default;
 }
 const universalify = universalify$1;
 const { stringify: stringify$2, stripBom } = utils;
@@ -1949,15 +1949,15 @@ const CONFIG_DIR = app.getPath("userData");
 const CONFIG_PATH = path$c.join(CONFIG_DIR, CONFIG_FILE_NAME);
 const DEFAULT_DATA_DIR = path$c.join(app.getPath("documents"), "DotForge");
 function ensureConfigFile() {
-  if (!fs$j.existsSync(CONFIG_DIR)) {
-    fs$j.mkdirSync(CONFIG_DIR, { recursive: true });
+  if (!fs$k.existsSync(CONFIG_DIR)) {
+    fs$k.mkdirSync(CONFIG_DIR, { recursive: true });
   }
-  if (!fs$j.existsSync(DEFAULT_DATA_DIR)) {
-    fs$j.mkdirSync(DEFAULT_DATA_DIR, { recursive: true });
+  if (!fs$k.existsSync(DEFAULT_DATA_DIR)) {
+    fs$k.mkdirSync(DEFAULT_DATA_DIR, { recursive: true });
     defaultConfig.defaultProjectPath = DEFAULT_DATA_DIR;
   }
-  if (!fs$j.existsSync(CONFIG_PATH)) {
-    fs$j.writeFileSync(CONFIG_PATH, JSON.stringify(defaultConfig, null, 2), "utf8");
+  if (!fs$k.existsSync(CONFIG_PATH)) {
+    fs$k.writeFileSync(CONFIG_PATH, JSON.stringify(defaultConfig, null, 2), "utf8");
   }
 }
 function getConfigPath() {
@@ -1966,7 +1966,7 @@ function getConfigPath() {
 function readConfig() {
   ensureConfigFile();
   try {
-    const content = fs$j.readFileSync(CONFIG_PATH, "utf8");
+    const content = fs$k.readFileSync(CONFIG_PATH, "utf8");
     const parsed = JSON.parse(content);
     return parsed;
   } catch (e) {
@@ -1977,7 +1977,7 @@ function readConfig() {
 function writeConfig(config) {
   try {
     ensureConfigFile();
-    fs$j.writeFileSync(CONFIG_PATH, JSON.stringify(config, null, 2), "utf8");
+    fs$k.writeFileSync(CONFIG_PATH, JSON.stringify(config, null, 2), "utf8");
     return true;
   } catch (e) {
     console.error("[设置] 写入配置失败", e);
@@ -1986,8 +1986,8 @@ function writeConfig(config) {
 }
 async function migrateDataDir(oldPath, newPath) {
   try {
-    if (!fs$j.existsSync(newPath)) {
-      fs$j.mkdirSync(newPath, { recursive: true });
+    if (!fs$k.existsSync(newPath)) {
+      fs$k.mkdirSync(newPath, { recursive: true });
     }
     await fs.copy(oldPath, newPath, {
       overwrite: true,
@@ -7140,9 +7140,6 @@ function deleteServer(id) {
   const db = getDb();
   return db.delete(server).where(eq(server.id, id)).returning();
 }
-async function testServerConnection(_) {
-  return true;
-}
 function registerServerHandlers() {
   ipcMain.handle("server:create", async (_, data) => {
     try {
@@ -7184,13 +7181,42 @@ function registerServerHandlers() {
       throw e;
     }
   });
-  ipcMain.handle("server:test", async (_, data) => {
-    try {
-      return await testServerConnection(data);
-    } catch (e) {
-      console.error("测试服务器连接失败:", e);
-      return false;
+}
+async function testServerConnection(config) {
+  return new Promise((resolve) => {
+    const client = new Client$1();
+    const connectConfig = {
+      host: config.host,
+      port: config.port,
+      username: config.username,
+      readyTimeout: 1e4
+      // 超时时间 10 秒
+    };
+    if (config.password) {
+      connectConfig.password = config.password;
+    } else if (config.privateKeyPath) {
+      try {
+        connectConfig.privateKey = fs$j.readFileSync(config.privateKeyPath, "utf8");
+      } catch (err) {
+        console.error("读取私钥失败:", err);
+        resolve(false);
+        return;
+      }
+    } else {
+      console.error("需要密码或私钥");
+      resolve(false);
+      return;
     }
+    client.on("ready", () => {
+      console.log("SSH 连接成功");
+      client.end();
+      resolve(true);
+    });
+    client.on("error", (err) => {
+      console.error("SSH 连接失败:", err);
+      resolve(false);
+    });
+    client.connect(connectConfig);
   });
 }
 class SSHManager {
@@ -7214,7 +7240,7 @@ class SSHManager {
         connectConfig.password = config.password;
       } else if (config.privateKeyPath) {
         try {
-          connectConfig.privateKey = require$$0$1.readFileSync(config.privateKeyPath, "utf8");
+          connectConfig.privateKey = fs$j.readFileSync(config.privateKeyPath, "utf8");
         } catch (error) {
           reject(new Error(`无法读取私钥文件: ${error}`));
           return;
@@ -7466,6 +7492,14 @@ function registerSSHHandlers() {
   ipcMain.handle("ssh:getConnectionCount", async () => {
     return sshManager.getConnectionCount();
   });
+  ipcMain.handle("ssh:test", async (_, data) => {
+    try {
+      return await testServerConnection(data);
+    } catch (e) {
+      console.error("测试服务器连接失败:", e);
+      return false;
+    }
+  });
 }
 function registerAllIpcHandlers() {
   registerFileDialogHandler();
@@ -7477,7 +7511,7 @@ function registerAllIpcHandlers() {
   registerSSHHandlers();
 }
 var lib = { exports: {} };
-var buffer = require$$0$4;
+var buffer = require$$0$3;
 var Buffer$1 = buffer.Buffer;
 var safer = {};
 var key;
