@@ -41,11 +41,14 @@ declare global {
             deleteBuildLog: (id: number) => Promise<any>
 
             // 服务器管理相关
-            getServers: () => Promise<any[]>
-            getServerById: (id: number) => Promise<any>
-            createServer: (data: any) => Promise<any>
-            updateServer: (id: number, data: any) => Promise<any>
-            deleteServer: (id: number) => Promise<any>
+            server:{
+                getServers: () => Promise<any[]>
+                getServerById: (id: number) => Promise<any>
+                createServer: (data: any) => Promise<any>
+                updateServer: (id: number, data: any) => Promise<any>
+                deleteServer: (id: number) => Promise<any>
+                getIdNameList: () => Promise<any[]>
+            }
 
             // SSH相关
             connectSSH: (config: any) => Promise<string>

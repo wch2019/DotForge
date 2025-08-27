@@ -48,11 +48,14 @@ electron.contextBridge.exposeInMainWorld("electronAPI", {
   updateBuildLog: (id, logData) => electron.ipcRenderer.invoke("build:update", id, logData),
   deleteBuildLog: (id) => electron.ipcRenderer.invoke("build:delete", id),
   // 服务器管理相关
-  getServers: () => electron.ipcRenderer.invoke("server:getAll"),
-  getServerById: (id) => electron.ipcRenderer.invoke("server:getById", id),
-  createServer: (data) => electron.ipcRenderer.invoke("server:create", data),
-  updateServer: (id, data) => electron.ipcRenderer.invoke("server:update", id, data),
-  deleteServer: (id) => electron.ipcRenderer.invoke("server:delete", id),
+  server: {
+    getServers: () => electron.ipcRenderer.invoke("server:getAll"),
+    getServerById: (id) => electron.ipcRenderer.invoke("server:getById", id),
+    createServer: (data) => electron.ipcRenderer.invoke("server:create", data),
+    updateServer: (id, data) => electron.ipcRenderer.invoke("server:update", id, data),
+    deleteServer: (id) => electron.ipcRenderer.invoke("server:delete", id),
+    getIdNameList: () => electron.ipcRenderer.invoke("server:getIdNameList")
+  },
   // SSH相关
   connectSSH: (config) => electron.ipcRenderer.invoke("ssh:connect", config),
   executeSSHCommand: (connectionId, command) => electron.ipcRenderer.invoke("ssh:execute", connectionId, command),

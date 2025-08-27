@@ -88,7 +88,7 @@
               <n-input v-model:value="form.buildCmd" type="textarea" rows="10" placeholder="如 mvn clean package.多行命令请用换行分隔"/>
             </n-form-item>
 
-            <n-form-item label="构建输出目录" path="outputDir" required>
+            <n-form-item label="构建输出产物" path="outputDir" required>
               <n-input v-model:value="form.outputDir" placeholder="如 target、dist、build"/>
             </n-form-item>
           </n-form>
@@ -126,11 +126,34 @@
               </n-form-item>
             </div>
 
+            <!-- 远程服务器 -->
+            <div v-if="form.deployMethod === 'remote'" class="deploy-section">
+              <div class="form-row">
+                <div>
+                  <n-form-item label="服务器" path="serverId" required>
+                    <n-select v-model:value="form.serverId" placeholder="选择服务器" :options="serverOptions"/>
+                  </n-form-item>
+                  <n-form-item label="目标路径" path="targetPath">
+                    <PathListInput v-model:modelValue ="form.targetPath" />
+                  </n-form-item>
+                </div>
+
+                <n-form-item label="上传后执行命令" path="remoteCommand">
+                  <n-input v-model:value="form.remoteCommand" type="textarea" rows="8" placeholder="上传后要执行的命令"/>
+                </n-form-item>
+              </div>
+
+            </div>
+
             <!-- Docker 镜像 -->
             <div v-if="form.deployMethod === 'docker'" class="deploy-section">
               <div class="form-row">
                 <n-form-item label="Dockerfile 路径" path="dockerfilePath">
-                  <n-input v-model:value="form.dockerfilePath" placeholder="如 ./Dockerfile"/>
+                  <FilePicker
+                      v-model="form.dockerfilePath"
+                      type="file"
+                      placeholder="如 Dockerfile"
+                  />
                 </n-form-item>
                 <n-form-item label="镜像名称" path="imageName">
                   <n-input v-model:value="form.imageName" placeholder="如 myapp:latest"/>
@@ -161,53 +184,6 @@
 
 
             </div>
-
-            <!-- 远程服务器 -->
-            <div v-if="form.deployMethod === 'remote'" class="deploy-section">
-              <div class="form-row">
-                <n-form-item label="服务器地址" path="serverAddress">
-                  <n-input v-model:value="form.serverAddress" placeholder="如 192.168.1.10"/>
-                </n-form-item>
-                <n-form-item label="端口" path="serverPort">
-                  <n-input-number v-model:value="form.serverPort" :min="1" :max="65535"/>
-                </n-form-item>
-              </div>
-
-              <div class="form-row">
-                <n-form-item label="用户名" path="serverUsername">
-                  <n-input v-model:value="form.serverUsername" placeholder="SSH 用户名"/>
-                </n-form-item>
-                <n-form-item label="认证方式" path="authType">
-                  <n-radio-group v-model:value="form.authType">
-                    <n-radio value="password">密码</n-radio>
-                    <n-radio value="privateKey">私钥</n-radio>
-                  </n-radio-group>
-                </n-form-item>
-              </div>
-
-
-              <div class="form-row">
-                <div v-if="form.authType === 'password'">
-                  <n-form-item label="密码" path="serverPassword">
-                    <n-input v-model:value="form.serverPassword" type="password" placeholder="SSH 密码"/>
-                  </n-form-item>
-                </div>
-
-                <div v-if="form.authType === 'privateKey'">
-                  <n-form-item label="私钥路径" path="privateKeyPath">
-                    <n-input v-model:value="form.privateKeyPath" placeholder="私钥文件路径"/>
-                  </n-form-item>
-                </div>
-
-                <n-form-item label="目标路径" path="targetPath">
-                  <n-input v-model:value="form.targetPath" placeholder="上传产物路径"/>
-                </n-form-item>
-              </div>
-
-              <n-form-item label="上传后执行命令" path="remoteCommand">
-                <n-input v-model:value="form.remoteCommand" type="textarea" rows="3" placeholder="上传后要执行的命令"/>
-              </n-form-item>
-            </div>
           </n-form>
         </div>
 
@@ -227,9 +203,9 @@
             </div>
 
             <div v-if="form.keepArtifacts" class="form-row">
-<!--              <n-form-item label="保留路径" path="keepPath">-->
-<!--                <n-input v-model:value="form.keepPath" placeholder="产物保留路径，留空使用默认路径"/>-->
-<!--              </n-form-item>-->
+              <!--              <n-form-item label="保留路径" path="keepPath">-->
+              <!--                <n-input v-model:value="form.keepPath" placeholder="产物保留路径，留空使用默认路径"/>-->
+              <!--              </n-form-item>-->
               <n-form-item label="保留个数" path="keepCount">
                 <n-input-number v-model:value="form.keepCount" :min="1" :max="100"/>
                 <span class="unit-text">个</span>
@@ -306,6 +282,7 @@ import {Edit24Regular} from '@vicons/fluent'
 
 import FilePicker from "@/components/FilePicker.vue";
 import {defaultProjectData, deployMethods, tags} from "@/types/project.ts";
+import PathListInput from "@/components/PathListInput.vue";
 
 const message = useMessage()
 const router = useRouter()
@@ -316,7 +293,7 @@ const isEdit = computed(() => !!id)
 // 当前步骤
 const currentStep = ref(1)
 const saving = ref(false)
-
+const serverOptions = ref<{ label: string; value: number }[]>([])
 // 步骤定义
 const steps = [
   {title: '基础信息', description: '项目基本信息'},
@@ -386,11 +363,25 @@ onMounted(async () => {
     if (project) {
       Object.assign(form.value, project)
     }
+    await loadServers()
   }
 })
 
 function onCancel() {
   router.push({name: 'Project'})
+}
+
+// 获取服务器信息
+async function loadServers() {
+  try {
+    const list: { id: number; name: string; host: string }[] = await window.electronAPI.server.getIdNameList()
+    serverOptions.value = list.map(item => ({
+      label: item.name + "(" + item.host + ")",
+      value: item.id
+    }))
+  } catch (err) {
+    console.error("加载服务器列表失败", err)
+  }
 }
 
 async function onSave() {

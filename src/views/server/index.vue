@@ -147,7 +147,6 @@ type ServerItem = {
   username?: string
   tag?: string
   description?: string
-  status: 'online' | 'offline'
 }
 
 const keyword = ref('')
@@ -161,11 +160,8 @@ const filteredServers = computed(() => {
   )
 })
 
-const onlineCount = computed(() => servers.value.filter(s => s.status === 'online').length)
-const offlineCount = computed(() => servers.value.filter(s => s.status === 'offline').length)
-
 async function initServers() {
-  const list = await window.electronAPI.getServers?.()
+  const list = await window.electronAPI.server.getServers?.()
   if (list) {
     servers.value = list.map((s: any) => ({
       id: s.id,
@@ -189,7 +185,7 @@ function edit(item: ServerItem) {
 }
 
 async function remove(item: ServerItem) {
-  await window.electronAPI.deleteServer?.(item.id)
+  await window.electronAPI.server.deleteServer?.(item.id)
   servers.value = servers.value.filter(s => s.id !== item.id)
 }
 

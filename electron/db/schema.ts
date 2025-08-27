@@ -17,12 +17,7 @@ export const project = sqliteTable('project', {
     registry: text('registry'),
     dockerDeployType: text('dockerDeployType'), // 'local'|'push'
     dockerRunCommand: text('dockerRunCommand'),
-    serverAddress: text('serverAddress'),
-    serverPort: integer('serverPort'),
-    serverUsername: text('serverUsername'),
-    authType: text('authType'), // 'password'|'privateKey'
-    serverPassword: text('serverPassword'),
-    privateKeyPath: text('privateKeyPath'),
+    serverId: text('serverId'),
     targetPath: text('targetPath'),
     remoteCommand: text('remoteCommand'),
     keepArtifacts: integer('keepArtifacts'), // 0 or 1

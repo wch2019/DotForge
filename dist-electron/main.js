@@ -6654,13 +6654,7 @@ const project = sqliteTable("project", {
   dockerDeployType: text("dockerDeployType"),
   // 'local'|'push'
   dockerRunCommand: text("dockerRunCommand"),
-  serverAddress: text("serverAddress"),
-  serverPort: integer("serverPort"),
-  serverUsername: text("serverUsername"),
-  authType: text("authType"),
-  // 'password'|'privateKey'
-  serverPassword: text("serverPassword"),
-  privateKeyPath: text("privateKeyPath"),
+  serverId: text("serverId"),
   targetPath: text("targetPath"),
   remoteCommand: text("remoteCommand"),
   keepArtifacts: integer("keepArtifacts"),
@@ -6830,9 +6824,9 @@ function construct(client, config = {}) {
     };
   }
   const session = new BetterSQLiteSession(client, dialect, schema2, { logger });
-  const db = new BetterSQLite3Database("sync", dialect, session, schema2);
-  db.$client = client;
-  return db;
+  const db2 = new BetterSQLite3Database("sync", dialect, session, schema2);
+  db2.$client = client;
+  return db2;
 }
 function drizzle(...params) {
   if (params[0] === void 0 || typeof params[0] === "string") {
@@ -6860,7 +6854,9 @@ function drizzle(...params) {
 })(drizzle || (drizzle = {}));
 const require$1 = createRequire(import.meta.url);
 const Database = require$1("better-sqlite3");
+let dbSingleton = null;
 function getDb() {
+  if (dbSingleton) return dbSingleton;
   const config = readConfig();
   const CONFIG_PATH2 = config.defaultProjectPath;
   const isDir = require$$1$1.extname(CONFIG_PATH2) === "";
@@ -6899,12 +6895,7 @@ function getDb() {
             registry TEXT,
             dockerDeployType TEXT,
             dockerRunCommand TEXT,
-            serverAddress TEXT,
-            serverPort INTEGER,
-            serverUsername TEXT,
-            authType TEXT,
-            serverPassword TEXT,
-            privateKeyPath TEXT,
+            serverId INTEGER,
             targetPath TEXT,
             remoteCommand TEXT,
             keepArtifacts INTEGER,
@@ -6944,29 +6935,29 @@ function getDb() {
             description TEXT
         );
     `);
-  const db = drizzle(sqlite, { schema });
-  return db;
+  dbSingleton = drizzle(sqlite, { schema });
+  return dbSingleton;
 }
 function createProject(data) {
   console.log("createProject", data);
-  const db = getDb();
-  return db.insert(project).values(data).returning();
+  const db2 = getDb();
+  return db2.insert(project).values(data).returning();
 }
 function getProject() {
-  const db = getDb();
-  return db.select().from(project).orderBy(desc(project.createdTime)).all();
+  const db2 = getDb();
+  return db2.select().from(project).orderBy(desc(project.createdTime)).all();
 }
 function getProjectById(id) {
-  const db = getDb();
-  return db.select().from(project).where(eq(project.id, id)).get();
+  const db2 = getDb();
+  return db2.select().from(project).where(eq(project.id, id)).get();
 }
 function updateProject(id, data) {
-  const db = getDb();
-  return db.update(project).set(data).where(eq(project.id, id)).returning();
+  const db2 = getDb();
+  return db2.update(project).set(data).where(eq(project.id, id)).returning();
 }
 function deleteProject(id) {
-  const db = getDb();
-  return db.delete(project).where(eq(project.id, id)).returning();
+  const db2 = getDb();
+  return db2.delete(project).where(eq(project.id, id)).returning();
 }
 function registerProjectHandlers() {
   ipcMain.handle("project:create", async (_, projectData) => {
@@ -7050,12 +7041,12 @@ function registerCommandHandlers() {
   });
 }
 function createProjectBuild(data) {
-  const db = getDb();
-  return db.insert(projectBuild).values(data).returning();
+  const db2 = getDb();
+  return db2.insert(projectBuild).values(data).returning();
 }
 function getProjectBuild(projectId) {
-  const db = getDb();
-  const query = db.select({
+  const db2 = getDb();
+  const query = db2.select({
     id: projectBuild.id,
     status: projectBuild.status,
     startTime: projectBuild.startTime,
@@ -7067,16 +7058,16 @@ function getProjectBuild(projectId) {
   return query.orderBy(desc(projectBuild.startTime)).all();
 }
 function getProjectBuildById(id) {
-  const db = getDb();
-  return db.select().from(projectBuild).where(eq(projectBuild.id, id)).get();
+  const db2 = getDb();
+  return db2.select().from(projectBuild).where(eq(projectBuild.id, id)).get();
 }
 function updateProjectBuild(id, data) {
-  const db = getDb();
-  return db.update(projectBuild).set(data).where(eq(projectBuild.id, id)).returning();
+  const db2 = getDb();
+  return db2.update(projectBuild).set(data).where(eq(projectBuild.id, id)).returning();
 }
 function deleteProjectBuild(id) {
-  const db = getDb();
-  return db.delete(projectBuild).where(eq(projectBuild.id, id)).returning();
+  const db2 = getDb();
+  return db2.delete(projectBuild).where(eq(projectBuild.id, id)).returning();
 }
 function registerProjectBuildHandlers() {
   ipcMain.handle("build:create", async (_, projectBuildData) => {
@@ -7120,64 +7111,43 @@ function registerProjectBuildHandlers() {
     }
   });
 }
+const db = getDb();
 function createServer(data) {
-  const db = getDb();
   return db.insert(server).values(data).returning();
 }
 function getServers() {
-  const db = getDb();
   return db.select().from(server).orderBy(desc(server.createdTime)).all();
 }
 function getServerById(id) {
-  const db = getDb();
   return db.select().from(server).where(eq(server.id, id)).get();
 }
 function updateServer(id, data) {
-  const db = getDb();
   return db.update(server).set(data).where(eq(server.id, id)).returning();
 }
 function deleteServer(id) {
-  const db = getDb();
   return db.delete(server).where(eq(server.id, id)).returning();
 }
+function getServerIdNameList() {
+  return db.select({
+    id: server.id,
+    name: server.name,
+    host: server.host
+  }).from(server).orderBy(desc(server.createdTime)).all();
+}
 function registerServerHandlers() {
-  ipcMain.handle("server:create", async (_, data) => {
+  handleIpc("server:create", createServer);
+  handleIpc("server:getAll", getServers);
+  handleIpc("server:getById", getServerById);
+  handleIpc("server:update", updateServer);
+  handleIpc("server:delete", deleteServer);
+  handleIpc("server:getIdNameList", getServerIdNameList);
+}
+function handleIpc(channel, handler) {
+  ipcMain.handle(channel, async (_event, ...args) => {
     try {
-      return await createServer(data);
+      return await handler(...args);
     } catch (e) {
-      console.error("创建服务器失败:", e);
-      throw e;
-    }
-  });
-  ipcMain.handle("server:getAll", async () => {
-    try {
-      return await getServers();
-    } catch (e) {
-      console.error("获取服务器列表失败:", e);
-      throw e;
-    }
-  });
-  ipcMain.handle("server:getById", async (_, id) => {
-    try {
-      return await getServerById(id);
-    } catch (e) {
-      console.error("获取服务器失败:", e);
-      throw e;
-    }
-  });
-  ipcMain.handle("server:update", async (_, id, data) => {
-    try {
-      return await updateServer(id, data);
-    } catch (e) {
-      console.error("更新服务器失败:", e);
-      throw e;
-    }
-  });
-  ipcMain.handle("server:delete", async (_, id) => {
-    try {
-      return await deleteServer(id);
-    } catch (e) {
-      console.error("删除服务器失败:", e);
+      console.error(`[${channel}] 处理失败:`, e);
       throw e;
     }
   });
@@ -18148,17 +18118,17 @@ const iconv = /* @__PURE__ */ getDefaultExportFromCjs(libExports);
 if (platform$1 === "win32") {
   const stdoutWrite = process.stdout.write.bind(process.stdout);
   const stderrWrite = process.stderr.write.bind(process.stderr);
-  process.stdout.write = (chunk, encoding, callback) => {
+  process.stdout.write = (chunk, ...args) => {
     if (typeof chunk === "string") {
       chunk = iconv.encode(chunk, "gbk");
     }
-    return stdoutWrite(chunk, encoding, callback);
+    return stdoutWrite(chunk, ...args);
   };
-  process.stderr.write = (chunk, encoding, callback) => {
+  process.stderr.write = (chunk, ...args) => {
     if (typeof chunk === "string") {
       chunk = iconv.encode(chunk, "gbk");
     }
-    return stderrWrite(chunk, encoding, callback);
+    return stderrWrite(chunk, ...args);
   };
 }
 const __dirname = path$c.dirname(fileURLToPath(import.meta.url));

@@ -1,4 +1,4 @@
-import {dialog, ipcMain} from 'electron'
+import { ipcMain, dialog } from 'electron'
 
 export function registerFileDialogHandler() {
     ipcMain.handle('dialog:selectPath', async (_event, options: { type: 'file' | 'directory' }) => {

@@ -153,7 +153,7 @@ const testResult = ref('')
 
 onMounted(async () => {
   if (isEdit.value && id) {
-    const data = await window.electronAPI.getServerById?.(parseInt(id))
+    const data = await window.electronAPI.server.getServerById?.(parseInt(id))
     if (data) Object.assign(form.value, data)
   }
 })
@@ -175,9 +175,9 @@ async function onSave() {
   try {
     const plain = JSON.parse(JSON.stringify(form.value))
     if (isEdit.value && id) {
-      await window.electronAPI.updateServer?.(parseInt(id), plain)
+      await window.electronAPI.server.updateServer?.(parseInt(id), plain)
     } else {
-      await window.electronAPI.createServer?.(plain)
+      await window.electronAPI.server.createServer?.(plain)
     }
     router.push({ name: 'Server' })
   } finally {

@@ -54,11 +54,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
     updateBuildLog: (id: number, logData: any) => ipcRenderer.invoke('build:update', id, logData),
     deleteBuildLog: (id: number) => ipcRenderer.invoke('build:delete', id),
     // 服务器管理相关
-    getServers: () => ipcRenderer.invoke('server:getAll'),
-    getServerById: (id: number) => ipcRenderer.invoke('server:getById', id),
-    createServer: (data: any) => ipcRenderer.invoke('server:create', data),
-    updateServer: (id: number, data: any) => ipcRenderer.invoke('server:update', id, data),
-    deleteServer: (id: number) => ipcRenderer.invoke('server:delete', id),
+    server: {
+        getServers: () => ipcRenderer.invoke('server:getAll'),
+        getServerById: (id: number) => ipcRenderer.invoke('server:getById', id),
+        createServer: (data: any) => ipcRenderer.invoke('server:create', data),
+        updateServer: (id: number, data: any) => ipcRenderer.invoke('server:update', id, data),
+        deleteServer: (id: number) => ipcRenderer.invoke('server:delete', id),
+        getIdNameList: () => ipcRenderer.invoke('server:getIdNameList'),
+    },
     // SSH相关
     connectSSH: (config: any) => ipcRenderer.invoke('ssh:connect', config),
     executeSSHCommand: (connectionId: string, command: string) => ipcRenderer.invoke('ssh:execute', connectionId, command),

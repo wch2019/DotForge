@@ -29,18 +29,8 @@ export interface ProjectData {
     dockerDeployType: 'local' | 'push'
     /** Docker 运行命令 **/
     dockerRunCommand: string
-    /** 服务器信息 **/
-    serverAddress: string
-    /** 服务器端口 **/
-    serverPort: number
-    /** 服务器用户名 **/
-    serverUsername: string
-    /** 认证方式 **/
-    authType: 'password' | 'privateKey'
-    /** 密码 **/
-    serverPassword: string
-    /** 私钥路径 **/
-    privateKeyPath: string
+    /** 远程服务器ID **/
+    serverId?: number
     /** 目标路径 **/
     targetPath: string
     /** 远程命令 **/
@@ -73,12 +63,6 @@ export const defaultProjectData: ProjectData = {
     localCommand: '',
     dockerDeployType: 'local',
     dockerRunCommand: '',
-    serverAddress: '',
-    serverPort: 22,
-    serverUsername: '',
-    authType: 'password',
-    serverPassword: '',
-    privateKeyPath: '',
     targetPath: '',
     remoteCommand: '',
     keepArtifacts: 0,
@@ -92,8 +76,8 @@ export const defaultProjectData: ProjectData = {
 export const deployMethods = [
     {label: '不发布', value: 'none'},
     {label: '本地命令', value: 'local'},
-    {label: 'Docker镜像', value: 'docker'},
     {label: '远程服务器', value: 'remote'},
+    {label: 'Docker镜像', value: 'docker'},
 ]
 
 export const tags = [

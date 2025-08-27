@@ -76,18 +76,24 @@
 </template>
 
 <script setup lang="ts">
-import {ref, computed, onMounted, nextTick, toRaw} from 'vue'
+import {computed, nextTick, onMounted, ref, toRaw} from 'vue'
 import {useRoute, useRouter} from 'vue-router'
 import {NButton, NIcon, useMessage} from 'naive-ui'
 import {
-  ArrowBackOutline, CheckmarkCircleOutline, CloseCircleOutline,
-  SyncOutline, TrashOutline, DownloadOutline, StopOutline,
-  DocumentTextOutline
+  ArrowBackOutline,
+  CheckmarkCircleOutline,
+  CloseCircleOutline,
+  DocumentTextOutline,
+  DownloadOutline,
+  StopOutline,
+  SyncOutline,
+  TrashOutline
 } from '@vicons/ionicons5'
 import {defaultProjectData} from "@/types/project.ts";
 import {BuildLog} from "@/types/buildLog.ts";
 import {formatDateTime} from "@/utils/date.ts";
 import {AnsiUp} from "ansi_up";
+
 const buildLog = ref<BuildLog>({
   projectId: '',
   projectName: '',
@@ -134,13 +140,14 @@ const buildStatusClass = computed(() => {
   }
 })
 
+const info = ref("\x1b[32m[INFO]\x1b[0m ")
 const buildSteps = [
-  '[INFO] 开始构建项目...',
-  '[INFO] 获取基础信息...',
-  '[INFO] 执行构建流程...',
-  '[INFO] 执行发布操作...',
-  '[INFO] 执行其他配置...',
-  '[INFO] 构建成功完成'
+  info + '开始构建项目...',
+  info + '获取基础信息...',
+  info + '执行构建流程...',
+  info + '执行发布操作...',
+  info + '执行其他配置...',
+  info + '构建成功完成'
 ]
 const ansi_up = new AnsiUp();
 
@@ -187,7 +194,7 @@ onMounted(async () => {
 function stopBuild() {
   window.electronAPI.stopCommand().then((stopped: any) => {
     if (stopped) {
-      logs.value.push('[INFO] 构建已停止')
+      logs.value.push( info+'构建已停止')
       buildStatus.value = 'failed'
     } else {
       logs.value.push('[WARN] 没有正在运行的构建任务')
@@ -239,10 +246,15 @@ async function runBuild() {
   await stepLog(buildSteps[0])
   await stepLog(buildSteps[1])
   const localPath = project.value.localPath
-  await stepLog("[INFO] " + localPath)
+  await stepLog(info + localPath)
   await stepLog(buildSteps[2])
   // 构建流程
-  await buildMethod( project.value.buildCmd, localPath)
+  const method = await buildMethod(project.value.buildCmd, localPath)
+  if (!method) {
+    buildStatus.value = 'failed'
+    await saveBuildLog()
+    return
+  }
   // 产物路径
   const outputPath = joinPaths(localPath, project.value.outputDir);
   // 发布操作
@@ -255,7 +267,7 @@ async function runBuild() {
 }
 
 // 构建流程
-async function buildMethod( buildCmd: string, localPath: string) {
+async function buildMethod(buildCmd: string, localPath: string) {
   // 按换行分割命令
   const commands = buildCmd
       .split(/\r?\n/) // 按换行符切割
@@ -264,13 +276,13 @@ async function buildMethod( buildCmd: string, localPath: string) {
 
   // 逐行执行命令
   for (const cmd of commands) {
-    logs.value.push(`[INFO] 执行命令: ${cmd}`)
+    logs.value.push(info+`执行命令: ${cmd}`)
     const code = await window.electronAPI.runCommand(cmd, {cwd: localPath})
     if (code !== 0) {
       buildStatus.value = 'failed'
       logs.value.push(`[ERROR] 命令失败: ${cmd}`)
       await saveBuildLog()
-      return
+      return false
     }
   }
 }

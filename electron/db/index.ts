@@ -8,7 +8,11 @@ import {readConfig} from "../ipc/setting.ts";
 const require = createRequire(import.meta.url);
 const Database = require("better-sqlite3");
 
+let dbSingleton: ReturnType<typeof drizzle> | null = null;
+
 export function getDb() {
+    if (dbSingleton) return dbSingleton;
+
     const config = readConfig();
     const CONFIG_PATH = config.defaultProjectPath;
 
@@ -53,12 +57,7 @@ export function getDb() {
             registry TEXT,
             dockerDeployType TEXT,
             dockerRunCommand TEXT,
-            serverAddress TEXT,
-            serverPort INTEGER,
-            serverUsername TEXT,
-            authType TEXT,
-            serverPassword TEXT,
-            privateKeyPath TEXT,
+            serverId INTEGER,
             targetPath TEXT,
             remoteCommand TEXT,
             keepArtifacts INTEGER,
@@ -100,7 +99,6 @@ export function getDb() {
         );
     `);
 
-    const db = drizzle(sqlite, {schema});
-
-    return db;
+    dbSingleton = drizzle(sqlite, {schema});
+    return dbSingleton;
 }
