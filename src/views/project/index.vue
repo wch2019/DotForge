@@ -234,7 +234,7 @@ import {
   FilterOutline, TimeOutline, DocumentTextOutline,
   CreateOutline, TrashOutline, PricetagsOutline
 } from '@vicons/ionicons5'
-import {ProjectData} from "../../types/project.ts";
+import {BuildStatus, ProjectData} from "../../types/project.ts";
 const dialog = useDialog()
 
 // 搜索关键词
@@ -306,7 +306,7 @@ function build(project: any) {
     draggable: true,
     onPositiveClick: () => {
       project.lastBuildTime= new Date().toLocaleString()
-      project.status = 'building'
+      project.status = BuildStatus.BUILDING
       console.log('开始构建项目', project)
       try {
          window.electronAPI.updateProject(parseInt(project.id), toRaw(project));

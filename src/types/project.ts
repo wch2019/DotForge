@@ -31,8 +31,12 @@ export interface ProjectData {
     dockerRunCommand: string
     /** 远程服务器ID **/
     serverId?: number
-    /** 目标路径 **/
-    targetPath: string
+    /** 远程目录 **/
+    remoteDirectory: string
+    /** 删除前缀 **/
+    removePrefix: string
+    /** 源文件 **/
+    sourceFiles:string
     /** 远程命令 **/
     remoteCommand: string
 
@@ -77,12 +81,22 @@ export const deployMethods = [
     {label: '不发布', value: 'none'},
     {label: '本地命令', value: 'local'},
     {label: '远程服务器', value: 'remote'},
-    {label: 'Docker镜像', value: 'docker'},
+    // {label: 'Docker镜像', value: 'docker'},
 ]
-
+// 项目标签
 export const tags = [
     {label: 'Java', value: 'java'},
     {label: 'Node', value: 'node'},
     {label: 'Python', value: 'python'},
     {label: 'Go', value: 'go'},
 ]
+// 构建状态
+export const enum BuildStatus {
+    // 正在构建
+    BUILDING = 'building',
+    // 构建完成
+    SUCCESS = 'success',
+    // 构建失败
+    FAILED = 'failed',
+}
+

@@ -6655,7 +6655,9 @@ const project = sqliteTable("project", {
   // 'local'|'push'
   dockerRunCommand: text("dockerRunCommand"),
   serverId: text("serverId"),
-  targetPath: text("targetPath"),
+  remoteDirectory: text("remoteDirectory"),
+  removePrefix: text("removePrefix"),
+  sourceFiles: text("sourceFiles"),
   remoteCommand: text("remoteCommand"),
   keepArtifacts: integer("keepArtifacts"),
   // 0 or 1
@@ -6896,7 +6898,9 @@ function getDb() {
             dockerDeployType TEXT,
             dockerRunCommand TEXT,
             serverId INTEGER,
-            targetPath TEXT,
+            remoteDirectory TEXT,
+            removePrefix TEXT,
+            sourceFiles TEXT
             remoteCommand TEXT,
             keepArtifacts INTEGER,
             keepPath TEXT,

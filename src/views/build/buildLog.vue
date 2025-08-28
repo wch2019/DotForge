@@ -26,6 +26,14 @@
           </div>
         </div>
         <div class="header-actions">
+          <n-switch v-model:value="scroll">
+            <template #checked>
+              自动滚动
+            </template>
+            <template #unchecked>
+              不滚动
+            </template>
+          </n-switch>
           <n-button quaternary size="small" @click="clearLogs" :disabled="!logs.length || action === 'view'">
             <template #icon>
               <n-icon>
@@ -42,8 +50,8 @@
             </template>
             导出日志
           </n-button>
-          <n-button type="error" size="small" @click="stopBuild"
-                    :disabled="buildStatus !== 'building' || action === 'view'">
+          <n-button v-if="action != 'view'" type="error" size="small" @click="stopBuild"
+                    :disabled="buildStatus !== 'building'">
             <template #icon>
               <n-icon>
                 <StopOutline/>
@@ -89,10 +97,11 @@ import {
   SyncOutline,
   TrashOutline
 } from '@vicons/ionicons5'
-import {defaultProjectData} from "@/types/project.ts";
+import {BuildStatus, defaultProjectData} from "@/types/project.ts";
 import {BuildLog} from "@/types/buildLog.ts";
 import {formatDateTime} from "@/utils/date.ts";
 import {AnsiUp} from "ansi_up";
+import {ServerForm} from "@/types/server.ts";
 
 const buildLog = ref<BuildLog>({
   projectId: '',
@@ -139,15 +148,28 @@ const buildStatusClass = computed(() => {
       return ''
   }
 })
+const scroll = ref(true)
+const server = ref<ServerForm>({
+  name: '',
+  host: '',
+  port: 22,
+  username: '',
+  authType: 'password',
+  password: '',
+  privateKeyPath: ''
+})
 
 const info = ref("\x1b[32m[INFO]\x1b[0m ")
+const error = ref("\x1b[31m[ERROR]\x1b[0m ")
+const warn = ref("\x1b[33m[WARN]\x1b[0m ")
+
 const buildSteps = [
-  info + '开始构建项目...',
-  info + '获取基础信息...',
-  info + '执行构建流程...',
-  info + '执行发布操作...',
-  info + '执行其他配置...',
-  info + '构建成功完成'
+  info.value + '开始构建项目...',
+  info.value + '获取基础信息...',
+  info.value + '执行构建流程...',
+  info.value + '执行发布操作...',
+  info.value + '执行其他配置...',
+  info.value + '构建成功完成'
 ]
 const ansi_up = new AnsiUp();
 
@@ -194,8 +216,8 @@ onMounted(async () => {
 function stopBuild() {
   window.electronAPI.stopCommand().then((stopped: any) => {
     if (stopped) {
-      logs.value.push( info+'构建已停止')
-      buildStatus.value = 'failed'
+      logs.value.push(info.value + '构建已停止')
+      buildStatus.value = BuildStatus.FAILED
     } else {
       logs.value.push('[WARN] 没有正在运行的构建任务')
     }
@@ -206,6 +228,7 @@ function stopBuild() {
 
 // 滚动到底部
 function scrollToBottom() {
+  if (!scroll.value) return
   nextTick(() => {
     if (logContent.value) {
       logContent.value.scrollTop = logContent.value.scrollHeight
@@ -226,11 +249,11 @@ async function saveBuildLog() {
     return
   } else {
     buildLog.value.status = buildStatus.value
-    buildLog.value.endTime = buildStatus.value !== 'building' ? formatDateTime(Date.now()) : undefined
+    buildLog.value.endTime = buildStatus.value !== BuildStatus.BUILDING ? formatDateTime(Date.now()) : undefined
     buildLog.value.logs = JSON.stringify(logs.value)
     await window.electronAPI.updateBuildLog(buildLog.value.id, toRaw(buildLog.value))
   }
-  if (buildStatus.value !== 'building') {
+  if (buildStatus.value !== BuildStatus.BUILDING) {
     await window.electronAPI.updateProject(parseInt(projectId.value), {
       lastBuildTime: buildLog.value.startTime,
       status: buildLog.value.status
@@ -241,27 +264,32 @@ async function saveBuildLog() {
 // 开始构建
 async function runBuild() {
   if (!projectId.value) return
-  buildStatus.value = 'building'
+  buildStatus.value = BuildStatus.BUILDING
   await saveBuildLog()
   await stepLog(buildSteps[0])
   await stepLog(buildSteps[1])
   const localPath = project.value.localPath
-  await stepLog(info + localPath)
+  await stepLog(info.value + localPath)
   await stepLog(buildSteps[2])
   // 构建流程
   const method = await buildMethod(project.value.buildCmd, localPath)
   if (!method) {
-    buildStatus.value = 'failed'
+    buildStatus.value = BuildStatus.FAILED
     await saveBuildLog()
     return
   }
-  // 产物路径
-  const outputPath = joinPaths(localPath, project.value.outputDir);
   // 发布操作
-  await deployMethod(project)
+  const deploy = await deployMethod(project)
+  if (!deploy) {
+    buildStatus.value = BuildStatus.FAILED
+    await saveBuildLog()
+    return
+  }
   // 其他操作
   await otherConfig(project)
-  buildStatus.value = 'success'
+  // 产物路径
+  const outputPath = joinPaths(localPath, project.value.outputDir);
+  buildStatus.value = BuildStatus.SUCCESS
   logs.value.push(buildSteps[5])
   await saveBuildLog()
 }
@@ -276,29 +304,46 @@ async function buildMethod(buildCmd: string, localPath: string) {
 
   // 逐行执行命令
   for (const cmd of commands) {
-    logs.value.push(info+`执行命令: ${cmd}`)
+    logs.value.push(info.value + `执行命令: ${cmd}`)
     const code = await window.electronAPI.runCommand(cmd, {cwd: localPath})
     if (code !== 0) {
-      buildStatus.value = 'failed'
-      logs.value.push(`[ERROR] 命令失败: ${cmd}`)
-      await saveBuildLog()
+      logs.value.push(error.value + `命令失败: ${cmd}`)
       return false
     }
   }
+  return true
 }
 
 // 发布操作
 async function deployMethod(project: any) {
   await stepLog(buildSteps[3])
-  //
   if (project.value.deployMethod == 'none') {
-    logs.value.push("不发布")
+    await stepLog("不发布")
   }
   if (project.value.deployMethod == 'local') {
-    logs.value.push("本地部署")
-
-    await buildMethod(project.value.localCommand, project.value.localPath)
+    await stepLog("本地部署")
+    return await buildMethod(project.value.localCommand, project.value.localPath)
   }
+  if (project.value.deployMethod == 'remote') {
+    await stepLog("远程服务器")
+    return await serverRemote(project)
+  }
+  return true
+}
+// 远程服务器
+async function serverRemote(project: any) {
+  const data = await window.electronAPI.server.getServerById(project.value.serverId)
+  if (!data) {
+    return false
+  }
+  Object.assign(server.value, data)
+  logs.value.push(`服务器: ${server.value.name}`)
+  logs.value.push(`连接中...`)
+  logs.value.push(`连接成功`)
+  logs.value.push(`开始上传...`)
+  logs.value.push(`上传完成`)
+  logs.value.push(`开始执行命令...`)
+  logs.value.push(`命令执行完成`)
 }
 
 // 其他配置
@@ -459,6 +504,7 @@ function exportLogs() {
   display: flex;
   gap: 8px;
   flex-shrink: 0;
+  align-items: center;
 }
 
 .log-container {

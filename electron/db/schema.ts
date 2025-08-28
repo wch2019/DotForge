@@ -18,7 +18,9 @@ export const project = sqliteTable('project', {
     dockerDeployType: text('dockerDeployType'), // 'local'|'push'
     dockerRunCommand: text('dockerRunCommand'),
     serverId: text('serverId'),
-    targetPath: text('targetPath'),
+    remoteDirectory: text('remoteDirectory'),
+    removePrefix: text('removePrefix'),
+    sourceFiles: text('sourceFiles'),
     remoteCommand: text('remoteCommand'),
     keepArtifacts: integer('keepArtifacts'), // 0 or 1
     keepPath: text('keepPath'),

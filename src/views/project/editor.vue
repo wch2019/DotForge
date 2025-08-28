@@ -133,13 +133,20 @@
                   <n-form-item label="服务器" path="serverId" required>
                     <n-select v-model:value="form.serverId" placeholder="选择服务器" :options="serverOptions"/>
                   </n-form-item>
-                  <n-form-item label="目标路径" path="targetPath">
-                    <PathListInput v-model:modelValue ="form.targetPath" />
+                  <n-form-item label="远程目录" path="remoteDirectory">
+                    <n-input v-model:value="form.remoteDirectory" placeholder="请输入远程目录"/>
                   </n-form-item>
+                  <n-form-item label="删除前缀" path="removePrefix">
+                    <n-input v-model:value="form.removePrefix" placeholder="请输入删除前缀"/>
+                  </n-form-item>
+                  <n-form-item label="源文件" path="sourceFiles">
+                    <PathListInput v-model:modelValue ="form.sourceFiles" />
+                  </n-form-item>
+
                 </div>
 
                 <n-form-item label="上传后执行命令" path="remoteCommand">
-                  <n-input v-model:value="form.remoteCommand" type="textarea" rows="8" placeholder="上传后要执行的命令"/>
+                  <n-input v-model:value="form.remoteCommand" type="textarea" rows="14" placeholder="上传后要执行的命令"/>
                 </n-form-item>
               </div>
 

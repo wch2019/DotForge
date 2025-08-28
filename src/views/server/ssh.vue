@@ -35,7 +35,7 @@ onMounted(async () => {
   const serverId = route.query.serverId as string
   const numericId = Number(serverId)
   if (!Number.isNaN(numericId)) {
-    const server = await window.electronAPI.getServerById(numericId)
+    const server = await window.electronAPI.server.getServerById(numericId)
     if (server) {
       await connectServer(server)
     }

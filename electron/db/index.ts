@@ -58,7 +58,9 @@ export function getDb() {
             dockerDeployType TEXT,
             dockerRunCommand TEXT,
             serverId INTEGER,
-            targetPath TEXT,
+            remoteDirectory TEXT,
+            removePrefix TEXT,
+            sourceFiles TEXT
             remoteCommand TEXT,
             keepArtifacts INTEGER,
             keepPath TEXT,
