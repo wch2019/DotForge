@@ -58,6 +58,7 @@ declare global {
             disconnectSSH: (connectionId: string) => Promise<boolean>
             isSSHConnected: (connectionId: string) => Promise<boolean>
             getSSHConnectionCount: () => Promise<number>
+            uploadDir: (connectionId: string, localDir: string, remoteDir: string) => Promise<boolean>
             ssh: {
                 testSSHConnection : (config: any) => Promise<boolean>
                 createShell: (connectionId: string) => Promise<any>

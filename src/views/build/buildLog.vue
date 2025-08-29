@@ -272,12 +272,12 @@ async function runBuild() {
   await stepLog(info.value + localPath)
   await stepLog(buildSteps[2])
   // 构建流程
-  const method = await buildMethod(project.value.buildCmd, localPath)
-  if (!method) {
-    buildStatus.value = BuildStatus.FAILED
-    await saveBuildLog()
-    return
-  }
+  // const method = await buildMethod(project.value.buildCmd, localPath)
+  // if (!method) {
+  //   buildStatus.value = BuildStatus.FAILED
+  //   await saveBuildLog()
+  //   return
+  // }
   // 发布操作
   const deploy = await deployMethod(project)
   if (!deploy) {
@@ -286,9 +286,7 @@ async function runBuild() {
     return
   }
   // 其他操作
-  await otherConfig(project)
-  // 产物路径
-  const outputPath = joinPaths(localPath, project.value.outputDir);
+  await otherConfig()
   buildStatus.value = BuildStatus.SUCCESS
   logs.value.push(buildSteps[5])
   await saveBuildLog()
@@ -334,20 +332,73 @@ async function deployMethod(project: any) {
 async function serverRemote(project: any) {
   const data = await window.electronAPI.server.getServerById(project.value.serverId)
   if (!data) {
+    logs.value.push(error.value + '未找到服务器配置')
     return false
   }
   Object.assign(server.value, data)
-  logs.value.push(`服务器: ${server.value.name}`)
-  logs.value.push(`连接中...`)
-  logs.value.push(`连接成功`)
-  logs.value.push(`开始上传...`)
-  logs.value.push(`上传完成`)
-  logs.value.push(`开始执行命令...`)
-  logs.value.push(`命令执行完成`)
+  logs.value.push(info.value + `服务器: ${server.value.name} (${server.value.host}:${server.value.port})`)
+
+  // 连接 SSH
+  try {
+    logs.value.push(info.value + '连接中...')
+    const connectionId = await window.electronAPI.connectSSH({
+      host: server.value.host,
+      port: Number(server.value.port) || 22,
+      username: server.value.username,
+      password: server.value.authType === 'password' ? server.value.password : undefined,
+      privateKeyPath: server.value.authType === 'privateKey' ? server.value.privateKeyPath : undefined,
+    })
+
+    if (!connectionId) {
+      logs.value.push(error.value + '连接失败')
+      return false
+    }
+    logs.value.push(info.value + '连接成功')
+
+    try {
+      // 上传目录
+      const localDir = joinPaths(project.value.localPath, project.value.outputDir)
+      const remoteDir = String(project.value.remoteDirectory || '').trim()
+      if (!remoteDir) {
+        logs.value.push(error.value + '远程目录未配置')
+        await window.electronAPI.disconnectSSH(connectionId)
+        return false
+      }
+
+      logs.value.push(info.value + `开始上传: ${localDir} -> ${remoteDir}`)
+      await window.electronAPI.uploadDir(connectionId, localDir, remoteDir)
+      logs.value.push(info.value + '上传完成')
+
+      // 执行远程命令（可选）
+      const remoteCmd = String(project.value.remoteCommand || '').trim()
+      if (remoteCmd) {
+        logs.value.push(info.value + '开始执行命令...')
+        const output = await window.electronAPI.executeSSHCommand(connectionId, remoteCmd)
+        if (output) {
+          for (const line of output.split(/\r?\n/)) {
+            if (line) logs.value.push(line)
+          }
+        }
+        logs.value.push(info.value + '命令执行完成')
+      } else {
+        logs.value.push(warn.value + '未配置远程命令，跳过执行')
+      }
+
+      await window.electronAPI.disconnectSSH(connectionId)
+      return true
+    } catch (e) {
+      logs.value.push(error.value + '远程部署失败: ' + (e as Error).message)
+      try { await window.electronAPI.disconnectSSH(connectionId) } catch {}
+      return false
+    }
+  } catch (e) {
+    logs.value.push(error.value + '连接服务器失败: ' + (e as Error).message)
+    return false
+  }
 }
 
 // 其他配置
-async function otherConfig(project: any) {
+async function otherConfig() {
   logs.value.push(buildSteps[4])
 }
 
@@ -378,7 +429,7 @@ async function loadHistoryLog() {
   if (!logId.value) return
 
   try {
-    const buildLogs = await window.electronAPI.getBuildLogById(logId.value)
+    const buildLogs = await window.electronAPI.getBuildLogById(Number(logId.value))
     if (buildLogs) {
       logs.value = JSON.parse(buildLogs.logs)
       buildStatus.value = buildLogs.status
@@ -393,7 +444,7 @@ async function loadHistoryLog() {
 
 // 获取项目信息
 async function getProjectInfo() {
-  const projectInfo = await window.electronAPI.getProjectById(projectId.value)
+  const projectInfo = await window.electronAPI.getProjectById(Number(projectId.value))
   if (projectInfo) {
     Object.assign(project.value, projectInfo)
   }
