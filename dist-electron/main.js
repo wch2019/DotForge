@@ -5,12 +5,12 @@ var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, 
 import { ipcMain, dialog, app, BrowserWindow } from "electron";
 import { fileURLToPath } from "node:url";
 import path$l from "node:path";
-import fs$s from "node:fs";
-import * as require$$0$1 from "fs";
-import require$$0__default from "fs";
-import require$$0$2 from "constants";
-import require$$0$3 from "stream";
-import require$$0$4 from "util";
+import fs$t from "node:fs";
+import * as fs$s from "fs";
+import fs__default from "fs";
+import require$$0$1 from "constants";
+import require$$0$2 from "stream";
+import require$$0$3 from "util";
 import require$$5$1 from "assert";
 import * as require$$1$1 from "path";
 import require$$1__default from "path";
@@ -19,8 +19,8 @@ import Client from "better-sqlite3";
 import { spawn, exec } from "child_process";
 import { Client as Client$1 } from "ssh2";
 import require$$2$2 from "events";
-import require$$0$5 from "buffer";
-import require$$0$6 from "zlib";
+import require$$0$4 from "buffer";
+import require$$0$5 from "zlib";
 import require$$4$1 from "string_decoder";
 import { platform as platform$1 } from "process";
 function registerFileDialogHandler() {
@@ -85,7 +85,7 @@ universalify$1.fromPromise = function(fn) {
     }
   }, "name", { value: fn.name });
 };
-var constants$4 = require$$0$2;
+var constants$4 = require$$0$1;
 var origCwd = process.cwd;
 var cwd = null;
 var platform = process.env.GRACEFUL_FS_PLATFORM || process.platform;
@@ -366,7 +366,7 @@ function patch$1(fs2) {
     return false;
   }
 }
-var Stream$3 = require$$0$3.Stream;
+var Stream$3 = require$$0$2.Stream;
 var legacyStreams = legacy$1;
 function legacy$1(fs2) {
   return {
@@ -472,11 +472,11 @@ function clone$1(obj) {
   });
   return copy3;
 }
-var fs$q = require$$0__default;
+var fs$q = fs__default;
 var polyfills = polyfills$1;
 var legacy = legacyStreams;
 var clone = clone_1;
-var util$e = require$$0$4;
+var util$e = require$$0$3;
 var gracefulQueue;
 var previousSymbol;
 if (typeof Symbol === "function" && typeof Symbol.for === "function") {
@@ -1735,7 +1735,7 @@ let _fs;
 try {
   _fs = gracefulFs;
 } catch (_2) {
-  _fs = require$$0__default;
+  _fs = fs__default;
 }
 const universalify = universalify$1;
 const { stringify: stringify$2, stripBom } = utils$2;
@@ -1976,15 +1976,15 @@ const CONFIG_DIR = app.getPath("userData");
 const CONFIG_PATH = path$l.join(CONFIG_DIR, CONFIG_FILE_NAME);
 const DEFAULT_DATA_DIR = path$l.join(app.getPath("documents"), "DotForge");
 function ensureConfigFile() {
-  if (!fs$s.existsSync(CONFIG_DIR)) {
-    fs$s.mkdirSync(CONFIG_DIR, { recursive: true });
+  if (!fs$t.existsSync(CONFIG_DIR)) {
+    fs$t.mkdirSync(CONFIG_DIR, { recursive: true });
   }
-  if (!fs$s.existsSync(DEFAULT_DATA_DIR)) {
-    fs$s.mkdirSync(DEFAULT_DATA_DIR, { recursive: true });
+  if (!fs$t.existsSync(DEFAULT_DATA_DIR)) {
+    fs$t.mkdirSync(DEFAULT_DATA_DIR, { recursive: true });
     defaultConfig.defaultProjectPath = DEFAULT_DATA_DIR;
   }
-  if (!fs$s.existsSync(CONFIG_PATH)) {
-    fs$s.writeFileSync(CONFIG_PATH, JSON.stringify(defaultConfig, null, 2), "utf8");
+  if (!fs$t.existsSync(CONFIG_PATH)) {
+    fs$t.writeFileSync(CONFIG_PATH, JSON.stringify(defaultConfig, null, 2), "utf8");
   }
 }
 function getConfigPath() {
@@ -1993,7 +1993,7 @@ function getConfigPath() {
 function readConfig() {
   ensureConfigFile();
   try {
-    const content = fs$s.readFileSync(CONFIG_PATH, "utf8");
+    const content = fs$t.readFileSync(CONFIG_PATH, "utf8");
     const parsed = JSON.parse(content);
     return parsed;
   } catch (e) {
@@ -2004,7 +2004,7 @@ function readConfig() {
 function writeConfig(config) {
   try {
     ensureConfigFile();
-    fs$s.writeFileSync(CONFIG_PATH, JSON.stringify(config, null, 2), "utf8");
+    fs$t.writeFileSync(CONFIG_PATH, JSON.stringify(config, null, 2), "utf8");
     return true;
   } catch (e) {
     console.error("[设置] 写入配置失败", e);
@@ -2013,8 +2013,8 @@ function writeConfig(config) {
 }
 async function migrateDataDir(oldPath, newPath) {
   try {
-    if (!fs$s.existsSync(newPath)) {
-      fs$s.mkdirSync(newPath, { recursive: true });
+    if (!fs$t.existsSync(newPath)) {
+      fs$t.mkdirSync(newPath, { recursive: true });
     }
     await fs$9.copy(oldPath, newPath, {
       overwrite: true,
@@ -7927,7 +7927,7 @@ let Minimatch$3 = class Minimatch {
 };
 minimatch$2.Minimatch = Minimatch$3;
 var readdirGlob_1 = readdirGlob;
-const fs$8 = require$$0__default;
+const fs$8 = fs__default;
 const { EventEmitter } = require$$2$2;
 const { Minimatch: Minimatch$2 } = minimatch_1$1;
 const { resolve } = require$$1__default;
@@ -10053,7 +10053,7 @@ var hasRequiredStream$2;
 function requireStream$2() {
   if (hasRequiredStream$2) return stream$2;
   hasRequiredStream$2 = 1;
-  stream$2 = require$$0$3;
+  stream$2 = require$$0$2;
   return stream$2;
 }
 var safeBuffer$2 = { exports: {} };
@@ -10062,7 +10062,7 @@ function requireSafeBuffer$2() {
   if (hasRequiredSafeBuffer$2) return safeBuffer$2.exports;
   hasRequiredSafeBuffer$2 = 1;
   (function(module, exports) {
-    var buffer2 = require$$0$5;
+    var buffer2 = require$$0$4;
     var Buffer2 = buffer2.Buffer;
     function copyProps(src, dst) {
       for (var key2 in src) {
@@ -10241,7 +10241,7 @@ function requireBufferList$1() {
       }
     }
     var Buffer2 = requireSafeBuffer$2().Buffer;
-    var util2 = require$$0$4;
+    var util2 = require$$0$3;
     function copyBuffer(src, target, offset) {
       src.copy(target, offset);
     }
@@ -10383,7 +10383,7 @@ var hasRequiredNode;
 function requireNode() {
   if (hasRequiredNode) return node;
   hasRequiredNode = 1;
-  node = require$$0$4.deprecate;
+  node = require$$0$3.deprecate;
   return node;
 }
 var _stream_writable$2;
@@ -11164,7 +11164,7 @@ function require_stream_readable$2() {
   }
   var util2 = Object.create(requireUtil());
   util2.inherits = inheritsExports;
-  var debugUtil = require$$0$4;
+  var debugUtil = require$$0$3;
   var debug2 = void 0;
   if (debugUtil && debugUtil.debuglog) {
     debug2 = debugUtil.debuglog("stream");
@@ -11944,7 +11944,7 @@ function require_stream_passthrough$2() {
   return _stream_passthrough$2;
 }
 (function(module, exports) {
-  var Stream2 = require$$0$3;
+  var Stream2 = require$$0$2;
   if (process.env.READABLE_STREAM === "disable" && Stream2) {
     module.exports = Stream2;
     exports = module.exports = Stream2.Readable;
@@ -11966,7 +11966,7 @@ function require_stream_passthrough$2() {
 })(readable$2, readable$2.exports);
 var readableExports$2 = readable$2.exports;
 var passthrough = readableExports$2.PassThrough;
-var util$b = require$$0$4;
+var util$b = require$$0$3;
 var PassThrough$4 = passthrough;
 var lazystream$2 = {
   Readable: Readable$1
@@ -12208,7 +12208,7 @@ var hasRequiredStream$1;
 function requireStream$1() {
   if (hasRequiredStream$1) return stream$1;
   hasRequiredStream$1 = 1;
-  stream$1 = require$$0$3;
+  stream$1 = require$$0$2;
   return stream$1;
 }
 var safeBuffer$1 = { exports: {} };
@@ -12217,7 +12217,7 @@ function requireSafeBuffer$1() {
   if (hasRequiredSafeBuffer$1) return safeBuffer$1.exports;
   hasRequiredSafeBuffer$1 = 1;
   (function(module, exports) {
-    var buffer2 = require$$0$5;
+    var buffer2 = require$$0$4;
     var Buffer2 = buffer2.Buffer;
     function copyProps(src, dst) {
       for (var key2 in src) {
@@ -12283,7 +12283,7 @@ function requireBufferList() {
       }
     }
     var Buffer2 = requireSafeBuffer$1().Buffer;
-    var util2 = require$$0$4;
+    var util2 = require$$0$3;
     function copyBuffer(src, target, offset) {
       src.copy(target, offset);
     }
@@ -13198,7 +13198,7 @@ function require_stream_readable$1() {
   }
   var util2 = Object.create(requireUtil());
   util2.inherits = inheritsExports;
-  var debugUtil = require$$0$4;
+  var debugUtil = require$$0$3;
   var debug2 = void 0;
   if (debugUtil && debugUtil.debuglog) {
     debug2 = debugUtil.debuglog("stream");
@@ -13978,7 +13978,7 @@ function require_stream_passthrough$1() {
   return _stream_passthrough$1;
 }
 (function(module, exports) {
-  var Stream2 = require$$0$3;
+  var Stream2 = require$$0$2;
   if (process.env.READABLE_STREAM === "disable" && Stream2) {
     module.exports = Stream2;
     exports = module.exports = Stream2.Readable;
@@ -14830,7 +14830,7 @@ var lodash_isplainobject = isPlainObject$2;
 var old$1 = {};
 var pathModule = require$$1__default;
 var isWindows = process.platform === "win32";
-var fs$7 = require$$0__default;
+var fs$7 = fs__default;
 var DEBUG = process.env.NODE_DEBUG && /fs/.test(process.env.NODE_DEBUG);
 function rethrow() {
   var callback;
@@ -15026,7 +15026,7 @@ realpath2.sync = realpathSync2;
 realpath2.realpathSync = realpathSync2;
 realpath2.monkeypatch = monkeypatch;
 realpath2.unmonkeypatch = unmonkeypatch;
-var fs$6 = require$$0__default;
+var fs$6 = fs__default;
 var origRealpath = fs$6.realpath;
 var origRealpathSync = fs$6.realpathSync;
 var version = process.version;
@@ -15812,7 +15812,7 @@ common.childrenIgnored = childrenIgnored;
 function ownProp(obj, field) {
   return Object.prototype.hasOwnProperty.call(obj, field);
 }
-var fs$5 = require$$0__default;
+var fs$5 = fs__default;
 var path$5 = require$$1__default;
 var minimatch = minimatch_1;
 var isAbsolute = pathIsAbsoluteExports;
@@ -17146,7 +17146,7 @@ var path$3 = require$$1__default;
 var lazystream$1 = lazystream$2;
 var normalizePath$2 = normalizePath$3;
 var defaults$1 = lodash_defaults;
-var Stream$2 = require$$0$3.Stream;
+var Stream$2 = require$$0$2.Stream;
 var PassThrough$3 = readableExports$1.PassThrough;
 var utils$1 = archiverUtils$1.exports = {};
 utils$1.file = fileExports$1;
@@ -17262,7 +17262,7 @@ var error = { exports: {} };
  * @copyright (c) 2012-2014 Chris Talkington, contributors.
  */
 (function(module, exports) {
-  var util2 = require$$0$4;
+  var util2 = require$$0$3;
   const ERROR_CODES = {
     "ABORTED": "archive was aborted",
     "DIRECTORYDIRPATHREQUIRED": "diretory dirpath argument must be a non-empty string value",
@@ -17297,7 +17297,7 @@ var hasRequiredStream;
 function requireStream() {
   if (hasRequiredStream) return stream;
   hasRequiredStream = 1;
-  stream = require$$0$3;
+  stream = require$$0$2;
   return stream;
 }
 var buffer_list;
@@ -17368,8 +17368,8 @@ function requireBuffer_list() {
     }
     return String(input);
   }
-  var _require = require$$0$5, Buffer2 = _require.Buffer;
-  var _require2 = require$$0$4, inspect = _require2.inspect;
+  var _require = require$$0$4, Buffer2 = _require.Buffer;
+  var _require2 = require$$0$3, inspect = _require2.inspect;
   var custom = inspect && inspect.custom || "inspect";
   function copyBuffer(src, target, offset) {
     Buffer2.prototype.copy.call(src, target, offset);
@@ -17773,7 +17773,7 @@ function require_stream_writable() {
     deprecate: requireNode()
   };
   var Stream2 = requireStream();
-  var Buffer2 = require$$0$5.Buffer;
+  var Buffer2 = require$$0$4.Buffer;
   var OurUint8Array = (typeof commonjsGlobal !== "undefined" ? commonjsGlobal : typeof window !== "undefined" ? window : typeof self !== "undefined" ? self : {}).Uint8Array || function() {
   };
   function _uint8ArrayToBuffer(chunk) {
@@ -18313,7 +18313,7 @@ function requireSafeBuffer() {
   if (hasRequiredSafeBuffer) return safeBuffer.exports;
   hasRequiredSafeBuffer = 1;
   (function(module, exports) {
-    var buffer2 = require$$0$5;
+    var buffer2 = require$$0$4;
     var Buffer2 = buffer2.Buffer;
     function copyProps(src, dst) {
       for (var key2 in src) {
@@ -19011,7 +19011,7 @@ function require_stream_readable() {
     return emitter.listeners(type).length;
   };
   var Stream2 = requireStream();
-  var Buffer2 = require$$0$5.Buffer;
+  var Buffer2 = require$$0$4.Buffer;
   var OurUint8Array = (typeof commonjsGlobal !== "undefined" ? commonjsGlobal : typeof window !== "undefined" ? window : typeof self !== "undefined" ? self : {}).Uint8Array || function() {
   };
   function _uint8ArrayToBuffer(chunk) {
@@ -19020,7 +19020,7 @@ function require_stream_readable() {
   function _isUint8Array(obj) {
     return Buffer2.isBuffer(obj) || obj instanceof OurUint8Array;
   }
-  var debugUtil = require$$0$4;
+  var debugUtil = require$$0$3;
   var debug2;
   if (debugUtil && debugUtil.debuglog) {
     debug2 = debugUtil.debuglog("stream");
@@ -19924,7 +19924,7 @@ function requirePipeline() {
   return pipeline_1;
 }
 (function(module, exports) {
-  var Stream2 = require$$0$3;
+  var Stream2 = require$$0$2;
   if (process.env.READABLE_STREAM === "disable" && Stream2) {
     module.exports = Stream2.Readable;
     Object.assign(module.exports, Stream2);
@@ -19949,12 +19949,12 @@ var readableExports = readable.exports;
  * @license [MIT]{@link https://github.com/archiverjs/node-archiver/blob/master/LICENSE}
  * @copyright (c) 2012-2014 Chris Talkington, contributors.
  */
-var fs$2 = require$$0__default;
+var fs$2 = fs__default;
 var glob$1 = readdirGlob_1;
 var async = require$$2$1;
 var path$2 = require$$1__default;
 var util$a = archiverUtilsExports$1;
-var inherits$7 = require$$0$4.inherits;
+var inherits$7 = require$$0$3.inherits;
 var ArchiverError = errorExports;
 var Transform$3 = readableExports.Transform;
 var win32 = process.platform === "win32";
@@ -20662,7 +20662,7 @@ var constants$3 = {
   // 040 Archive
   S_DOS_D: 16
 };
-var inherits$6 = require$$0$4.inherits;
+var inherits$6 = require$$0$3.inherits;
 var normalizePath$1 = normalizePath$3;
 var ArchiveEntry$1 = archiveEntryExports;
 var GeneralPurposeBit = generalPurposeBitExports;
@@ -20834,7 +20834,7 @@ ZipArchiveEntry$1.prototype.isZip64 = function() {
 var zipArchiveEntryExports = zipArchiveEntry.exports;
 var archiveOutputStream = { exports: {} };
 var util$7 = { exports: {} };
-var Stream$1 = require$$0$3.Stream;
+var Stream$1 = require$$0$2.Stream;
 var PassThrough$2 = readableExports.PassThrough;
 var util$6 = util$7.exports = {};
 util$6.isStream = function(source) {
@@ -20853,7 +20853,7 @@ util$6.normalizeInputSource = function(source) {
   return source;
 };
 var utilExports = util$7.exports;
-var inherits$5 = require$$0$4.inherits;
+var inherits$5 = require$$0$3.inherits;
 var Transform$2 = readableExports.Transform;
 var ArchiveEntry = archiveEntryExports;
 var util$5 = utilExports;
@@ -20936,7 +20936,7 @@ ArchiveOutputStream$1.prototype.write = function(chunk, cb) {
 };
 var archiveOutputStreamExports = archiveOutputStream.exports;
 var zipArchiveOutputStream = { exports: {} };
-var Buffer$3 = require$$0$5.Buffer;
+var Buffer$3 = require$$0$4.Buffer;
 var CRC_TABLE = [
   0,
   1996959894,
@@ -21353,7 +21353,7 @@ let CRC32Stream$1 = class CRC32Stream extends Transform$1 {
   }
 };
 var crc32Stream = CRC32Stream$1;
-const { DeflateRaw } = require$$0$6;
+const { DeflateRaw } = require$$0$5;
 const crc32$2 = crc32$4;
 let DeflateCRC32Stream$1 = class DeflateCRC32Stream extends DeflateRaw {
   constructor(options) {
@@ -21397,7 +21397,7 @@ var lib$1 = {
   CRC32Stream: crc32Stream,
   DeflateCRC32Stream: deflateCrc32Stream
 };
-var inherits$4 = require$$0$4.inherits;
+var inherits$4 = require$$0$3.inherits;
 var crc32$1 = bufferCrc32;
 var { CRC32Stream: CRC32Stream2 } = lib$1;
 var { DeflateCRC32Stream: DeflateCRC32Stream2 } = lib$1;
@@ -21835,7 +21835,7 @@ var path = require$$1__default;
 var lazystream = lazystream$2;
 var normalizePath = normalizePath$3;
 var defaults = lodash_defaults;
-var Stream = require$$0$3.Stream;
+var Stream = require$$0$2.Stream;
 var PassThrough$1 = readableExports.PassThrough;
 var utils = archiverUtils.exports = {};
 utils.file = fileExports;
@@ -21947,7 +21947,7 @@ var archiverUtilsExports = archiverUtils.exports;
  * @license [MIT]{@link https://github.com/archiverjs/node-zip-stream/blob/master/LICENSE}
  * @copyright (c) 2014 Chris Talkington, contributors.
  */
-var inherits$3 = require$$0$4.inherits;
+var inherits$3 = require$$0$3.inherits;
 var ZipArchiveOutputStream = compressCommons.ZipArchiveOutputStream;
 var ZipArchiveEntry = compressCommons.ZipArchiveEntry;
 var util$4 = archiverUtilsExports;
@@ -22088,7 +22088,7 @@ Zip.prototype.unpipe = function() {
 var zip = Zip;
 var tarStream = {};
 var bl$1 = { exports: {} };
-const { Buffer: Buffer$2 } = require$$0$5;
+const { Buffer: Buffer$2 } = require$$0$4;
 const symbol = Symbol.for("BufferList");
 function BufferList$1(buf) {
   if (!(this instanceof BufferList$1)) {
@@ -22682,7 +22682,7 @@ headers$2.decode = function(buf, filenameEncoding, allowUnknownFormat) {
     devminor
   };
 };
-var util$2 = require$$0$4;
+var util$2 = require$$0$3;
 var bl = blExports;
 var headers$1 = headers$2;
 var Writable$1 = readableExports.Writable;
@@ -22892,7 +22892,7 @@ Extract.prototype._final = function(cb) {
   cb();
 };
 var extract = Extract;
-var fsConstants = require$$0__default.constants || require$$0$2;
+var fsConstants = fs__default.constants || require$$0$1;
 var once = onceExports;
 var noop$1 = function() {
 };
@@ -23188,7 +23188,7 @@ tarStream.pack = pack;
  * @license [MIT]{@link https://github.com/archiverjs/node-archiver/blob/master/LICENSE}
  * @copyright (c) 2012-2014 Chris Talkington, contributors.
  */
-var zlib = require$$0$6;
+var zlib = require$$0$5;
 var engine = tarStream;
 var util$1 = archiverUtilsExports$1;
 var Tar = function(options) {
@@ -23267,7 +23267,7 @@ var tar = Tar;
  * @license [MIT]{@link https://github.com/archiverjs/node-archiver/blob/master/LICENSE}
  * @copyright (c) 2012-2014 Chris Talkington, contributors.
  */
-var inherits = require$$0$4.inherits;
+var inherits = require$$0$3.inherits;
 var Transform = readableExports.Transform;
 var crc32 = bufferCrc32;
 var util = archiverUtilsExports$1;
@@ -23374,7 +23374,7 @@ async function testServerConnection(config) {
       connectConfig.password = config.password;
     } else if (config.privateKeyPath) {
       try {
-        connectConfig.privateKey = require$$0$1.readFileSync(config.privateKeyPath, "utf8");
+        connectConfig.privateKey = fs$s.readFileSync(config.privateKeyPath, "utf8");
       } catch (err) {
         console.error("读取私钥失败:", err);
         resolve2(false);
@@ -23418,7 +23418,7 @@ class SSHManager {
         connectConfig.password = config.password;
       } else if (config.privateKeyPath) {
         try {
-          connectConfig.privateKey = require$$0$1.readFileSync(config.privateKeyPath, "utf8");
+          connectConfig.privateKey = fs$s.readFileSync(config.privateKeyPath, "utf8");
         } catch (error2) {
           reject2(new Error(`无法读取私钥文件: ${error2}`));
           return;
@@ -23615,79 +23615,90 @@ class SSHManager {
     }
     return conn;
   }
-  async uploadDirectoryZipSFTP(connectionId, localDir, remoteDir) {
+  /**
+   * 上传目录
+   * @param connectionId 连接ID
+   * @param localDir 本地目录
+   * @param remoteDir 远程目录
+   * @param sender 发送者
+   */
+  async uploadDirectoryZipSFTP(connectionId, localDir, remoteDir, sender) {
     const client = this.getConnection(connectionId);
-    console.log("📌 开始压缩本地目录:", localDir);
-    const zipPath = require$$1$1.join(process.cwd(), `temp_upload_${Date.now()}.zip`);
+    const config = readConfig();
+    const tempDir = require$$1$1.join(config.defaultProjectPath, "temp");
+    if (!fs$s.existsSync(tempDir)) {
+      fs$s.mkdirSync(tempDir, { recursive: true });
+    }
+    const zipPath = require$$1$1.join(tempDir, `temp_upload_${Date.now()}.zip`);
+    sender.send("ssh:uploadLog", `📌 开始压缩本地目录: ${localDir}`);
     await new Promise((resolve2, reject2) => {
-      const output = require$$0$1.createWriteStream(zipPath);
+      const output = fs$s.createWriteStream(zipPath);
       const archive = archiver$1("zip", { zlib: { level: 9 } });
       output.on("close", () => {
         console.log(`📦 本地 zip 压缩完成，大小: ${archive.pointer()} bytes`);
+        sender.send("ssh:uploadLog", `📦 压缩完成，大小: ${archive.pointer()} bytes`);
         resolve2();
       });
-      archive.on("error", (err) => reject2(err));
+      archive.on("error", reject2);
       archive.pipe(output);
       archive.directory(localDir, false);
       archive.finalize();
     });
     console.log("📌 打开 SFTP");
+    sender.send("ssh:uploadLog", `📌 打开 SFTP`);
     const sftp = await new Promise((resolve2, reject2) => {
-      client.sftp((err, sftp2) => {
-        if (err) {
-          console.error("❌ SFTP 打开失败:", err);
-          return reject2(err);
-        }
-        console.log("✅ SFTP 打开成功");
-        resolve2(sftp2);
-      });
+      client.sftp((err, sftp2) => err ? reject2(err) : resolve2(sftp2));
     });
-    const tmpDir = "/tmp/upload_temp";
+    console.log("✅ SFTP 打开成功");
+    sender.send("ssh:uploadLog", `✅ SFTP 打开成功`);
+    const remoteZipPath = `${remoteDir}/upload.zip`;
+    console.log("📌 上传 zip 到:", remoteZipPath);
     await new Promise((resolve2, reject2) => {
-      sftp.mkdir(tmpDir, (err) => {
+      sftp.mkdir(remoteDir, (err) => {
         if (err && err.code !== 4) return reject2(err);
         resolve2();
       });
     });
-    const remoteZipPath = `${tmpDir}/temp_upload.zip`;
-    console.log("📌 上传 zip 到临时目录:", remoteZipPath);
+    sender.send("ssh:uploadLog", `📌 上传 zip 到: ${remoteZipPath}`);
     await new Promise((resolve2, reject2) => {
-      const readStream = require$$0$1.createReadStream(zipPath);
+      const readStream = fs$s.createReadStream(zipPath);
       const writeStream = sftp.createWriteStream(remoteZipPath);
+      readStream.on("data", () => {
+      });
       writeStream.on("close", () => {
-        console.log("⬆️ 上传 zip 完成");
+        sender.send("ssh:uploadLog", `⬆️ 上传完成`);
         resolve2();
       });
       writeStream.on("error", reject2);
       readStream.pipe(writeStream);
     });
-    console.log("📌 远程解压 zip");
+    console.log("📌 解压到目标目录:", remoteDir);
+    sender.send("ssh:uploadLog", `📌 开始远程解压到: ${remoteDir}`);
     await new Promise((resolve2, reject2) => {
-      client.exec(`unzip -o ${remoteZipPath} -d ${tmpDir}`, (err, stream2) => {
+      const cmd = `
+            mkdir -p ${remoteDir} &&
+            unzip -o ${remoteZipPath} -d ${remoteDir} &&
+            rm -f ${remoteZipPath}
+        `;
+      client.exec(cmd, (err, stream2) => {
         if (err) return reject2(err);
-        stream2.stderr.on("data", (data) => console.error("远程解压错误:", data.toString()));
+        stream2.on("data", (data) => {
+        });
+        stream2.stderr.on("data", (data) => {
+          console.error("远程错误:", data.toString());
+          sender.send("ssh:uploadLog", `❌ 错误: ${data.toString().trim()}`);
+        });
+        stream2.on("exit", (code) => {
+          console.log("📌 远程进程退出码:", code);
+        });
         stream2.on("close", (code) => {
           if (code === 0) {
-            console.log("✅ 临时目录解压完成");
+            console.log("✅ 解压完成");
+            sender.send("ssh:uploadLog", `✅ 解压完成`);
+            fs$s.unlinkSync(zipPath);
             resolve2();
           } else {
             reject2(new Error(`远程解压失败 (exit code: ${code})`));
-          }
-        });
-      });
-    });
-    console.log("📌 移动解压内容到目标目录:", remoteDir);
-    await new Promise((resolve2, reject2) => {
-      client.exec(`sudo mkdir -p ${remoteDir} && sudo mv ${tmpDir}/* ${remoteDir} && sudo rm -rf ${tmpDir}`, (err, stream2) => {
-        if (err) return reject2(err);
-        stream2.stderr.on("data", (data) => console.error("移动文件错误:", data.toString()));
-        stream2.on("close", (code) => {
-          if (code === 0) {
-            console.log("✅ 文件移动完成");
-            require$$0$1.unlinkSync(zipPath);
-            resolve2();
-          } else {
-            reject2(new Error(`移动文件失败 (exit code: ${code})`));
           }
         });
       });
@@ -23767,12 +23778,13 @@ function registerSSHHandlers() {
       return false;
     }
   });
-  ipcMain.handle("ssh:uploadDir", async (_2, connectionId, localDir, remoteDir) => {
+  ipcMain.handle("ssh:uploadDir", async (event, connectionId, localDir, remoteDir) => {
     try {
-      await sshManager.uploadDirectoryZipSFTP(connectionId, localDir, remoteDir);
+      await sshManager.uploadDirectoryZipSFTP(connectionId, localDir, remoteDir, event.sender);
       return true;
     } catch (error2) {
       console.error("上传目录失败:", error2);
+      event.sender.send("ssh:uploadLog", `❌ 上传目录失败: ${error2}`);
       throw error2;
     }
   });
@@ -23787,7 +23799,7 @@ function registerAllIpcHandlers() {
   registerSSHHandlers();
 }
 var lib = { exports: {} };
-var buffer = require$$0$5;
+var buffer = require$$0$4;
 var Buffer$1 = buffer.Buffer;
 var safer = {};
 var key;

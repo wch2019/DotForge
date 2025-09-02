@@ -63,6 +63,7 @@ electron.contextBridge.exposeInMainWorld("electronAPI", {
   disconnectSSH: (connectionId) => electron.ipcRenderer.invoke("ssh:disconnect", connectionId),
   isSSHConnected: (connectionId) => electron.ipcRenderer.invoke("ssh:isConnected", connectionId),
   getSSHConnectionCount: () => electron.ipcRenderer.invoke("ssh:getConnectionCount"),
+  // 上传目录
   uploadDir: (connectionId, localDir, remoteDir) => electron.ipcRenderer.invoke("ssh:uploadDir", connectionId, localDir, remoteDir),
   ssh: {
     testSSHConnection: (data) => electron.ipcRenderer.invoke("ssh:test", data),

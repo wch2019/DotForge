@@ -3,6 +3,7 @@ import {Client, ClientChannel, ConnectConfig} from 'ssh2'
 import * as fs from 'fs'
 import * as path from 'path'
 import archiver from 'archiver'
+import {readConfig} from "./setting.ts";
 
 export interface SSHConnectionConfig {
     host: string
@@ -357,21 +358,37 @@ class SSHManager {
         return conn
     }
 
-    async uploadDirectoryZipSFTP(connectionId: string, localDir: string, remoteDir: string) {
+    /**
+     * 上传目录
+     * @param connectionId 连接ID
+     * @param localDir 本地目录
+     * @param remoteDir 远程目录
+     * @param sender 发送者
+     */
+    async uploadDirectoryZipSFTP(connectionId: string, localDir: string, remoteDir: string, sender: Electron.WebContents) {
         const client = this.getConnection(connectionId)
-        console.log('📌 开始压缩本地目录:', localDir)
 
-        // 1. 创建本地临时 zip
-        const zipPath = path.join(process.cwd(), `temp_upload_${Date.now()}.zip`)
+        const config = readConfig();
+        const tempDir = path.join(config.defaultProjectPath, "temp");
+
+        if (!fs.existsSync(tempDir)) {
+            fs.mkdirSync(tempDir, {recursive: true});
+        }
+
+        // 1. 压缩本地目录
+        const zipPath = path.join(tempDir, `temp_upload_${Date.now()}.zip`)
+        sender.send("ssh:uploadLog", `📌 开始压缩本地目录: ${localDir}`);
+
         await new Promise<void>((resolve, reject) => {
             const output = fs.createWriteStream(zipPath)
             const archive = archiver('zip', {zlib: {level: 9}})
 
             output.on('close', () => {
                 console.log(`📦 本地 zip 压缩完成，大小: ${archive.pointer()} bytes`)
+                sender.send("ssh:uploadLog", `📦 压缩完成，大小: ${archive.pointer()} bytes`);
                 resolve()
             })
-            archive.on('error', (err) => reject(err))
+            archive.on('error', reject)
 
             archive.pipe(output)
             archive.directory(localDir, false)
@@ -380,72 +397,80 @@ class SSHManager {
 
         // 2. 打开 SFTP
         console.log('📌 打开 SFTP')
+        sender.send("ssh:uploadLog", `📌 打开 SFTP`);
         const sftp = await new Promise<any>((resolve, reject) => {
-            client.sftp((err, sftp) => {
-                if (err) {
-                    console.error('❌ SFTP 打开失败:', err)
-                    return reject(err)
-                }
-                console.log('✅ SFTP 打开成功')
-                resolve(sftp)
-            })
-        })
+            client.sftp((err, sftp) => (err ? reject(err) : resolve(sftp)));
+        });
+        console.log("✅ SFTP 打开成功");
+        sender.send("ssh:uploadLog", `✅ SFTP 打开成功`);
 
-        // 3. 上传到临时目录 /tmp
-        const tmpDir = '/tmp/upload_temp'
-        await new Promise<void>((resolve, reject) => {
-            sftp.mkdir(tmpDir, (err) => {
-                if (err && err.code !== 4) return reject(err) // code 4 = already exists
-                resolve()
-            })
-        })
-        const remoteZipPath = `${tmpDir}/temp_upload.zip`
-        console.log('📌 上传 zip 到临时目录:', remoteZipPath)
-        await new Promise<void>((resolve, reject) => {
-            const readStream = fs.createReadStream(zipPath)
-            const writeStream = sftp.createWriteStream(remoteZipPath)
-            writeStream.on('close', () => {
-                console.log('⬆️ 上传 zip 完成')
-                resolve()
-            })
-            writeStream.on('error', reject)
-            readStream.pipe(writeStream)
-        })
+        // 3. 上传到目标目录
+        const remoteZipPath = `${remoteDir}/upload.zip`;
+        console.log("📌 上传 zip 到:", remoteZipPath);
 
-        // 4. 远程解压到临时目录
-        console.log('📌 远程解压 zip')
         await new Promise<void>((resolve, reject) => {
-            client.exec(`unzip -o ${remoteZipPath} -d ${tmpDir}`, (err, stream) => {
-                if (err) return reject(err)
-                stream.stderr.on('data', (data) => console.error('远程解压错误:', data.toString()))
-                stream.on('close', (code) => {
+            sftp.mkdir(remoteDir, (err) => {
+                if (err && err.code !== 4) return reject(err); // 4 = already exists
+                resolve();
+            });
+        });
+        sender.send("ssh:uploadLog", `📌 上传 zip 到: ${remoteZipPath}`);
+
+        await new Promise<void>((resolve, reject) => {
+            const readStream = fs.createReadStream(zipPath);
+            const writeStream = sftp.createWriteStream(remoteZipPath);
+
+            readStream.on("data", () => {
+                // sender.send("ssh:uploadLog", `⬆️ 上传中...`);
+            });
+
+            writeStream.on("close", () => {
+                sender.send("ssh:uploadLog", `⬆️ 上传完成`);
+                resolve();
+            });
+            writeStream.on("error", reject);
+
+            readStream.pipe(writeStream);
+        });
+
+        // 4. 远程解压
+        console.log("📌 解压到目标目录:", remoteDir);
+        sender.send("ssh:uploadLog", `📌 开始远程解压到: ${remoteDir}`);
+        await new Promise<void>((resolve, reject) => {
+            const cmd = `
+            mkdir -p ${remoteDir} &&
+            unzip -o ${remoteZipPath} -d ${remoteDir} &&
+            rm -f ${remoteZipPath}
+        `;
+            client.exec(cmd, (err, stream) => {
+                if (err) return reject(err);
+
+                stream.on("data", (data) => {
+                    // console.log("远程输出:", data.toString());
+                    // sender.send("ssh:uploadLog", data.toString().trim());
+                });
+
+                stream.stderr.on("data", (data) => {
+                    console.error("远程错误:", data.toString());
+                    sender.send("ssh:uploadLog", `❌ 错误: ${data.toString().trim()}`);
+                });
+
+                stream.on("exit", (code: number) => {
+                    console.log("📌 远程进程退出码:", code);
+                });
+
+                stream.on("close", (code: number) => {
                     if (code === 0) {
-                        console.log('✅ 临时目录解压完成')
-                        resolve()
+                        console.log("✅ 解压完成");
+                        sender.send("ssh:uploadLog", `✅ 解压完成`);
+                        fs.unlinkSync(zipPath);
+                        resolve();
                     } else {
-                        reject(new Error(`远程解压失败 (exit code: ${code})`))
+                        reject(new Error(`远程解压失败 (exit code: ${code})`));
                     }
-                })
-            })
-        })
-
-        // 5. 移动到目标目录（sudo 确保 root 权限）
-        console.log('📌 移动解压内容到目标目录:', remoteDir)
-        await new Promise<void>((resolve, reject) => {
-            client.exec(`sudo mkdir -p ${remoteDir} && sudo mv ${tmpDir}/* ${remoteDir} && sudo rm -rf ${tmpDir}`, (err, stream) => {
-                if (err) return reject(err)
-                stream.stderr.on('data', (data) => console.error('移动文件错误:', data.toString()))
-                stream.on('close', (code) => {
-                    if (code === 0) {
-                        console.log('✅ 文件移动完成')
-                        fs.unlinkSync(zipPath)
-                        resolve()
-                    } else {
-                        reject(new Error(`移动文件失败 (exit code: ${code})`))
-                    }
-                })
-            })
-        })
+                });
+            });
+        });
     }
 
 }
@@ -543,12 +568,13 @@ export function registerSSHHandlers() {
     })
 
     // 目录上传
-    ipcMain.handle('ssh:uploadDir', async (_, connectionId: string, localDir: string, remoteDir: string) => {
+    ipcMain.handle('ssh:uploadDir', async (event, connectionId: string, localDir: string, remoteDir: string) => {
         try {
-            await sshManager.uploadDirectoryZipSFTP(connectionId, localDir, remoteDir)
+            await sshManager.uploadDirectoryZipSFTP(connectionId, localDir, remoteDir, event.sender)
             return true
         } catch (error) {
             console.error('上传目录失败:', error)
+            event.sender.send("ssh:uploadLog", `❌ 上传目录失败: ${error}`);
             throw error
         }
     })

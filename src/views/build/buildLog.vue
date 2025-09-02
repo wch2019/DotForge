@@ -26,7 +26,7 @@
           </div>
         </div>
         <div class="header-actions">
-          <n-switch v-model:value="scroll">
+          <n-switch v-model:value="scroll" size="small">
             <template #checked>
               自动滚动
             </template>
@@ -34,31 +34,36 @@
               不滚动
             </template>
           </n-switch>
-          <n-button quaternary size="small" @click="clearLogs" :disabled="!logs.length || action === 'view'">
-            <template #icon>
-              <n-icon>
-                <TrashOutline/>
-              </n-icon>
-            </template>
-            清除日志
-          </n-button>
-          <n-button quaternary size="small" @click="exportLogs" :disabled="!logs.length">
-            <template #icon>
-              <n-icon>
-                <DownloadOutline/>
-              </n-icon>
-            </template>
-            导出日志
-          </n-button>
-          <n-button v-if="action != 'view'" type="error" size="small" @click="stopBuild"
-                    :disabled="buildStatus !== 'building'">
-            <template #icon>
-              <n-icon>
-                <StopOutline/>
-              </n-icon>
-            </template>
-            停止构建
-          </n-button>
+<!--          <n-tooltip trigger="hover" placement="top-start" :content="'清除日志'">-->
+            <n-button v-if="action != 'view'" quaternary size="small" @click="clearLogs" :disabled="!logs.length">
+              <template #icon>
+                <n-icon>
+                  <TrashOutline/>
+                </n-icon>
+              </template>
+            </n-button>
+<!--          </n-tooltip>-->
+
+<!--          <n-tooltip trigger="hover" placement="top-start" :content="'导出日志'">-->
+            <n-button quaternary size="small" @click="exportLogs" :disabled="!logs.length">
+              <template #icon>
+                <n-icon>
+                  <DownloadOutline/>
+                </n-icon>
+              </template>
+            </n-button>
+<!--          </n-tooltip>-->
+
+<!--          <n-tooltip trigger="hover" placement="top-start" :content="'停止构建'">-->
+            <n-button v-if="action != 'view'" type="error" size="small" @click="stopBuild"
+                      :disabled="buildStatus !== 'building'">
+              <template #icon>
+                <n-icon>
+                  <StopOutline/>
+                </n-icon>
+              </template>
+            </n-button>
+<!--          </n-tooltip>-->
         </div>
       </div>
 
@@ -86,7 +91,7 @@
 <script setup lang="ts">
 import {computed, nextTick, onMounted, ref, toRaw} from 'vue'
 import {useRoute, useRouter} from 'vue-router'
-import {NButton, NIcon, useMessage} from 'naive-ui'
+import {NButton, NIcon, NTooltip, useMessage,} from 'naive-ui'
 import {
   ArrowBackOutline,
   CheckmarkCircleOutline,
@@ -272,12 +277,12 @@ async function runBuild() {
   await stepLog(info.value + localPath)
   await stepLog(buildSteps[2])
   // 构建流程
-  // const method = await buildMethod(project.value.buildCmd, localPath)
-  // if (!method) {
-  //   buildStatus.value = BuildStatus.FAILED
-  //   await saveBuildLog()
-  //   return
-  // }
+  const method = await buildMethod(project.value.buildCmd, localPath)
+  if (!method) {
+    buildStatus.value = BuildStatus.FAILED
+    await saveBuildLog()
+    return
+  }
   // 发布操作
   const deploy = await deployMethod(project)
   if (!deploy) {
@@ -316,18 +321,19 @@ async function buildMethod(buildCmd: string, localPath: string) {
 async function deployMethod(project: any) {
   await stepLog(buildSteps[3])
   if (project.value.deployMethod == 'none') {
-    await stepLog("不发布")
+    await stepLog(info.value + "不发布")
   }
   if (project.value.deployMethod == 'local') {
-    await stepLog("本地部署")
+    await stepLog(info.value + "本地部署")
     return await buildMethod(project.value.localCommand, project.value.localPath)
   }
   if (project.value.deployMethod == 'remote') {
-    await stepLog("远程服务器")
+    await stepLog(info.value + "远程服务器")
     return await serverRemote(project)
   }
   return true
 }
+
 // 远程服务器
 async function serverRemote(project: any) {
   const data = await window.electronAPI.server.getServerById(project.value.serverId)
@@ -364,9 +370,13 @@ async function serverRemote(project: any) {
         await window.electronAPI.disconnectSSH(connectionId)
         return false
       }
-
+      // 订阅上传日志
+      const unsubscribe = window.electronAPI.ssh.on('ssh:uploadLog', (message: string) => {
+        logs.value.push(info.value + message);
+      });
       logs.value.push(info.value + `开始上传: ${localDir} -> ${remoteDir}`)
       await window.electronAPI.uploadDir(connectionId, localDir, remoteDir)
+      unsubscribe();
       logs.value.push(info.value + '上传完成')
 
       // 执行远程命令（可选）
@@ -388,7 +398,10 @@ async function serverRemote(project: any) {
       return true
     } catch (e) {
       logs.value.push(error.value + '远程部署失败: ' + (e as Error).message)
-      try { await window.electronAPI.disconnectSSH(connectionId) } catch {}
+      try {
+        await window.electronAPI.disconnectSSH(connectionId)
+      } catch {
+      }
       return false
     }
   } catch (e) {
