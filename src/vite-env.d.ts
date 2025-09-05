@@ -41,7 +41,7 @@ declare global {
             deleteBuildLog: (id: number) => Promise<any>
 
             // 服务器管理相关
-            server:{
+            server: {
                 getServers: () => Promise<any[]>
                 getServerById: (id: number) => Promise<any>
                 createServer: (data: any) => Promise<any>
@@ -58,9 +58,14 @@ declare global {
             disconnectSSH: (connectionId: string) => Promise<boolean>
             isSSHConnected: (connectionId: string) => Promise<boolean>
             getSSHConnectionCount: () => Promise<number>
-            uploadDir: (connectionId: string, localDir: string, remoteDir: string) => Promise<boolean>
+            uploadDir: (connectionId: string, {localPath, removePrefix, sourceFiles}: {
+                localPath: string,
+                removePrefix?: string,
+                sourceFiles: string[],
+                remoteDir: string
+            }) => Promise<boolean>
             ssh: {
-                testSSHConnection : (config: any) => Promise<boolean>
+                testSSHConnection: (config: any) => Promise<boolean>
                 createShell: (connectionId: string) => Promise<any>
                 send: (channel: string, data: any) => void
                 on: (channel: string, callback: (data: any) => void) => () => void

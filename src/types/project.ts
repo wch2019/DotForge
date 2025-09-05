@@ -36,7 +36,7 @@ export interface ProjectData {
     /** 删除前缀 **/
     removePrefix: string
     /** 源文件 **/
-    sourceFiles:string
+    sourceFiles: string
     /** 远程命令 **/
     remoteCommand: string
 
@@ -67,7 +67,9 @@ export const defaultProjectData: ProjectData = {
     localCommand: '',
     dockerDeployType: 'local',
     dockerRunCommand: '',
-    targetPath: '',
+    remoteDirectory: '',
+    removePrefix: '',
+    sourceFiles: '',
     remoteCommand: '',
     keepArtifacts: 0,
     keepPath: '',
@@ -90,6 +92,7 @@ export const tags = [
     {label: 'Python', value: 'python'},
     {label: 'Go', value: 'go'},
 ]
+
 // 构建状态
 export const enum BuildStatus {
     // 正在构建

@@ -34,36 +34,45 @@
               不滚动
             </template>
           </n-switch>
-<!--          <n-tooltip trigger="hover" placement="top-start" :content="'清除日志'">-->
-            <n-button v-if="action != 'view'" quaternary size="small" @click="clearLogs" :disabled="!logs.length">
-              <template #icon>
-                <n-icon>
-                  <TrashOutline/>
-                </n-icon>
-              </template>
-            </n-button>
-<!--          </n-tooltip>-->
+          <n-tooltip trigger="hover" placement="bottom">
+            <template #trigger>
+              <n-button v-show="action != 'view'" quaternary size="small" @click="clearLogs" :disabled="!logs.length">
+                <template #icon>
+                  <n-icon>
+                    <TrashOutline/>
+                  </n-icon>
+                </template>
+              </n-button>
+            </template>
+            清除日志
+          </n-tooltip>
 
-<!--          <n-tooltip trigger="hover" placement="top-start" :content="'导出日志'">-->
-            <n-button quaternary size="small" @click="exportLogs" :disabled="!logs.length">
-              <template #icon>
-                <n-icon>
-                  <DownloadOutline/>
-                </n-icon>
-              </template>
-            </n-button>
-<!--          </n-tooltip>-->
+          <n-tooltip trigger="hover" placement="bottom">
+            <template #trigger>
+              <n-button quaternary size="small" @click="exportLogs" :disabled="!logs.length">
+                <template #icon>
+                  <n-icon>
+                    <DownloadOutline/>
+                  </n-icon>
+                </template>
+              </n-button>
+            </template>
+            导出日志
+          </n-tooltip>
 
-<!--          <n-tooltip trigger="hover" placement="top-start" :content="'停止构建'">-->
-            <n-button v-if="action != 'view'" type="error" size="small" @click="stopBuild"
-                      :disabled="buildStatus !== 'building'">
-              <template #icon>
-                <n-icon>
-                  <StopOutline/>
-                </n-icon>
-              </template>
-            </n-button>
-<!--          </n-tooltip>-->
+          <n-tooltip trigger="hover" placement="bottom">
+            <template #trigger>
+              <n-button v-show="action != 'view'" type="error" size="small" @click="stopBuild"
+                        :disabled="buildStatus !== 'building'">
+                <template #icon>
+                  <n-icon>
+                    <StopOutline/>
+                  </n-icon>
+                </template>
+              </n-button>
+            </template>
+            停止构建
+          </n-tooltip>
         </div>
       </div>
 
@@ -107,6 +116,7 @@ import {BuildLog} from "@/types/buildLog.ts";
 import {formatDateTime} from "@/utils/date.ts";
 import {AnsiUp} from "ansi_up";
 import {ServerForm} from "@/types/server.ts";
+import {Logger} from "@/utils/logger.ts";
 
 const buildLog = ref<BuildLog>({
   projectId: '',
@@ -169,12 +179,12 @@ const error = ref("\x1b[31m[ERROR]\x1b[0m ")
 const warn = ref("\x1b[33m[WARN]\x1b[0m ")
 
 const buildSteps = [
-  info.value + '开始构建项目...',
-  info.value + '获取基础信息...',
-  info.value + '执行构建流程...',
-  info.value + '执行发布操作...',
-  info.value + '执行其他配置...',
-  info.value + '构建成功完成'
+  Logger.logInfo('开始构建项目...'),
+  Logger.logInfo('获取基础信息...'),
+  Logger.logInfo('执行构建流程...'),
+  Logger.logInfo('执行发布操作...'),
+  Logger.logInfo('执行其他配置...'),
+  Logger.logInfo('构建成功完成')
 ]
 const ansi_up = new AnsiUp();
 
@@ -221,10 +231,10 @@ onMounted(async () => {
 function stopBuild() {
   window.electronAPI.stopCommand().then((stopped: any) => {
     if (stopped) {
-      logs.value.push(info.value + '构建已停止')
+      logs.value.push(Logger.logInfo('构建已停止'))
       buildStatus.value = BuildStatus.FAILED
     } else {
-      logs.value.push('[WARN] 没有正在运行的构建任务')
+      logs.value.push(Logger.logWarn('没有正在运行的构建任务'))
     }
   })
   // 保存构建日志
@@ -274,7 +284,7 @@ async function runBuild() {
   await stepLog(buildSteps[0])
   await stepLog(buildSteps[1])
   const localPath = project.value.localPath
-  await stepLog(info.value + localPath)
+  await stepLog(Logger.logInfo(localPath))
   await stepLog(buildSteps[2])
   // 构建流程
   const method = await buildMethod(project.value.buildCmd, localPath)
@@ -307,7 +317,7 @@ async function buildMethod(buildCmd: string, localPath: string) {
 
   // 逐行执行命令
   for (const cmd of commands) {
-    logs.value.push(info.value + `执行命令: ${cmd}`)
+    logs.value.push(Logger.logInfo(`执行命令: ${cmd}`))
     const code = await window.electronAPI.runCommand(cmd, {cwd: localPath})
     if (code !== 0) {
       logs.value.push(error.value + `命令失败: ${cmd}`)
@@ -321,14 +331,14 @@ async function buildMethod(buildCmd: string, localPath: string) {
 async function deployMethod(project: any) {
   await stepLog(buildSteps[3])
   if (project.value.deployMethod == 'none') {
-    await stepLog(info.value + "不发布")
+    await stepLog(Logger.logInfo("不发布"))
   }
   if (project.value.deployMethod == 'local') {
-    await stepLog(info.value + "本地部署")
+    await stepLog(Logger.logInfo("本地部署"))
     return await buildMethod(project.value.localCommand, project.value.localPath)
   }
   if (project.value.deployMethod == 'remote') {
-    await stepLog(info.value + "远程服务器")
+    await stepLog(Logger.logInfo("远程服务器"))
     return await serverRemote(project)
   }
   return true
@@ -342,11 +352,11 @@ async function serverRemote(project: any) {
     return false
   }
   Object.assign(server.value, data)
-  logs.value.push(info.value + `服务器: ${server.value.name} (${server.value.host}:${server.value.port})`)
+  logs.value.push(Logger.logInfo(`服务器: ${server.value.name} (${server.value.host}:${server.value.port})`))
 
   // 连接 SSH
   try {
-    logs.value.push(info.value + '连接中...')
+    logs.value.push(Logger.logInfo('连接中...'))
     const connectionId = await window.electronAPI.connectSSH({
       host: server.value.host,
       port: Number(server.value.port) || 22,
@@ -362,8 +372,10 @@ async function serverRemote(project: any) {
     logs.value.push(info.value + '连接成功')
 
     try {
-      // 上传目录
-      const localDir = joinPaths(project.value.localPath, project.value.outputDir)
+      // 上传文件
+      const localPath = project.value.localPath
+      const removePrefix = project.value.removePrefix
+      const sourceFiles = project.value.sourceFiles
       const remoteDir = String(project.value.remoteDirectory || '').trim()
       if (!remoteDir) {
         logs.value.push(error.value + '远程目录未配置')
@@ -372,10 +384,10 @@ async function serverRemote(project: any) {
       }
       // 订阅上传日志
       const unsubscribe = window.electronAPI.ssh.on('ssh:uploadLog', (message: string) => {
-        logs.value.push(info.value + message);
+        logs.value.push(message);
       });
       logs.value.push(info.value + `开始上传: ${localDir} -> ${remoteDir}`)
-      await window.electronAPI.uploadDir(connectionId, localDir, remoteDir)
+      await window.electronAPI.uploadDir(connectionId, {localPath, removePrefix, sourceFiles,remoteDir})
       unsubscribe();
       logs.value.push(info.value + '上传完成')
 
@@ -398,10 +410,7 @@ async function serverRemote(project: any) {
       return true
     } catch (e) {
       logs.value.push(error.value + '远程部署失败: ' + (e as Error).message)
-      try {
-        await window.electronAPI.disconnectSSH(connectionId)
-      } catch {
-      }
+      await window.electronAPI.disconnectSSH(connectionId)
       return false
     }
   } catch (e) {
@@ -413,6 +422,8 @@ async function serverRemote(project: any) {
 // 其他配置
 async function otherConfig() {
   logs.value.push(buildSteps[4])
+  // 产物目录
+  const localDir = joinPaths(project.value.localPath, project.value.outputDir)
 }
 
 function joinPaths(...paths: string[]) {
@@ -491,7 +502,7 @@ function exportLogs() {
 
 <style scoped>
 .build-log-page {
-  background: #f5f7fa;
+  background: var(--content-bg);
   height: var(--content-height);
   padding: 16px;
 }
@@ -499,15 +510,16 @@ function exportLogs() {
 .build-log-container {
   max-width: 1200px;
   margin: 0 auto;
-  background: white;
+  background: var(--content-bg);
   border-radius: 12px;
+  border: 1px solid var(--n-border-color);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   overflow: hidden;
 }
 
 .build-log-header {
   padding: 8px 24px;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--n-border-color);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -533,7 +545,6 @@ function exportLogs() {
 .project-title {
   font-size: 20px;
   font-weight: 600;
-  color: #1f2937;
   margin: 0 0 4px 0;
   overflow: hidden;
   text-overflow: ellipsis;

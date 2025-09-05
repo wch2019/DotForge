@@ -4,6 +4,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import archiver from 'archiver'
 import {readConfig} from "./setting.ts";
+import {Logger} from "@/utils/logger.ts";
 
 export interface SSHConnectionConfig {
     host: string
@@ -361,11 +362,13 @@ class SSHManager {
     /**
      * 上传目录
      * @param connectionId 连接ID
-     * @param localDir 本地目录
+     * @param localPath 本地目录
+     * @param removePrefix 删除前缀
+     * @param sourceFiles 源文件
      * @param remoteDir 远程目录
      * @param sender 发送者
      */
-    async uploadDirectoryZipSFTP(connectionId: string, localDir: string, remoteDir: string, sender: Electron.WebContents) {
+    async uploadDirectoryZipSFTP(connectionId: string, localPath: string, removePrefix?: string, sourceFiles: string[], remoteDir: string, sender: Electron.WebContents) {
         const client = this.getConnection(connectionId)
 
         const config = readConfig();
@@ -377,7 +380,7 @@ class SSHManager {
 
         // 1. 压缩本地目录
         const zipPath = path.join(tempDir, `temp_upload_${Date.now()}.zip`)
-        sender.send("ssh:uploadLog", `📌 开始压缩本地目录: ${localDir}`);
+        sender.send("ssh:uploadLog", Logger.logInfo(`📌 开始压缩文件/目录`));
 
         await new Promise<void>((resolve, reject) => {
             const output = fs.createWriteStream(zipPath)
@@ -385,36 +388,63 @@ class SSHManager {
 
             output.on('close', () => {
                 console.log(`📦 本地 zip 压缩完成，大小: ${archive.pointer()} bytes`)
-                sender.send("ssh:uploadLog", `📦 压缩完成，大小: ${archive.pointer()} bytes`);
+                sender.send("ssh:uploadLog", Logger.logInfo(`📦 压缩完成，大小: ${archive.pointer()} bytes`));
                 resolve()
             })
             archive.on('error', reject)
 
             archive.pipe(output)
-            archive.directory(localDir, false)
+            for (const file of sourceFiles) {
+                // 完整本地路径
+                const fullPath = path.join(localPath, file);
+                if (!fs.existsSync(fullPath)) {
+                    sender.send("ssh:uploadLog", Logger.logError(`❌ 文件不存在: ${fullPath}`));
+                    continue;
+                }
+                const stat = fs.statSync(fullPath);
+                // 压缩包内部路径就是相对路径，不包含 localPath
+                // 压缩包内路径：去掉 removePrefix
+                let target: string;
+                if (removePrefix) {
+                    // 确保路径统一，用 path.relative
+                    target = path.relative(removePrefix, file);
+                } else {
+                    // 没有 removePrefix，保留相对 file 的路径
+                    target = file
+                }
+
+                if (stat.isDirectory()) {
+                    archive.directory(fullPath, target);
+                    sender.send("ssh:uploadLog", Logger.logInfo(`📁 添加目录: ${fullPath} -> ${target}`));
+                } else {
+                    archive.file(fullPath, { name: target });
+                    sender.send("ssh:uploadLog", Logger.logInfo(`📄 添加文件: ${fullPath} -> ${target}`));
+                }
+            }
+
             archive.finalize()
         })
 
         // 2. 打开 SFTP
         console.log('📌 打开 SFTP')
-        sender.send("ssh:uploadLog", `📌 打开 SFTP`);
+        sender.send("ssh:uploadLog", Logger.logInfo(`📌 打开 SFTP`));
         const sftp = await new Promise<any>((resolve, reject) => {
             client.sftp((err, sftp) => (err ? reject(err) : resolve(sftp)));
         });
         console.log("✅ SFTP 打开成功");
-        sender.send("ssh:uploadLog", `✅ SFTP 打开成功`);
+        sender.send("ssh:uploadLog", Logger.logInfo(`✅ SFTP 打开成功`));
 
         // 3. 上传到目标目录
         const remoteZipPath = `${remoteDir}/upload.zip`;
         console.log("📌 上传 zip 到:", remoteZipPath);
 
         await new Promise<void>((resolve, reject) => {
-            sftp.mkdir(remoteDir, (err) => {
+            sftp.mkdir(remoteDir, (err: any) => {
                 if (err && err.code !== 4) return reject(err); // 4 = already exists
                 resolve();
             });
         });
-        sender.send("ssh:uploadLog", `📌 上传 zip 到: ${remoteZipPath}`);
+        sender.send("ssh:uploadLog", Logger.logInfo(`📌 上传 zip 到: ${remoteZipPath}`));
 
         await new Promise<void>((resolve, reject) => {
             const readStream = fs.createReadStream(zipPath);
@@ -425,7 +455,7 @@ class SSHManager {
             });
 
             writeStream.on("close", () => {
-                sender.send("ssh:uploadLog", `⬆️ 上传完成`);
+                sender.send("ssh:uploadLog", Logger.logInfo(`⬆️ 上传完成`));
                 resolve();
             });
             writeStream.on("error", reject);
@@ -435,7 +465,7 @@ class SSHManager {
 
         // 4. 远程解压
         console.log("📌 解压到目标目录:", remoteDir);
-        sender.send("ssh:uploadLog", `📌 开始远程解压到: ${remoteDir}`);
+        sender.send("ssh:uploadLog", Logger.logInfo(`📌 开始远程解压到: ${remoteDir}`));
         await new Promise<void>((resolve, reject) => {
             const cmd = `
             mkdir -p ${remoteDir} &&
@@ -452,7 +482,7 @@ class SSHManager {
 
                 stream.stderr.on("data", (data) => {
                     console.error("远程错误:", data.toString());
-                    sender.send("ssh:uploadLog", `❌ 错误: ${data.toString().trim()}`);
+                    sender.send("ssh:uploadLog", Logger.logError(`❌ 错误: ${data.toString().trim()}`));
                 });
 
                 stream.on("exit", (code: number) => {
@@ -462,7 +492,7 @@ class SSHManager {
                 stream.on("close", (code: number) => {
                     if (code === 0) {
                         console.log("✅ 解压完成");
-                        sender.send("ssh:uploadLog", `✅ 解压完成`);
+                        sender.send("ssh:uploadLog", Logger.logInfo(`✅ 解压完成`));
                         fs.unlinkSync(zipPath);
                         resolve();
                     } else {
@@ -568,13 +598,18 @@ export function registerSSHHandlers() {
     })
 
     // 目录上传
-    ipcMain.handle('ssh:uploadDir', async (event, connectionId: string, localDir: string, remoteDir: string) => {
+    ipcMain.handle('ssh:uploadDir', async (event, connectionId: string, options: {
+        localPath: string,
+        removePrefix?: string,
+        sourceFiles: string[],
+        remoteDir: string
+    }) => {
         try {
-            await sshManager.uploadDirectoryZipSFTP(connectionId, localDir, remoteDir, event.sender)
+            await sshManager.uploadDirectoryZipSFTP(connectionId, options.localPath, options.removePrefix, options.sourceFiles, options.remoteDir, event.sender)
             return true
         } catch (error) {
             console.error('上传目录失败:', error)
-            event.sender.send("ssh:uploadLog", `❌ 上传目录失败: ${error}`);
+            event.sender.send("ssh:uploadLog", Logger.logError(`❌ 上传目录失败: ${error}`));
             throw error
         }
     })
